@@ -6,36 +6,32 @@
  ************************************************************************/
 
 #include<iostream>
+#include<memory.h>
 using namespace std;
-int cnt=0;
-int top=1;
-void move(int n,char star,char des){
-    cout<<n<<" move from "<<star<<" to"<<des<<endl;
-    cnt++;
-}
-void hanoi(int n,char star,char medium_L,char medium_R,char des){
-    if(n<=0){
-        return;
-    }
-    else if(n==top||n==1){
-     move(n,star,des);
-    }
-    else{
-        hanoi(n-2,star,medium_R,des,medium_L);
-        top++;
-        cout<<top<<endl;
-        move(n-1,star,medium_R);
-        move(n,star,des);
-        top++;
-        hanoi(n-2,medium_L,star,des,medium_R);
-        /*top=n-2;
-        hanoi(n-2,medium_L,star,medium_R,des);*/
-    }
-}
 int main(){
-    int m;
-    cin>>m;
-    hanoi(m,'A','B','C','D');
-    cout<<cnt<<endl;
+    int n;
+    int move[75];
+    int base=1;
+    int cnt=1;
+    int deep=0;
+    for(int i=1;i<=64;i++){
+        move[i]=base;
+        deep++;
+        if(deep==cnt){
+            cnt++;
+            deep=0;
+            base*=2;
+        }
+    }
+    //for(int i=1;i<=64;i++)
+    //    cout<<move[i]<<endl;
+    while(cin>>n){
+        int tot=0;
+        for(int i=1;i<=n;i++){
+            tot+=move[i];
+        }
+        cout<<tot<<endl;
+    }
+
     return 0;
 }
