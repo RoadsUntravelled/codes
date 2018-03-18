@@ -54,70 +54,25 @@ int main(){
             for(int j=1;j<=M;j++){
                 castle[i][j]=num;
                 cin>>ceil;
-                if(ceil==1) walls.insert({num,num-1,i});
-                else if(ceil==2)walls.insert({num,num-M,i});
-                else if(ceil==3)walls.insert({num,num-1,i}),walls.insert({num,num-M,i});
-                else if(ceil==4){
-                    if(num%M)walls.insert({num,num+1,i});
+                if(ceil>=8){
+                    ceil-=8;
+                    walls.insert({num,num+M,i});
                 }
-                else if(ceil==5){
-                    walls.insert({num,num-1,i});
-                    if(num%M)walls.insert({num,num+1,i});
-                }
-                else if(ceil==6){
-                    walls.insert({num,num-M,i});
+                if(ceil>=4){
+                    ceil-=4;
                     if(num%M)
                     walls.insert({num,num+1,i});
                 }
-                else if(ceil==7){
-                    walls.insert({num,num-1,i});
-                    walls.insert({num,num-M,i});
-                    if(num%M)
-                    walls.insert({num,num+1,i});
-                }
-                else if(ceil==8){
-                    walls.insert({num,num+M,i});
-                }
-                else if(ceil==9){
-                    walls.insert({num,num-1,i});
-                    walls.insert({num,num+M,i});
-                }
-                else if(ceil==10){
-                    walls.insert({num,num+M,i});
+                if(ceil>=2){
+                    ceil-=2;
                     walls.insert({num,num-M,i});
                 }
-                else if(ceil==11){
-                    walls.insert({num,num-1,i});
-                    walls.insert({num,num+M,i});
-                    walls.insert({num,num-M,i});
-                }
-                else if(ceil==12){
-                    walls.insert({num,num+M,i});
-                    if(num%M)
-                    walls.insert({num,num+1,i});
-                }
-                else if(ceil==13){
-                    walls.insert({num,num+M,i});
-                    if(num%M)
-                    walls.insert({num,num+1,i});
+                if(ceil>=1){
                     walls.insert({num,num-1,i});
                 }
-                else if(ceil==14){
-                    walls.insert({num,num-M,i});
-                    walls.insert({num,num+M,i});
-                    if(num%M)
-                    walls.insert({num,num+1,i});
-                }
-                else if(ceil==15){
-                    walls.insert({num,num-M,i});
-                    walls.insert({num,num+M,i});
-                    if(num%M)
-                    walls.insert({num,num+1,i});
-                    walls.insert({num,num-1,i});
-                }
+               
                 num++;
         }
-
         Rooms room[2555];
         int cnt=1;
         for(int i=1;i<=N;i++)
