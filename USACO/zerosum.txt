@@ -1,0 +1,220 @@
+/*
+ID: noname01
+PROB: zerosum
+LANG: C++
+*/
+#include<iostream>
+#include<fstream>
+#include<string>
+using namespace std;
+ifstream fin("zerosum.in");
+ofstream fout("zerosum.out");
+int n,m;
+void dfs(int step,int sum,int num,string s){
+  string s1=s;
+  if(step==n){if(sum+num==0)fout<<s<<endl;return;}
+  if(num>0)dfs(step+1,sum,num*10+step+1,s+" "+char(step+1+48));
+  else dfs(step+1,sum,num*10-step-1,s+" "+char(step+1+48));
+  dfs(step+1,sum+num,step+1,s+"+"+char(step+1+48));
+  dfs(step+1,sum+num,-1*step-1,s+"-"+char(step+1+48));
+}
+void solve(){
+  fin>>n;
+  dfs(1,0,1,"1");
+}
+int main(){
+  solve();
+  return(0);
+}/*
+ID:ybojan2
+LANG:C++
+TASK:zerosum
+*/
+ 
+#include <iostream>
+#include <fstream>
+ 
+using namespace std;
+ 
+int n,dat[10],res[1000][10],cnt=0;
+ 
+void search(int sum,int last,int deep,int flag)
+{
+     if (deep==n+1)
+     {
+                   sum+=last*flag;
+                   if (sum!=0) return ;
+                   cnt++;
+                   for (int i=2;i<=n;i++)
+                       res[cnt][i]=dat[i];
+                   return ;
+     }
+     dat[deep]=0;
+     search(sum,last*10+deep,deep+1,flag);
+     sum+=last*flag;
+     dat[deep]=1;
+     flag=1;
+     search(sum,deep,deep+1,1);
+     dat[deep]=2;
+     flag=-1;
+     search(sum,deep,deep+1,-1);
+}
+ 
+int main()
+{
+    ifstream fin("zerosum.in");
+    ofstream fout("zerosum.out");
+    fin>>n;
+ 
+    search(0,1,2,1);
+ 
+    for (int i=1;i<=cnt;i++)
+    {
+                   fout<<1;
+                   for (int j=2;j<=n;j++)
+                   {
+                       switch (res[i][j])
+                       {
+                              case 0:
+                                   fout<<" ";
+                                   break;
+                              case 1:
+                                   fout<<"+";
+                                   break;
+                              case 2:
+                                   fout<<"-";
+                                   break;
+                       }
+                       fout<<j;
+                   }
+                   fout<<endl;               
+    }
+    return 0;
+}
+ 
+ 
+ 
+ 
+/*
+ID: MasterRay
+LANG: C++
+TASK: zerosum
+*/
+ 
+#include <stdio.h>
+ 
+char line[18];
+int n;
+ 
+void DFS(int k, int sum, int last)
+{
+	if (k == n)
+	{
+		if (sum+last == 0) puts(line);
+		return;
+	}
+	line[k*2-1] = ' ';
+	DFS(k+1, sum, last > 0 ? last*10+k+1 : last*10-k-1);
+	line[k*2-1] = '+';
+	DFS(k+1, sum+last, k+1);
+	line[k*2-1] = '-';
+	DFS(k+1, sum+last, -k-1);
+}
+ 
+int main()
+{
+	freopen("zerosum.in", "r", stdin);
+	freopen("zerosum.out", "w", stdout);
+	scanf("%d", &n);
+	for (int i = 0; i < n; ++i)
+		line[i*2] = i+'1';
+	DFS(1, 0, 1);
+}题很简单，但我在一直输出正确答案的情况下调试了半个小时，真是瞎了眼。。。。
+/*
+	ID:echooat1
+	LANG:C++
+	TASK:zerosum
+	*/
+#include <fstream>
+#include <cstdlib>
+#include <cstring>
+using namespace std;
+long len,p=1;
+char ch[20][20];
+long a[20]={0},n;
+ifstream fin("zerosum.in");
+ofstream fout("zerosum.out");
+void find(long k,long sum,long filag){
+	long ii=len;
+	if(k>=n+1){
+		if(sum==0){p++;
+		memcpy(ch[p],ch[p-1],2*n-1);}
+		ii=len;
+		if(p==5){
+			p=5;
+		}
+		return;
+	}
+	long uu=0;
+	ii=len;long q1=1,q2=2;
+	long i=k;
+	while(i<=n){
+		uu=uu*10+i;long jj=i+1;
+		if(filag==1){
+			ch[p][ii]='+';
+			len+=2;
+			long temp=sum+uu;
+			if(jj<=n){
+			find(jj,temp,q1);
+			find(jj,temp,q2);}
+			else find(jj,temp,q1);
+		}
+		else {
+			ch[p][ii]='-';
+			len+=2;
+			long temp=sum-uu;
+			if(jj<=n){find(jj,temp,q2);
+			find(jj,temp,q1);}else find(jj,temp,q1);
+	}
+i++;
+ch[p][len]=' ';
+	}
+	len=ii;
+}
+bool comp(char *a,char *b){
+	long temp=1;
+	while(a[temp]==b[temp]&&temp<=n*2-1)temp++;
+	if(a[temp]>b[temp])return true;else return false;
+	}
+int main(int argc,char** argv){
+	fin >>n;
+	for(long j=1;j<=19;j++)
+	for(long i=1;i<=2*n;i++)
+		if(i&1)ch[j][i]=(i+1)/2+'0';else ch[j][i]=' ';
+	len=0;
+	long u=0;
+	for(long i=1;i<=n;i++){
+		u=u*10+i;
+		len+=2;
+		for(long j=1;j<=2;j++){
+			long yy=i+1;
+			find(yy,u,j);}
+		ch[p][len]=' ';
+	}
+	p--;
+	for(long i=1;i<p;i++)
+		for(long j=i+1;j<=p;j++)
+			if(comp(ch[i],ch[j])){
+				char cr[20];
+				memcpy(cr,ch[i],19);
+				memcpy(ch[i],ch[j],19);
+				memcpy(ch[j],cr,19);
+			}
+	for(long i=1;i<=p;i++){
+		for(long j=1;j<=n*2-1;j++)
+			fout <<ch[i][j];
+		fout <<endl;
+	}
+	fin.close();fout.close();
+	return 0;
+}

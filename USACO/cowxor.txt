@@ -1,0 +1,362 @@
+/*
+TASK:cowxor
+LANG:C++
+*/
+ 
+#include<iostream>
+#include<fstream>
+using namespace std;
+ 
+bool trie[4194306];
+int hash[2097153];
+int Left=1,Right=1,Last=0;
+int Q[22],n;
+int r=0,nowsearch;
+ 
+void findmax(int x)
+{
+ 
+for(int i=1;i<=21;i++)
+{
+Q[i]=(x&1);
+x>>=1;
+}
+int now=1,s=0,w=(1<<20),z,sav=0;
+for(int i=21;i>=1;i--)
+{
+if(Q[i])
+{
+if(trie[2*now+1])
+s+=w,z=1;
+else
+z=0;
+}
+else
+{
+if(trie[2*now])
+s+=w,z=0;
+else
+z=1;
+}
+if(s+w-1 < r)
+return;
+if(z==0)
+sav+=w;
+now=2*now+z;
+ 
+w>>=1;
+}
+ 
+if(s>r)
+{
+r=s;
+Left=hash[sav]+1;
+Right=nowsearch;
+}
+}
+ 
+void input(int x)
+{
+for(int i=1;i<=21;i++)
+{
+Q[i]=(x&1);
+x>>=1;
+}
+int now=1;
+for(int i=21;i>=1;i--)
+{
+if(Q[i])
+now=2*now;
+else
+now=2*now+1;
+trie[now]=1;
+}
+}
+ 
+int main()
+{
+ifstream cin("cowxor.in");
+ofstream cout("cowxor.out");
+ 
+memset(trie,0,sizeof(trie));
+trie[1]=1;
+cin>>n;
+for(int i=1;i<=n;i++)
+{
+nowsearch=i;
+int t;
+cin>>t;
+t=t^last;
+hash[t]=i;
+last=t;
+input(t);
+if(i>1)
+findmax(t);
+else
+r=t;
+}
+cout<<r<<" "<<Left<<" "<<Right<<endl;
+return 0;
+}// This code is from oimaster (http://hi.baidu.com/oimaster)
+ 
+#include <iostream>
+#include <cstring>
+ 
+using namespace std;
+ 
+int tot[100001];
+bool s[1 << 22];
+ 
+void Update(int x, int loc)
+  {
+    int i, tmp;
+    for (i = 1; i <= 21; i ++)
+      tmp = (x >> (i-1)) + (1 << (22-i)), s[tmp] = true;
+  }
+ 
+int main()
+  {
+    int n, x, i, j, t, tmp, ans, ans_e;
+    freopen("cowxor.in", "r", stdin);
+    freopen("cowxor.out", "w", stdout);
+    scanf("%d", &n);
+    for (tot[0] = 0, i = 1; i <= n; i ++)
+      scanf("%d", &x), tot[i] = tot[i-1] ^ x;
+    memset(s, false, sizeof(s)), Update(0, 0);
+    ans = tot[1], ans_e = 1;
+    for (i = 1; i <= n; i ++)
+      {
+        for (tmp = 0, j = 1; j <= 21; j ++)
+          {
+            t = (tot[i] >> (21-j)) & 1;
+            if (s[tmp*2 + (! t) + (1 << j)])
+              tmp = tmp*2 + (! t);
+            else
+              tmp = tmp*2 + t;
+          }
+        if ((tmp ^ tot[i]) > ans)
+          ans = tmp ^ tot[i], ans_e = i;
+        Update(tot[i], i);
+      }
+    for (i = ans_e-1; i; i --)
+      if ((tot[i] ^ tot[ans_e]) == ans) break;
+    printf("%d %d %d\n", ans, i+1, ans_e);
+    return 0;
+  }Trie树
+ 
+ 
+ 
+Compiling...
+Compile: OK
+ 
+Executing...
+   Test 1: TEST OK [0.032 secs, 15296 KB]
+   Test 2: TEST OK [0.043 secs, 15296 KB]
+   Test 3: TEST OK [0.022 secs, 15296 KB]
+   Test 4: TEST OK [0.022 secs, 15296 KB]
+   Test 5: TEST OK [0.054 secs, 15296 KB]
+   Test 6: TEST OK [0.097 secs, 15296 KB]
+   Test 7: TEST OK [0.162 secs, 15296 KB]
+   Test 8: TEST OK [0.130 secs, 15296 KB]
+   Test 9: TEST OK [0.140 secs, 15296 KB]
+   Test 10: TEST OK [0.130 secs, 15296 KB]
+   Test 11: TEST OK [0.205 secs, 15296 KB]
+   Test 12: TEST OK [0.130 secs, 15296 KB]
+   Test 13: TEST OK [0.130 secs, 15296 KB]
+   Test 14: TEST OK [0.097 secs, 15296 KB]
+   Test 15: TEST OK [0.194 secs, 15296 KB]
+   Test 16: TEST OK [0.238 secs, 15296 KB]
+   Test 17: TEST OK [0.205 secs, 15296 KB]
+   Test 18: TEST OK [0.162 secs, 15296 KB]
+   Test 19: TEST OK [0.086 secs, 15296 KB]
+   Test 20: TEST OK [0.032 secs, 15296 KB]
+ 
+All tests OK.
+ 
+ 
+ 
+ 
+/*
+	ID:echooat1
+	LANG:C++
+	TASK:cowxor
+	*/
+#include <fstream>
+#include <cstring>
+#include <cstdio>
+#define len 100010
+#define maxn 4194306
+#define oo 2097153
+using namespace std;
+ 
+FILE *fin,*fout;
+ 
+long n=0,a=0,ans=0,t1=1,t2=0,b=0;
+bool trie[maxn]={0};
+int lab[maxn>>1]={0};
+ 
+void search(long u,long k){
+	long temp=1,now=0;
+	for(long i=21;i>=1;i--){
+		long y=(u>>(i-1))^1;
+		u-=((y^1)<<(i-1));
+		if(trie[(temp<<1)+y]==y){
+			temp=(temp<<1)+y;
+			now=now+(1<<(i-1));
+		}
+		else temp=(temp<<1)+(y^1);
+	}
+	if(now>ans){
+		ans=now;
+		t1=k;
+		t2=lab[temp-oo];
+	}
+}
+void inser(long u,long k){
+	long temp=1;
+	for(long i=21;i>=1;i--){
+		long y=(u>>(i-1));
+		u-=(y<<(i-1));
+		temp=(temp<<1)+y;
+		trie[temp]=y;
+	}
+	lab[temp-oo]=k;
+}
+int main(int argc,char** argv){
+	fin=fopen("cowxor.in","r");
+	fout=fopen("cowxor.out","w");
+	fscanf(fin,"%ld",&n);
+	for(long i=1;i<=maxn;i++)
+		if(!(i&1)&&(i&(i-1)))
+			trie[i]=true;
+	for(long i=1;i<=n;i++){
+		fscanf(fin,"%ld",&a);
+		a=a^b;
+		search(a,i);
+		inser(a,i);
+		b=a;
+	}
+	fprintf(fout,"%ld %ld %ld\n",ans,t2+1,t1);
+	fclose(fin);fclose(fout);
+	return 0;
+}USER: gu gu [zsyzgu1]
+TASK: cowxor
+LANG: C++
+ 
+Compiling...
+Compile: OK
+ 
+Executing...
+   Test 1: TEST OK [0.000 secs, 15384 KB]
+   Test 2: TEST OK [0.011 secs, 15384 KB]
+   Test 3: TEST OK [0.000 secs, 15384 KB]
+   Test 4: TEST OK [0.000 secs, 15384 KB]
+   Test 5: TEST OK [0.011 secs, 15384 KB]
+   Test 6: TEST OK [0.065 secs, 15384 KB]
+   Test 7: TEST OK [0.097 secs, 15384 KB]
+   Test 8: TEST OK [0.119 secs, 15384 KB]
+   Test 9: TEST OK [0.108 secs, 15384 KB]
+   Test 10: TEST OK [0.097 secs, 15384 KB]
+   Test 11: TEST OK [0.119 secs, 15384 KB]
+   Test 12: TEST OK [0.108 secs, 15384 KB]
+   Test 13: TEST OK [0.054 secs, 15384 KB]
+   Test 14: TEST OK [0.097 secs, 15384 KB]
+   Test 15: TEST OK [0.173 secs, 15384 KB]
+   Test 16: TEST OK [0.194 secs, 15384 KB]
+   Test 17: TEST OK [0.194 secs, 15384 KB]
+   Test 18: TEST OK [0.140 secs, 15384 KB]
+   Test 19: TEST OK [0.011 secs, 15384 KB]
+   Test 20: TEST OK [0.011 secs, 15384 KB]
+ 
+All tests OK.
+ 
+终于通关了！
+ 
+#include<stdio.h>
+ 
+const int m=20;
+const int maxn=100000+10;
+ 
+int n , a[maxn];
+ 
+int f[maxn];
+ 
+struct point{ int kid[2],num; };
+int tot=1; point tree[maxn * 10];
+ 
+void init()
+{
+     scanf("%d",&n);
+ 
+     for (int i=1;i<=n;i++)
+         scanf("%d",&a[i]);
+}
+ 
+void insert(int k)
+{
+     int t=1;
+ 
+     for (int i=m;i>=0;i--)
+     {
+         int now=(f[k]>>i)%2;
+ 
+         if (tree[t].kid[now]==0)
+             tree[t].kid[now]=++tot;
+ 
+         t=tree[t].kid[now];
+     }
+ 
+     tree[t].num=k;
+}
+ 
+int find(int k)
+{
+    int t=1;
+ 
+    for (int i=m;i>=0;i--)
+    {
+        int now=1-(f[k]>>i)%2;
+ 
+        if (tree[t].kid[now]!=0)
+           t=tree[t].kid[now];
+        else
+           t=tree[t].kid[1-now];
+    }
+ 
+    return tree[t].num;
+}
+ 
+void doit()
+{
+     int ans=a[1],s=1,t=1;
+     f[1]=a[1]; insert(1);
+ 
+     for (int i=2;i<=n;i++)
+     {
+         f[i]=f[i-1]^a[i];
+ 
+         int p=find(i);
+ 
+         if ((f[i]^f[p])>ans)
+         {
+            ans=f[i]^f[p];
+            s=p+1;
+            t=i;
+         }
+ 
+         insert(i);
+     }
+ 
+     printf("%d %d %d\n",ans,s,t);
+}
+ 
+int main()
+{
+    freopen("cowxor.in"  , "r" ,stdin  );
+    freopen("cowxor.out" , "w" ,stdout );
+ 
+    init();
+    doit();
+ 
+    return 0;
+}

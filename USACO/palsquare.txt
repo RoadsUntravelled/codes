@@ -1,0 +1,170 @@
+#include <iostream>
+#include <cstdio>
+#include <stdlib.h>
+#include <string.h>
+#include <string>
+#include <map>
+#include <list>
+using namespace std;
+ 
+FILE *in, *out;
+ 
+void openfile() { in = fopen("palsquare.in", "r"); out = fopen("palsquare.out", "w+"); }
+void closefile() { fclose(in); fclose(out); }
+ 
+/** TODO VAR. */
+int base;
+char num[50], oldnum[50];
+ 
+void __itoa(int num, char *str, int base)
+{
+    const char key[] = "0123456789ABCDEFGHIJ";
+    string s = "";
+    while(num)
+    {
+        s = key[num % base] + s;
+        num /= base;
+    }
+ 
+    strcpy(str, s.c_str());
+}
+ 
+int main()
+{
+    openfile();
+    fscanf(in, "%d", &base);
+    for(int i = 1; i <= 300; i++)
+    {
+        int sq = i * i;
+        __itoa(sq, num, base);
+ 
+        int len = strlen(num);
+        bool flag = false;
+        for(int i = 0; i < len / 2; i++)
+            if(num[i] != num[len - 1 - i])
+            {
+                flag = true;
+                break;
+            }
+ 
+        if(!flag)
+        {
+            __itoa(i, oldnum, base);
+            fprintf(out, "%s %s\n", oldnum, num);
+        }
+    }
+ 
+    closefile();
+    return 0;
+}/*
+ID: MasterRay
+LANG: C++
+TASK: palsquare
+*/
+ 
+#include <algorithm>
+#include <cstdio>
+using namespace std;
+ 
+const char code[] = "0123456789ABCDEFGHIJ";
+char buff[20], buff2[20];
+ 
+int main()
+{
+	freopen("palsquare.in", "r", stdin);
+	freopen("palsquare.out", "w", stdout);
+	int n;
+	scanf("%d", &n);
+	for (int i = 1; i <= 300; ++i)
+	{
+		char *p = buff, *q = buff;
+		for (int sqr = i*i; *q++ = code[sqr%n], sqr /= n; );
+		for (; p < --q; ++p)
+			if (*p != *q)
+				goto L1;
+		q = buff2;
+		for (int t = i; *q++ = code[t%n], t /= n; );
+		reverse(buff2, q);
+		printf("%s %s\n", buff2, buff);
+L1:;
+	}
+}/*
+    ID : Your ID
+    PROG : palsquare
+    LANG : C++
+*/
+#include <iostream>
+#include <fstream>
+using namespace std;
+ifstream fin ("palsquare.in");
+ofstream fout ("palsquare.out");
+const char a[21] = {'0','1','2','3','4','5','6','7','8','9','A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K'};
+int n;
+void get(int t)
+{
+   string s("");
+   int m = t * t;
+   do
+   {
+      s = a[m % n] + s;
+      m /= n;
+   } while (m > 0); 
+   bool mark(true);
+   for (int i = 0; i <= s.size() / 2 - 1; i++)
+     if (s[i] != s[s.size() - i - 1])
+     {
+        mark = false;
+        break;
+     }
+   string w("");
+   do
+   {
+      w = a[t % n] + w;
+      t /= n;
+   } while (t > 0);
+   if (mark == true || s.size() == 1)  
+      fout << w << " " << s << endl;
+ 
+}
+int main(void)
+{
+    fin >> n;
+    for (int i = 1; i <= 300; i++)
+       get(i);
+}
+---------------------------------------/*
+ID:31440461
+PROG:palsquare
+LANG:C++
+*/
+#include<iostream>
+using namespace std;
+int B;
+const
+  int MAX=300;
+  char CH[20]={'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F','G','H','I','J'};
+ 
+void printdata(int x)
+{
+  int a[30],i=0;
+  while (x>0) a[++i]=x%B,x/=B;
+  for (;i;cout<<CH[ a[i--] ]);
+}
+ 
+void handle( int x )
+{
+  int a[30],n=0,xx=x*x;
+  while (xx>0)  a[++n]=xx%B,xx/=B;
+  int t=n;
+  for (;(n>0)&&(a[n]==a[t-n+1]);--n);
+  if (n==0) printdata(x),cout<<' ',printdata(x*x),cout<<endl;
+}
+ 
+int main()
+{ 
+  freopen("palsquare.in","r",stdin);
+  freopen("palsquare.out","w",stdout);
+  cin>>B;
+  for (int i=1;i<=MAX;i++) handle(i);
+  return 0;
+}

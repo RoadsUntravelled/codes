@@ -1,0 +1,287 @@
+链表版本：
+#include <iostream>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <string>
+#include <map>
+#include <list>
+using namespace std;
+ 
+FILE *in, *out;
+ 
+void openfile() { in = fopen("beads.in", "r"); out = fopen("beads.out", "w+"); }
+void closefile() { fclose(in); fclose(out); }
+ 
+struct node {
+    char ch;
+    node *pre, *next;
+};
+ 
+/** TODO VAR. */
+int n, maxn;
+node *head, *p;
+bool s = false;
+ 
+int main()
+{
+    openfile();
+ 
+    maxn = 0;
+    fscanf(in, "%d", &n);
+    head = new node();
+    p = head;
+    for(int i = 0; i < n; i++)
+    {
+        fscanf(in, "%c", &(p->ch));
+        while(p->ch == 10) fscanf(in, "%c", &(p->ch));
+ 
+        if(i != n - 1)
+        {
+            p->next = new node();
+            p->next->pre = p;
+            p = p->next;
+        }
+        else p->next = head, head->pre = p;
+    }
+ 
+    for(node *op = head; !s || op != head; op = op->next)
+    {
+        int tmp = 0;
+        s = true;
+        node *ed = op->pre;
+        char opc = op->ch, edc = ed->ch;
+        node *tmpp = op;
+        int cnt = 0;
+        while(opc == 'w')
+        {
+            if(cnt == n)
+            {
+                maxn = n;
+                break;
+            }
+            cnt++;
+            tmpp = tmpp->next;
+            opc = tmpp->ch;
+        }
+        if(cnt == n) break;
+        tmpp = ed;
+        while(edc == 'w')
+        {
+            tmpp = tmpp->pre;
+            edc = tmpp->ch;
+        }
+ 
+        for(node *i = op; ; i = i->next)
+        {
+            if((i->ch != opc && i->ch != 'w') || tmp > n) break;
+            tmp++;
+        }
+        for(node *i = ed; ; i = i->pre)
+        {
+            if((i->ch != edc && i->ch != 'w') || tmp > n) break;
+            tmp++;
+        }
+ 
+        if(tmp > n)
+        {
+            maxn = n;
+            break;
+        }
+        else maxn = (tmp > maxn) ? tmp : maxn;
+    }
+ 
+    fprintf(out, "%d\n", maxn);
+    p = head;
+    for(int i = 0; i < n - 1; i++)
+    {
+        p = p->next;
+        delete p->pre;
+    }
+    delete p;
+ 
+    closefile();
+    return 0;
+}/*
+ID: noname01
+PROB: beads
+LANG: C++
+*/
+#include<fstream>
+#include<iostream>
+using namespace std;
+ifstream fin("beads.in");
+ofstream fout("beads.out");
+int s[1001],a1[1001],a2[1001],b1[1001],b2[1001],n;
+//s---倍长后的环 1表示r 2表示b 0表示w
+//a1---以i结尾的最长连续r个数
+//a2---以i结尾的最长连续b个数
+//b1---以i开头的最长连续r个数
+//b2---以i开头的最长连续b个数
+void init(){
+	int i;
+	string str;
+	char ch;
+	fin>>n;
+	getline(fin,str);
+	for(i=1;i<=n;i++){
+		fin>>ch;
+		if(ch=='r')s[i]=1;
+		else if(ch=='b')s[i]=2;
+		else s[i]=0;
+		s[n+i]=s[i];
+	}
+	for(i=1;i<=n*2;i++)
+		if(s[i]==1||s[i]==0)a1[i]=a1[i-1]+1;
+		else a1[i]=0;
+	for(i=1;i<=n*2;i++)
+		if(s[i]==2||s[i]==0)a2[i]=a2[i-1]+1;
+		else a2[i]=0;
+	for(i=n*2;i>=1;i--)
+		if(s[i]==1||s[i]==0)b1[i]=b1[i+1]+1;
+		else b1[i]=0;
+	for(i=n*2;i>=1;i--)
+		if(s[i]==2||s[i]==0)b2[i]=b2[i+1]+1;
+		else b2[i]=0;
+}
+void solve(){
+	int i,ans=0;
+	for(i=1;i<=n*2;i++)
+		ans=max(ans,max(a1[i],a2[i])+max(b1[i+1],b2[i+1]));
+	if(ans>n)ans=n;
+	fout<<ans<<endl;
+}
+int main(){
+	init();
+	solve();
+	return(0);
+}
+/*
+ID: masterr3
+LANG: C++
+TASK: beads
+*/
+ 
+#include <stdio.h>
+#include <string.h>
+ 
+char a[701];
+ 
+int main()
+{
+	freopen("beads.in", "r", stdin);
+	freopen("beads.out", "w", stdout);
+	int color = 0, curr = 0, prev = 0, w = 0, n, res = 0;
+	scanf("%d", &n);
+	gets(a);
+	memcpy(a+n, a, n);
+	for (int i = 0; i < n*2 && res < n; ++i)
+	{
+		if (a[i] == 'w') ++w, ++curr;
+		else if (a[i] == color) w = 0, ++curr;
+		else
+		{
+			color = a[i];
+			if (prev+curr > res) res = prev+curr;
+			prev = curr-w; curr = w+1; w = 0;
+		}
+	}
+	if (prev+curr > res) res = prev+curr;
+	printf("%d\n", res < n ? res : n);
+}/*
+PROG: beads
+LANG: C++
+*/
+#include <iostream>
+#include <fstream>
+#include <string>
+ 
+using namespace std;
+ 
+int main()
+{
+  ofstream fout("beads.out");
+  ifstream fin("beads.in");
+  int n, max;
+  string s;
+  fin>>n>>s;
+  s=s+s;
+  max=0;
+  for(int k=0; k<2*n; k++) //...r...b...
+  {
+    int i=k, j=k+1;
+    if((s[i]==s[j])||(s[i]=='b')||(s[j]=='r')) continue;
+    while((s[i]!='b')&&(i>0)) 
+      i--;
+    if((s[i]=='r')&&(i==0)) 
+      i--;
+    while((s[j]!='r')&&(j<2*n)) 
+      j++;
+    if((s[j]=='b')&&(j==2*n)) 
+      j++;
+    if(j-i-1>max) max=j-i-1;
+  }
+  for(int k=0; k<2*n; k++)//...b...r...
+  {
+    int i=k, j=k+1;
+    if((s[i]==s[j])||(s[i]=='r')||(s[j]=='b')) continue;
+    while((s[i]!='r')&&(i>0)) 
+      i--;
+    if((s[i]=='b')&&(i==0)) 
+      i--;
+    while((s[j]!='b')&&(j<2*n)) 
+      j++;
+    if((s[j]=='r')&&(j==2*n)) 
+      j++;
+    if(j-i-1>max) max=j-i-1;
+  }
+  if((max>n)||(max==0)) max=n;
+  fout<<max<<endl;
+  return 0;
+}/*
+	ID:linuxco1
+	PROG:beads
+	LANG: C++
+*/
+#include<fstream>
+#include<string>
+using namespace std;
+ifstream fin("beads.in");
+ofstream fout("beads.out");
+int main( )
+{	int i,j,k,max1=0,n,coun,len;
+	char s[400],ch;
+	fin>>n>>s;
+for(i=0;i<n;i++)
+{	coun=1;
+	for(k=0;k<n&&s[k]=='w';k++);
+		ch=s[k];
+	for(k=0;k<n-1;k++)
+	{	if(s[k]==s[k+1]||s[k+1]=='w')
+			coun++;
+		else if(ch==s[k+1])
+				coun++;
+			else break;
+	}
+	len=k++;
+	for(;k<n&&s[k]=='w';k++);
+				ch=s[k];
+	for(k=len;k<n-1;k++)
+	{	if(s[k]==s[k+1]||s[k+1]=='w')
+			coun++;
+		else if(ch==s[k+1])
+				coun++;
+			else break;
+	}
+	if(coun>max1)
+		max1=coun;
+	ch=s[n-1];
+	for(j=n-1;j>0;j--)
+			s[j]=s[j-1];
+		s[0]=ch;
+}
+	fout<<max1<<endl;
+	fin.close();
+	fout.close();
+	return 0;
+}

@@ -1,0 +1,374 @@
+#include <iostream>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <string>
+#include <map>
+#include <list>
+using namespace std;
+ 
+#define NONE 0
+#define THROUGH 1
+#define MATCH 2
+ 
+struct Hash_Arr_ch {
+    char str[20];
+    int flag;
+};
+ 
+FILE *in, *out;
+ 
+void openfile() { in = fopen("namenum.in", "r"); out = fopen("namenum.out", "w+"); }
+void closefile() { fclose(in); fclose(out); }
+ 
+/** TODO VAR. */
+const char key[][3] = {
+    { 0, 0, 0 }, { 0, 0, 0 },
+    { 'A', 'B', 'C' }, { 'D', 'E', 'F' }, { 'G', 'H', 'I' }, { 'J', 'K', 'L' },
+    { 'M', 'N', 'O' }, { 'P', 'R', 'S' }, { 'T', 'U', 'V' }, { 'W', 'X', 'Y' }
+};
+Hash_Arr_ch words[100000];
+char str[20];
+char nums[20], nowstr[20];
+bool active = false;
+ 
+int ELFHash(char *str)
+{
+    unsigned int hash = 0;
+    unsigned int x	= 0;
+ 
+    while (*str)
+    {
+        hash = (hash << 4) + (*str++);
+        if ((x = hash & 0xF0000000L) != 0)
+        {
+            hash ^= (x >> 24);
+            hash &= ~x;
+        }
+    }
+ 
+	return (hash & 0x7FFFFFFF) % 100000;
+}
+ 
+void make_hash(Hash_Arr_ch words[])
+{
+    FILE *dict = fopen("dict.txt", "r");
+    while(!feof(dict))
+    {
+        fscanf(dict, "%s", str);
+        bool flag = false;
+        while(*str != '\0')
+        {
+            int hash_num = ELFHash(str);
+ 
+            while(NONE != words[hash_num].flag &&
+                0 != strcmp(words[hash_num].str, str))
+            {
+                hash_num++;
+                if(hash_num == 100000) hash_num = 0;
+            }
+ 
+            if(NONE == words[hash_num].flag)
+            {
+                strcpy(words[hash_num].str, str);
+                if(!flag) words[hash_num].flag = MATCH;
+                else words[hash_num].flag = THROUGH;
+            }
+            else
+            if(THROUGH == words[hash_num].flag && !flag)
+            {
+                words[hash_num].flag = MATCH;
+            }
+ 
+            str[strlen(str) - 1] = '\0';
+            flag = true;
+        }
+    }
+    fclose(dict);
+}
+ 
+int find(char *str)
+{
+    int hash_num = ELFHash(str);
+    while(NONE != words[hash_num].flag &&
+        0 != strcmp(words[hash_num].str, str))
+    {
+        hash_num++;
+        if(hash_num == 100000) hash_num = 0;
+    }
+ 
+    return words[hash_num].flag;
+}
+ 
+void dfs(int p, const int len, const char *str, char *now)
+{
+    if(len == p)
+    {
+        int rst = find(now);
+        if(MATCH == rst)
+        {
+            active = true;
+            fprintf(out, "%s\n", now);
+        }
+ 
+        return;
+    }
+ 
+ 
+    int num = (str[p] - '0');
+    for(int i = 0; i < 3; i++)
+    {
+        now[p] = key[num][i];
+        now[p + 1] = '\0';
+        dfs(p + 1, len, str, now);
+        now[p] = '\0';
+    }
+}
+ 
+int main()
+{
+    openfile();
+    make_hash(words);
+ 
+    fscanf(in, "%s", nums);
+    memset(nowstr, 0, sizeof(nowstr));
+    dfs(0, strlen(nums), nums, nowstr);
+ 
+    if(!active) fprintf(out, "NONE\n");
+ 
+    closefile();
+    return 0;
+}/*
+ID: MasterRay
+LANG: C++
+TASK: namenum
+*/
+ 
+#include <stdio.h>
+#include <string.h>
+ 
+const char code[26] = {'2','2','2','3','3','3','4','4','4','5','5','5','6','6','6','7','0','7','7','8','8','8','9','9','9','0'};
+char a[13], b[13], c[13];
+ 
+int main()
+{
+	freopen("namenum.in", "r", stdin);
+	freopen("namenum.out", "w", stdout);
+	freopen("dict.txt", "r", stderr);
+	bool flag = false;
+	int i;
+	gets(a);
+	while (fscanf(stderr, "%s", b) != EOF)
+	{
+		if (code[b[0]-'A'] != a[0]) continue;
+		for (i = 0; b[i]; ++i)
+			c[i] = code[b[i]-'A'];
+		c[i] = '\0';
+		if (!strcmp(a, c))
+		{
+			flag = true;
+			puts(b);
+		}
+	}
+	if (!flag) puts("NONE");
+}#include<iostream>
+using namespace std;
+ 
+char list[10][4]={{0,0,0},{0,0,0},{'A','B','C'},{'D','E','F'},{'G','H','I'},
+                 {'J','K','L'},{'M','N','O'},{'P','R','S'},{'T','U','V'},{'W','X','Y'}};
+char dict[5000][16];
+ 
+int cmp(char num[],int n){
+     char name[16];
+     strcpy(name,dict[n]);
+     int i,j,t;
+     int len=strlen(num);
+     char prod[16];
+     if(len!=strlen(name))
+     return 0; 
+     for(i=0;i<len;i++){
+         bool flag=1;
+         for(j=2;j<=9&&flag;j++)
+             for(t=0;t<3&&flag;t++)
+         if(name[i]==list[j][t]){
+            prod[i]='0'+j;
+            flag=0;
+         }
+     }
+     i=0;
+     while(i<len){
+          if(num[i]!=prod[i])
+          return 0;
+          i++;
+     }
+     return 1;
+}
+ 
+int main(){
+    freopen("namenum.in","r",stdin);
+    freopen("namenum.out","w",stdout);
+    freopen("dict.txt","r",stdin);
+    int i = 0;
+    while(scanf("%s",&dict[i++])!=EOF);
+    int len=i;
+    char num[16];
+    bool flag=0;
+    i=0;
+    while(scanf("%s", &num)!=EOF){
+          for(i=0;i<len;i++){
+              if(cmp(num,i)){
+                 flag=1;
+                 printf("%s\n",dict[i]);
+              }
+          }
+    }
+    if(!flag)
+    printf("NONE\n");
+    return 0;
+}/*
+ID: 31440461
+LANG: C++
+TASK: namenum
+*/
+#include<iostream>
+using namespace std;
+const char code[26]={'2','2','2','3','3','3','4','4','4','5','5','5','6','6','6','7','0','7','7','8','8','8','9','9','9','0'};
+char a[13],b[13];
+int main()
+{
+  freopen("namenum.in","r",stdin);
+  freopen("namenum.out","w",stdout);
+  freopen("dict.txt","r",stderr);
+  bool flag=1;
+  cin>>a;
+  while (fscanf(stderr,"%s",b)!=EOF)
+    {
+      bool flg=1;
+      if (strlen(a)!=strlen(b)) continue;
+      for (int i=0;b[i];i++) flg=flg&&(code[b[i]-'A']==a[i]);
+      if (flg) flag=0,cout<<b<<endl;
+    }
+  if (flag) cout<<"NONE"<<endl;
+  return 0;
+}/*
+ID: lichaoy2
+PROG: namenum
+LANG: C++
+*/
+#include<iostream>
+#include<fstream>
+#include<cstring>
+ 
+using namespace std;
+ 
+char dict[5000][13];
+char nums[5000][13];
+int count;
+ 
+void Init(){
+	int i, j, t;
+	ifstream fin("dict.txt");//此方法比C语言中fscanf()快
+	memset(dict, 0, sizeof(dict));
+	memset(nums, 0, sizeof(nums));
+	count = 0;
+	for(i=0; fin >> dict[i]; ++i){
+		for(j = 0; j < strlen(dict[i]); j++){
+			t = dict[i][j]-'A';
+			if(dict[i][j] < 'Q') nums[i][j] = (char)(t/3 + 2 + '0');
+			else nums[i][j] = (char)((t-1)/3 + 2 + '0');
+		}
+		++count;
+	}
+}
+ 
+void Solve()
+{	
+	int i;
+	bool flag = true;
+	char name[13];
+	ifstream fin("namenum.in");
+	ofstream fout("namenum.out");
+	fin >> name;
+	for(i = 0; i < count; i++){
+		if(strcmp(name,nums[i]) == 0){
+			fout << dict[i] << endl;
+			flag = false;
+		}
+	}
+	if(flag && i >= count) fout << "NONE" << endl;
+}
+ 
+int main()
+{
+	Init();
+	Solve();
+	return 0;
+}/*
+  ID:sgfreed1
+  PROG:namenum
+  LANG:C++
+*/
+ 
+#include <fstream>
+#include <string>
+ 
+using namespace std;
+ 
+ifstream tin("dict.txt");
+ifstream fin("namenum.in");
+ofstream fout("namenum.out");
+ 
+const int maxn=5000;
+ 
+const char a[10]={'a','b','A','D','G','J','M','P','T','W'}; 
+const char b[10]={'a','b','B','E','H','K','N','R','U','X'};
+const char c[10]={'a','b','C','F','I','L','O','S','V','Y'};
+ 
+int k=0,p=0;
+int f[13];
+ 
+char s[13];
+string mod[maxn];
+string m;
+ 
+bool flag=0;
+ 
+int check()
+{
+	int t=1;
+	for(int i=1;i<=p;++i)
+	{
+		for(int j=0;j<m.size();++j)
+		{
+		if(mod[i][j]!=s[j]){t=0;break;}
+		}
+		if(t)return 1;
+		t=1;
+	}
+	return 0;
+}
+ 
+void dfs(int k)
+{
+	if(k==m.size()+1){if(check()){flag=1;for(int i=0;i<m.size();++i)fout<<s[i];fout<<endl;}return;}
+	{s[k-1]=a[f[k]];dfs(k+1);}
+	{s[k-1]=b[f[k]];dfs(k+1);}
+	{s[k-1]=c[f[k]];dfs(k+1);}
+}
+ 
+int main()
+{
+	getline(fin,m);
+	string c;
+	while(tin>>c)
+	{
+		if(c.size()==m.size())
+		mod[++p]=c;
+	}
+	for(int i=0;i<m.size();++i)
+	f[i+1]=m[i]-'0';
+	dfs(1);
+	if(!flag)fout<<"NONE"<<endl;
+	fout.close();
+	return 0;
+}

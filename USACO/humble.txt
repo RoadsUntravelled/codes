@@ -1,0 +1,433 @@
+/*
+ID:ybojan2
+LANG:C++
+TASK:humble
+*/
+ 
+#include <iostream>
+#include <fstream>
+ 
+using namespace std;
+ 
+int main()
+{
+    ifstream fin("humble.in");
+    ofstream fout("humble.out");
+ 
+    int k,n,p[101],num[100001],s[101];
+    fin>>k>>n;
+    for (int i=1;i<=k;i++)
+        fin>>s[i];
+    for (int i=1;i<=k;i++)
+        p[i]=-1;
+    num[0]=1;
+    for (int i=1;i<=n;i++)
+    {
+ 
+        for (;;)
+        {
+            int min=2147483647,x;
+            for (int j=1;j<=k;j++)
+                if (num[p[j]+1]*s[j]<min){
+                                         min=num[p[j]+1]*s[j];
+                                         x=j;
+                                         }
+            p[x]++;
+            num[i]=min;
+            if (num[i]!=num[i-1]) break;
+        }
+    }
+    fout<<num[n]<<endl;
+    return 0;
+}/*
+ID: MasterRay
+LANG: C++
+TASK: humble
+*/
+ 
+#include <stdio.h>
+ 
+int s[100001];
+struct node {int num, pointer; } a[100];
+ 
+int main()
+{
+	int k, n;
+	freopen("humble.in", "r", stdin);
+	freopen("humble.out", "w", stdout);
+	scanf("%d%d", &k, &n);
+	for (int i = 0; i < k; ++i)
+		scanf("%d", &a[i].num); //a[i].pointer = 0;
+	s[0] = 1;
+	for (int i = 1; i <= n; ++i)
+	{
+		int min_value = a[0].num*s[a[0].pointer], u = 0;
+		for (int j = 1; j < k; ++j)
+			if (a[j].num*s[a[j].pointer] < min_value)
+				min_value = a[j].num*s[a[j].pointer], u = j;
+		s[i] = min_value;
+		++a[u].pointer;
+		for (int j = 0; j < k; ++j)
+			if (a[j].num*s[a[j].pointer] == min_value)
+				++a[j].pointer;
+	}
+	printf("%d\n", s[n]);
+}/*
+ID:nettle99
+PROG:humble
+LANG:C++
+*/
+ 
+#include <cstdio>
+#define MAXL 100001
+#define MAXK 101
+#define SMA 1
+#define BIG -1
+ 
+FILE *fin = fopen("humble.in", "r");
+FILE *fout = fopen("humble.out", "w");
+ 
+struct node
+{
+  int data;
+  short n;
+} small[MAXL * 2];
+ 
+int big[MAXL], N, K, num[MAXK], Max[MAXK];
+ 
+void swap(int &a, int &b)
+{
+int box;
+  box = a; a = b; b = box;
+  return ;
+}
+ 
+void swap(node &a, node &b)
+{
+node box;
+  box = a; a = b; b = box;
+  return ;
+}
+ 
+void sort(int i, int x)
+{
+  while (x < num[i - 1] && i > 1)
+    num[i] = num[i - 1], i--;
+  num[i] = x;
+  return ;
+}
+ 
+void Init()
+{
+int x;
+  fscanf(fin, "%d%d", &K, &N);
+  for (int i = 1; i <= K; i++)
+    {
+      fscanf(fin, "%d", &x);
+      sort(i, x);
+    }
+  for (int i = 1; i <= K; i++)
+    Max[i] = (1 << 30) / num[i] * 2;
+  return ;
+}
+ 
+int bn, sn;
+ 
+void BotUp(int key)
+{
+int t = (key == SMA) ? sn : bn;
+  if (key == SMA)
+    while (t > 1 && small[t].data < small[(t >> 1)].data)
+      {
+        swap(small[t], small[(t >> 1)]);
+        t = t >> 1;
+      }
+  else
+    while (t > 1 && big[t] > big[(t >> 1)])
+      {
+        swap(big[t], big[(t >> 1)]);
+        t = t >> 1;
+      }
+  return ;
+}
+ 
+void TopDown(int key)
+{
+int l = (key == SMA) ? sn : bn, t = 1, p, p1, p2;
+  l = l >> 1;
+  if (key == SMA)
+    while (t <= l)
+      {
+        p1 = t * 2;
+        p2 = p1 + 1;
+        if (p2 > sn)
+          {
+            if (small[p1].data < small[t].data) { swap(small[p1], small[t]); t = p1;}
+              else break;
+          }
+        else
+          {
+            p = small[p1].data < small[p2].data ? p1 : p2;
+            if (small[p].data < small[t].data)
+              swap(small[p], small[t]);
+            else break;
+            t = p;
+          }
+      }
+  else
+    while (t <= l)
+      {
+        p1 = t * 2;
+        p2 = p1 + 1;
+        if (p2 > bn)
+          {
+            if (big[p1] > big[t]) { swap(big[p1], big[t]); t = p1;}
+              else break;
+          }
+        else
+          {
+            p = big[p1] > big[p2] ? p1 : p2;
+            if (big[p] > big[t])
+              swap(big[p], big[t]);
+            else break;
+            t = p;
+          }
+      }
+  return ;
+}
+ 
+void TopUp()
+{
+  small[1].data = small[sn].data;
+  small[1].n = small[sn].n;
+  sn--;
+  TopDown(SMA);
+  return ;
+}
+ 
+void Doit()
+{
+  bn = 1, sn = 2;
+  big[1] = num[1];
+  small[1].data = 1, small[1].n = 2;
+  small[2].data = num[1], small[2].n = 1;
+int v, n, tmp;
+  while (sn)
+    {
+      while (small[1].data > big[1] && sn) TopUp();
+      if (!sn) break;
+      v = small[1].data, n = small[1].n;
+      for (int i = n; i <= K; i++)
+        if (v < Max[i])
+          {
+            tmp = v * num[i];
+            if (bn < N)
+              {
+                big[++bn] = tmp;
+                BotUp(BIG);
+              }
+            else
+              {
+                if (tmp >= big[1]) break;
+                big[1] = tmp;
+                TopDown(BIG);
+              }
+            if (tmp < big[1] || bn < N)
+              {
+                small[++sn].data = tmp, small[sn].n = i;
+                BotUp(SMA);
+              }
+          }
+      TopUp();
+    }
+  fprintf(fout, "%d\n", big[1]);
+  return ;
+}
+ 
+int main()
+{
+  Init();
+  Doit();
+  return 0;
+}2个二叉堆优化，所以程序比较冗长但速度还是比较快的
+  Test 1: TEST OK [0.011 secs, 4804 KB]
+  Test 2: TEST OK [0.000 secs, 4804 KB]
+  Test 3: TEST OK [0.000 secs, 4804 KB]
+  Test 4: TEST OK [0.011 secs, 4804 KB]
+  Test 5: TEST OK [0.022 secs, 4800 KB]
+  Test 6: TEST OK [0.065 secs, 4800 KB]
+  Test 7: TEST OK [0.011 secs, 4804 KB]
+  Test 8: TEST OK [0.032 secs, 4804 KB]
+  Test 9: TEST OK [0.000 secs, 4804 KB]
+  Test 10: TEST OK [0.011 secs, 4804 KB]
+  Test 11: TEST OK [0.000 secs, 4800 KB]
+  Test 12: TEST OK [0.108 secs, 4804 KB]
+
+/*
+ID: 62251381
+LANG: C++
+PROG: humble
+*/
+ 
+#include <iostream>
+#include <queue>
+#include <cstdio>
+#include <vector>
+#include <algorithm>
+#include <set>
+#include <climits>
+using namespace std;
+ 
+priority_queue<int> q;
+vector<int> s;
+set<int> vised;
+int k;
+ 
+void dfs(long long a, int n)
+{
+	if(a != 1 && vised.find(a) == vised.end())
+	{
+		if(q.size() < k || a < q.top())
+		{
+			vised.insert(a);
+			q.push(a);
+		}
+		if(q.size() > k)
+			q.pop();
+	}
+ 
+	if(n == s.size()) return ;
+ 
+	while(a < INT_MAX)
+	{
+		if(q.size() == k && a > q.top()) break;
+		dfs(a, n + 1);
+		a *= s[n];
+	}
+}
+ 
+int main()
+{
+	int n;
+	freopen("humble.in", "r", stdin);
+	freopen("humble.out", "w", stdout);
+ 
+	cin >> n >> k;
+	for(int i = 0; i < n; i++)
+	{
+		int a;
+		cin >> a;
+		s.push_back(a);
+	}
+	dfs(1, 0);
+	cout << q.top() << endl;
+ 
+	return 0;
+}
+DFS+priority_queue+set
+   Test 1: TEST OK [0.011 secs, 2936 KB]
+   Test 2: TEST OK [0.000 secs, 2936 KB]
+   Test 3: TEST OK [0.000 secs, 2936 KB]
+   Test 4: TEST OK [0.032 secs, 2936 KB]
+   Test 5: TEST OK [0.043 secs, 3620 KB]
+   Test 6: TEST OK [0.184 secs, 5336 KB]
+   Test 7: TEST OK [0.086 secs, 4016 KB]
+   Test 8: TEST OK [0.054 secs, 3752 KB]
+   Test 9: TEST OK [0.000 secs, 2936 KB]
+   Test 10: TEST OK [0.000 secs, 2936 KB]
+   Test 11: TEST OK [0.000 secs, 2936 KB]利用set每次存储可能下次被加到后面的humble数，
+set的size总是和K 的size相同，初始化的时候，把
+K放进去，以后每次选K中第i项 对应的set中的乘积
+添加到humble后面之后，要在set中添加第i项对应的
+下一个乘积.. 
+/*
+ID:dingyag1
+LANG:C++
+TASK:humble
+*/
+ 
+#include <stdio.h>
+#include <iostream>
+#include <algorithm>
+#include <set>
+using namespace std;
+ 
+long humble[100001],S[101];
+int len,nS;
+ 
+class item
+{
+public:
+	long a,b,r;
+};
+ 
+bool operator < (const item & m, const item & n)
+{
+	return m.r<n.r;
+}
+ 
+set<item> waiting;
+ 
+bool find(long  r)
+{
+	set<item>::iterator it=waiting.begin();
+	while (it!=waiting.end())
+	{
+		if (it->r==r)
+		{
+			return true;
+		}
+		++it;
+	}
+	return false;
+}
+ 
+int main()
+{
+	freopen("humble.in","r",stdin);
+	freopen("humble.out","w",stdout);
+ 
+	int N,i,j,k;
+	item itm;
+ 
+	cin>>nS>>N;
+ 
+	for (i=0;i<nS;++i)
+	{
+		cin>>S[i];
+	}
+ 
+//init  waiting	
+	for (i=0;i<nS;++i)
+	{
+		itm.a=i;
+		itm.b=-1;
+		itm.r=S[i];
+		waiting.insert(itm);
+	}
+	i=0;
+	len=0;
+	while (i!=N)
+	{
+		itm=*waiting.begin();
+		humble[len++]=itm.r;
+		waiting.erase(waiting.begin());
+		//======
+ 
+		while(1)
+		{
+			itm.b+=1;
+			itm.r=S[itm.a]*humble[itm.b];
+			if ((double)S[itm.a]*humble[itm.b]>humble[len-1] && !find(itm.r))
+			{
+				waiting.insert(itm);
+				break;
+			}
+		}
+ 
+		++i;
+	}
+ 
+	cout<<humble[N-1]<<endl;
+	return 0;
+}

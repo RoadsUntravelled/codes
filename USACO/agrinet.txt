@@ -1,0 +1,184 @@
+/*
+ID:ybojan2
+LANG:C++
+TASK:agrinet
+*/
+ 
+#include <iostream>
+#include <fstream>
+ 
+using namespace std;
+ 
+int main()
+{
+    ifstream fin("agrinet.in");
+    ofstream fout("agrinet.out");
+ 
+    int n,map[101][101],d[101],res=0;
+    bool use[101];
+    fin>>n;
+    for (int i=1;i<=n;i++)
+        for (int j=1;j<=n;j++)
+            fin>>map[i][j];
+    for (int i=2;i<=n;i++)
+        d[i]=1000000000;
+    memset(use,false,sizeof(use));
+    d[1]=0;
+    for (int i=1;i<=n;i++)
+    {
+        int min=2147483647,x;
+        for (int j=1;j<=n;j++)
+            if ((!use[j])&&(d[j]<min)){
+                                       min=d[j];
+                                       x=j;
+                                       }
+        res+=min;
+        use[x]=true;
+        for (int j=1;j<=n;j++)
+            if ((!use[j])&&(map[x][j]<d[j]))
+               d[j]=map[x][j];
+    }
+    fout<<res<<endl;
+    return 0;
+}/*
+ID: MasterRay
+LANG: C++
+TASK: agrinet
+*/
+ 
+#include <algorithm>
+#include <climits>
+#include <cstdio>
+using namespace std;
+ 
+bool flag[100] = {};
+int a[100][100], dist[100];
+ 
+int main()
+{
+	int n, res = 0;
+	freopen("agrinet.in", "r", stdin);
+	freopen("agrinet.out", "w", stdout);
+	scanf("%d", &n);
+	for (int i = 0; i < n; ++i)
+		for (int j = 0; j < n; ++j)
+			scanf("%d", &a[i][j]);
+	copy(a[0], a[0]+n, dist);
+	flag[0] = true;
+	for (int i = 1; i < n; ++i)
+	{
+		int min_dist = INT_MAX, u;
+		for (int j = 0; j < n; ++j)
+			if (!flag[j] && dist[j] < min_dist)
+				min_dist = dist[j], u = j;
+		flag[u] = true;
+		res += min_dist;
+		for (int j = 0; j < n; ++j)
+			if (!flag[j] && a[u][j] < dist[j])
+				dist[j] = a[u][j];
+	}
+	printf("%d\n", res);
+}/*
+ID:your ID
+PROG:agrinet
+LANG:C++
+*/
+#include<iostream>
+#include<fstream>
+#include<algorithm>
+#define INF 2147483646
+using namespace std;
+int n,edge,t=0,ans=0;
+int p[10005],r[10005];
+int u[10005],v[10005],w[10005];
+int cmp(const int i, const int j){return w[i] < w[j];}
+int find(int x) {return p[x] == x?x:p[x] = find(p[x]);}
+int kruscal()
+{
+ int ans = 0;
+ for(int i = 0; i < t; i++) p[i] = i;
+ for(int i = 0; i < t; i++) r[i] = i;
+ sort(r,r+t,cmp);//下标间接排序 
+ for(int i = 0; i < t; i++)
+ {
+  int e = r[i];int x = find(u[e]);int y = find(v[e]);
+  if(x!=y) {ans += w[e];p[x]=y;}        
+ }    
+ return ans;
+}
+int main()
+{
+    freopen("agrinet.in","r",stdin);
+    freopen("agrinet.out","w",stdout);
+    cin >> n;
+    for(int i = 0;i < n;i++)
+    for(int j = 0;j < n;j++)
+    {
+     cin >> edge;
+     //if(edge == 0) edge = INF;
+     u[t] = i;v[t] = j;w[t] = edge;
+     t++;
+    }   
+    cout << kruscal() << endl;
+}/*
+	ID:echooat1
+	LANG:C++
+	TASK:agrinet
+	*/
+#include <fstream>
+#include <cstdlib>
+#define ma 19940522
+using namespace std;
+int main(int argc,char** argv){
+	ifstream fin("agrinet.in");
+	ofstream fout("agrinet.out");
+	long a[101][101]={0};
+	long n;
+	fin >>n;
+	for(long i=1;i<=n;i++)
+		for(long j=1;j<=n;j++)
+			fin >>a[i][j];
+	long close[101]={0};
+	bool hash[101]={false};
+	for(long i=2;i<=n;i++)
+		close[i]=a[i][1];
+	hash[1]=true;
+	long ans=0;
+	for(long o=1;o<n;o++){
+		long min=ma,k=0;
+		for(long i=1;i<=n;i++)
+			if(!hash[i]&&close[i]<min){
+				min=close[i];
+				k=i;
+			}
+		ans+=min;
+		hash[k]=true;
+		for(long i=1;i<=n;i++)
+			if(!hash[i]&&close[i]>a[i][k])
+				close[i]=a[i][k];
+		}
+	fout <<ans<<endl;
+	fin.close();fout.close();
+	}/*
+ID:Your ID
+PROG:agrinet
+LANG:C++
+*/
+//我在想能不能写的再短点。。。
+#include <cstdio>
+#include <cstdlib>
+#define MAX 101
+const int maxnum=100000000;
+int n, i, j, tn, tmp, ans=0;
+int g[MAX][MAX], last[MAX]={}, v[MAX]={1};
+int main() {
+    FILE* ipt=fopen("agrinet.in","rt");
+    FILE* opt=fopen("agrinet.out","wt");
+    fscanf(ipt,"%d",&n);
+    for (i=0;i<n;i++)
+    for (j=0;j<n;j++) fscanf(ipt,"%d",&g[i][j]);
+    for (i=1;i<n;i++) {
+        for (j=0, tmp=maxnum;j<n;j++) if (!v[j]&&tmp>g[last[j]][j]) {tn=j;tmp=g[last[j]][j];}
+        for (j=0, v[tn]++, ans+=tmp;j<n;j++) if (!v[j]&&g[last[j]][j]>g[tn][j]) last[j]=tn;}
+    fprintf(opt,"%d\n",ans);
+}

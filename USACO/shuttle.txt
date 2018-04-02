@@ -1,0 +1,278 @@
+/*
+ID:ybojan2
+LANG:C++
+TASK:shuttle
+*/
+#include <fstream>
+using namespace std;
+ifstream cin("shuttle.in");
+ofstream cout("shuttle.out");
+ 
+int main()
+{
+    int n,t,s,res[500],tt=0;
+    memset(res,0,sizeof(res));
+    cin>>n;
+    for (int i=2;i<=n+1;i++)
+    {
+        if (i%2==1) t=-2;
+        else t=2;
+        if (i%2==1) s=n+i;
+        else s=n-i+2;
+        res[++tt]=s;
+        for (int j=2;j<=i;j++)
+        {
+            s+=t;
+            res[++tt]=s;
+        }
+    }
+    for (int i=n;i>=2;i--)
+    {
+        if (i%2==1) t=-2;
+        else t=2;
+        if (i%2==1) s=n+i;
+        else s=n-i+2;
+        res[++tt]=s;
+        for (int j=2;j<=i;j++)
+        {
+            s+=t;
+            res[++tt]=s;
+        }
+    }
+    res[++tt]=n+1;
+    for (int i=1;i<=tt;i++)
+    {
+        cout<<res[i];
+        if ((i%20==0)||(i==tt)) cout<<endl;
+        else cout<<" ";
+    }
+    return 0;
+}/*
+ID:Ronice.1
+PROG:shuttle
+LANG:C++
+*/
+#include <iostream>
+#include <fstream>
+using namespace std;
+ 
+int main()
+{
+	ifstream fin("shuttle.in");
+	int m;
+	fin >> m;
+	int flag = -1;	
+	int n = m+1;
+	int t = 0;	
+	int i,j;
+ 
+	ofstream fout("shuttle.out");
+	for ( i=1; i<=m; i++)
+	{
+		n += flag;
+	        (++t % 20 == 0 )? fout << n << endl : fout << n << ' ';
+		flag *= -1;
+		for ( int j=0; j<i ; j++)
+		{
+			n += flag*2;
+			(++t % 20 == 0 )? fout << n << endl : fout << n << ' ';
+		}
+	}
+	for ( i=m; i>1; i--)
+	{
+		flag *= -1;
+		n += flag;
+		(++t % 20 == 0 )? fout << n << endl : fout << n << ' ';
+		for ( j=1; j<i; j++)
+		{
+			n += flag*2;
+			(++t % 20 == 0 )? fout << n << endl : fout << n << ' ';
+		}
+	}
+	fout << n-flag << endl;
+ 
+	return 0;
+}#include <stdio.h>
+ 
+int k,l;
+ 
+void a(int i){
+	int j;
+	for(j=0;j<i;j++){
+		if(k%20==0)putchar('\n');
+		else putchar(' ');
+		if(i%2==0)l-=2;
+		else l+=2;
+		printf("%d",l);
+		k++;
+	}
+}
+ 
+void b(int i){
+	if(i%2==0)l--;
+	else l++;
+	if(k==0);
+	else if(k%20==0)putchar('\n');
+	else putchar(' ');
+	printf("%d",l);
+	k++;
+}
+ 
+main(){
+	freopen("shuttle.in","r",stdin);
+	freopen("shuttle.out","w",stdout);
+	int n,i;
+	scanf("%d",&n);
+	l=n+1;
+	for(i=0;i<n;i++){a(i);b(i);}
+	a(i);
+	for(i=n-1;i>=0;i--){b(i);a(i);}
+	putchar('\n');
+	return 0;
+}用搜索＋贪心
+  Test 1: TEST OK [0.000 secs, 8580 KB]
+  Test 2: TEST OK [0.000 secs, 8584 KB]
+  Test 3: TEST OK [0.022 secs, 8584 KB]
+  Test 4: TEST OK [0.011 secs, 8580 KB]
+  Test 5: TEST OK [0.000 secs, 8580 KB]
+  Test 6: TEST OK [0.000 secs, 8580 KB]
+  Test 7: TEST OK [0.022 secs, 8584 KB]
+  Test 8: TEST OK [0.032 secs, 8580 KB]
+  Test 9: TEST OK [0.011 secs, 8584 KB]
+  Test 10: TEST OK [0.032 secs, 8584 KB]
+/*
+ID:continu2
+LANG:C++
+PROB:shuttle
+*/
+#include <iostream>
+#include <string.h>
+using namespace std;
+#define Limit 150001
+struct eq
+{
+	char s[30];
+	int p;
+	int last;
+}q[Limit];
+char begin[30],end[30];
+int ans[1000],ans_n;
+int n;
+void init()
+{
+	cin>>n;
+	for(int i=1;i<=n;i++)
+	{
+		begin[i]='W';
+		end[i]='B';
+	}
+	begin[n+1]=' ';
+	end[n+1]=' ';
+	for(int i=n+2;i<=n*2+1;i++)
+	{
+		begin[i]='B';
+		end[i]='W';
+	}
+}
+void print(int x)
+{
+	if(q[x].last==0)
+	{
+		ans_n++;
+		ans[ans_n]=q[x].p;
+		return;
+	}
+	print(q[x].last);
+	ans_n++;
+	ans[ans_n]=q[x].p;
+}
+void bfs()
+{
+	int l=0,r=1;
+	q[1].last=0;
+	q[1].p=n+1;
+	memcpy(q[1].s,begin,sizeof(q[1].s));
+	while(l<r)
+	{
+		l++;
+		char s[30];
+		int p=q[l].p;
+		if(p-1>0&&q[l].s[p-1]=='W')
+		{
+			memcpy(s,q[l].s,sizeof(s));
+			s[p]='W';
+			s[p-1]=' ';
+			r++;
+			memcpy(q[r].s,s,sizeof(q[r].s));
+			q[r].p=p-1;
+			q[r].last=l;
+			if(memcmp(q[r].s,end,sizeof(q[r].s))==0)
+			{
+				print(r);
+				return;
+			}
+		}
+		if(p+2<=2*n+1&&q[l].s[p+2]=='B'&&q[l].s[p+1]=='W')
+		{
+			memcpy(s,q[l].s,sizeof(s));
+			s[p]='B';
+			s[p+2]=' ';
+			r++;
+			memcpy(q[r].s,s,sizeof(q[r].s));
+			q[r].p=p+2;
+			q[r].last=l;
+			if(memcmp(q[r].s,end,sizeof(q[r].s))==0)
+			{
+				print(r);
+				return;
+			}
+		}
+		if(p+1<=2*n+1&&q[l].s[p+1]=='B')
+		{
+			memcpy(s,q[l].s,sizeof(s));
+			s[p]='B';
+			s[p+1]==' ';
+			r++;
+			memcpy(q[r].s,s,sizeof(q[r].s));
+			q[r].p=p+1;
+			q[r].last=l;
+			if(memcmp(q[r].s,end,sizeof(q[r].s))==0)
+			{
+				print(r);
+				return;
+			}
+		}
+		if(p-2>0&&q[l].s[p-2]=='W'&&q[l].s[p-1]=='B')
+		{
+			memcpy(s,q[l].s,sizeof(s));
+			s[p]='W';
+			s[p-2]=' ';
+			r++;
+			memcpy(q[r].s,s,sizeof(q[r].s));
+			q[r].p=p-2;
+			q[r].last=l;
+			if(memcmp(q[r].s,end,sizeof(q[r].s))==0)
+			{
+				print(r);
+				return;
+			}
+		}
+	}
+}
+main()
+{
+	freopen("shuttle.in","r",stdin);
+	freopen("shuttle.out","w",stdout);
+	init();
+	bfs();
+	int c=0;
+	for(int i=2;i<=ans_n;i++)
+	{
+		cout<<ans[i];
+		c++;
+		if(c%20==0||i==ans_n)cout<<endl;
+		else
+			cout<<' ';
+	}
+	return 0;
+}

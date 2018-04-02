@@ -1,0 +1,218 @@
+/*
+ID:ybojan2
+LANG:C++
+TASK:ttwo
+*/
+ 
+#include <iostream>
+#include <fstream>
+ 
+using namespace std;
+ 
+int main()
+{
+    ifstream fin("ttwo.in");
+    ofstream fout("ttwo.out");
+ 
+    int cx,cy,fx,fy,dat[11][11],dc=0,df=0,go[4][2]={{-1,0},{0,1},{1,0},{0,-1}};
+    memset(dat,0,sizeof(dat));
+ 
+    for (int i=1;i<=10;i++)
+    {
+        for (int j=1;j<=10;j++)
+        {
+            char c;
+            fin>>c;
+            if (c=='*') dat[i][j]=1;
+            if (c=='F') 
+            {
+                        fx=i;
+                        fy=j;
+                        }
+            if (c=='C')
+            {
+                       cx=i;
+                       cy=j;
+                       }
+        }
+    }
+ 
+    int time=0,x,y;
+    for (;;)
+    {
+        if((fx==cx)&&(fy==cy)) break;
+        x=fx+go[df][0];
+        y=fy+go[df][1];
+        if ((dat[x][y]==1)||(x<1)||(x>10)||(y<1)||(y>10)) df=(df+1)%4;
+        else {
+             fx=x;
+             fy=y;
+             }
+        x=cx+go[dc][0];
+        y=cy+go[dc][1];
+        if ((dat[x][y]==1)||(x<1)||(x>10)||(y<1)||(y>10)) dc=(dc+1)%4;
+        else {
+             cx=x;
+             cy=y;
+             }
+        time++;
+        if (time>10000000) break;
+    }
+ 
+    if (time<=10000000) fout<<time<<endl;
+    else fout<<0<<endl;
+ 
+    return 0;
+ 
+}
+
+/*
+ID: MasterRay
+LANG: C++
+TASK: ttwo
+*/
+ 
+#include <stdio.h>
+ 
+const int dx[] = {-1,0,1,0}, dy[] = {0,-1,0,1};
+char a[12][12];
+struct
+{
+	int x, y, d, cycle, state[11][11][4];
+}john, cow;
+ 
+int main()
+{
+	int the_time = 0;
+	freopen("ttwo.in", "r", stdin);
+	freopen("ttwo.out", "w", stdout);
+	for (int j = 1; j <= 10; ++j, getchar())
+	{
+		a[0][j] = '*'; a[11][j] = '*';
+		a[j][0] = '*'; a[j][11] = '*';
+		for (int i = 1; i <= 10; ++i)
+		{
+			a[j][i] = getchar();
+			if (a[j][i] == 'F') john.x = i, john.y = j, john.d = 1;
+			else if (a[j][i] == 'C') cow.x = i, cow.y = j, cow.d = 
+ 
+1;
+		}
+	}
+	do
+	{
+		if (!john.state[john.y][john.x][john.d]) john.state[john.y]
+ 
+[john.x][john.d] = the_time;
+		else if (!john.cycle) john.cycle = the_time-john.state[john.y]
+ 
+[john.x][john.d];
+		if (!cow.state[cow.y][cow.x][cow.d]) cow.state[cow.y][cow.x]
+ 
+[cow.d] = the_time;
+		else if (!cow.cycle) cow.cycle = the_time-cow.state[cow.y]
+ 
+[cow.x][cow.d];
+		++the_time;
+		if (a[john.y+dy[john.d]][john.x+dx[john.d]] == '*') john.d = 
+ 
+(john.d+1)%4;
+		else john.x += dx[john.d], john.y += dy[john.d];
+		if (a[cow.y+dy[cow.d]][cow.x+dx[cow.d]] == '*') cow.d = 
+ 
+(cow.d+1)%4;
+		else cow.x += dx[cow.d], cow.y += dy[cow.d];
+		if (john.x == cow.x && john.y == cow.y)
+			return printf("%d\n", the_time), 0;
+	}while (!john.cycle || !cow.cycle || the_time%john.cycle || the_time%
+ 
+cow.cycle);
+	puts("0");
+}
+
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <cstring>
+using namespace std;
+ 
+const short direction[4][2] = {{-1,0},{0,1},{1,0},{0,-1}};
+char map[12][12];
+bool used[11][11][4][11][11][4] = {false};
+int count;
+class T
+{
+public:
+	int x,
+		y,
+		dire;//up:0 right:1 down:2 left:3
+	T() 
+	{
+		dire = 0;
+	}
+	void go()
+	{
+		if(map[direction[dire][0] + x][direction[dire][1] + y] == '*')
+			dire = (dire+1)%4;
+		else x += direction[dire][0],
+			 y += direction[dire][1];
+	}
+ 
+};
+ 
+ifstream fin("ttwo.in");
+ofstream fout("ttwo.out");
+T F,C;
+ 
+void input()
+{
+	string in;
+	for(int i=0; i<=11; i++)
+		map[0][i] = '*',
+		map[11][i] = '*';
+	for(int i=1; i<=10; i++)
+	{
+		fin >> in;
+		map[i][0] = '*';
+		map[i][11] = '*';
+		for(int j=1; j<=10; j++)
+		{
+			if(in[j-1] != 'C' && in[j-1] != 'F')
+				map[i][j] = in[j-1];
+			else 
+			{
+				map[i][j] = '.';
+				if(in[j-1] == 'F')
+					F.x = i,
+					F.y = j;
+				else C.x = i,
+					 C.y = j;
+			}
+ 
+		}
+	}
+}
+ 
+int main()
+{
+	input();
+	count = 0;
+	while(true)
+	{
+		if(used[F.x][F.y][F.dire][C.x][C.y][C.dire])
+		{
+			fout << 0 << endl;
+			return 0;
+		}
+		used[F.x][F.y][F.dire][C.x][C.y][C.dire] = true;
+		if(F.x == C.x && F.y == C.y)
+		{
+			fout << count << endl;
+			return 0;
+		}
+		F.go();
+		C.go();
+		count++;
+	}
+    return 0;
+}

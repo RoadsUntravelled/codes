@@ -1,0 +1,173 @@
+#include <cstdio>
+#include <cstring>
+ 
+using namespace std;
+ 
+const int MAXL = 100000+1;
+ 
+char s[MAXL];
+int l;
+ 
+int work() {
+	int i = 0,j = 1,k = 0,t;
+	while (i<l && j<l && k<l) {
+		t = s[(i+k)>=l?i+k-l:i+k]-s[(j+k)>=l?j+k-l:j+k];
+		if (!t) k++;
+		else {
+			if (t>0) i += k+1;
+			else j += k+1;
+			if (i==j) j++;
+			k = 0;
+		}
+	}
+	printf("%d\n",i<j?i:j);
+}
+ 
+int main() {
+	freopen("hidden.in","r",stdin);
+	freopen("hidden.out","w",stdout);
+	scanf("%d\n",&l);
+	for (int i = 0; gets(s+i); i += 72);
+	work();
+	return 0;
+}/*
+使用后缀树组dc3算法解决，将数组复制一遍，成为一个2n的数组，再在最后面加一个很大的值，就可以解决像aaaa的问题了
+*/
+#include<cstdio>
+    bool compar(int a1,int b1,int a2,int b2){
+         return (a1<a2)||(a1==a2&&b1<=b2);
+    }
+    bool compar(int a1,int b1,int c1,int a2,int b2,int c2){
+         return (a1<a2)||(a1==a2&&compar(b1,c1,b2,c2));
+    }
+    void radix(int n,int k,int a[],int b[],int t[]){
+         int c[k+1];
+         for(int i=0;i<=k;i++)
+           c[i]=0;
+         for(int i=0;i<n;i++)
+           c[t[a[i]]]++;
+         for(int i=0,sum=0;i<=k;i++){
+                 int kk=c[i];
+                 c[i]=sum;
+                 sum+=kk;
+         }
+         for(int i=0;i<n;i++)
+           b[c[t[a[i]]]++]=a[i];
+    }
+    void aa(int n,int k,int sa[],int t[]){
+         int n1=(n+2)/3,n2=n1+n/3,n0=(n+1)/3;
+         int sa12[n2+3]; sa12[n2]=sa12[n2+1]=sa12[n2+2]=0;
+         int r[n2+3]; r[n2]=r[n2+1]=r[n2+2]=0;
+         int sa0[n1];
+         int r0[n1];
+         for(int i=0,j=0;i<n+n1-n0;i++)
+           if(i%3!=0)
+             r[j++]=i;
+         radix(n2,k,r,sa12,t+2);
+         radix(n2,k,sa12,r,t+1);
+         radix(n2,k,r,sa12,t);            
+         int num=0,c1=-1,c2=-1,c3=-1;
+         for(int i=0;i<n2;i++){
+           if(t[sa12[i]]!=c1||t[sa12[i]+1]!=c2||t[sa12[i]+2]!=c3){
+             c1=t[sa12[i]];
+             c2=t[sa12[i]+1];
+             c3=t[sa12[i]+2];
+             num++;
+           }
+           if(sa12[i]%3==1) r[sa12[i]/3]=num;
+           else r[sa12[i]/3+n1]=num;
+         }
+         if(num<n2){
+           aa(n2,num,sa12,r);
+           for(int i=0;i<n2;i++) 
+            r[sa12[i]]=i+1;
+         }
+         else
+           for(int i=0;i<n2;i++)
+                    sa12[r[i]-1]=i;
+         for(int i=0,j=0;i<n2;i++)
+           if(sa12[i]<n1)        
+              r0[j++]=sa12[i]*3;
+         radix(n1,k,r0,sa0,t);
+         for(int i=n1-n0,j=0,p=0;p<n;p++){
+           #define geti() (sa12[i]<n1? sa12[i]*3+1:(sa12[i]-n1)*3+2)
+           int ii=geti();
+           int jj=sa0[j];
+           if(sa12[i]<n1? compar(t[ii],r[sa12[i]+n1],t[jj],r[jj/3])
+                           :compar(t[ii],t[ii+1],r[sa12[i]-n1+1],t[jj],t[jj+1],r[jj/3+n1])){
+             i++;
+             sa[p]=ii;
+             if(i==n2)
+               for(p++;j<n1;j++,p++)sa[p]=sa0[j];
+           }else{
+                 sa[p]=jj;
+                 j++;
+                 if(j==n1)
+                   for(p++;i<n2;i++,p++)sa[p]=geti();
+                 }
+         }
+    }
+int main(){
+    freopen("hidden.in","r",stdin);
+    freopen("hidden.out","w",stdout);
+    int n;
+    scanf("%d\n",&n);
+    int t[2*n+4],sa[2*n+4];
+    char c;
+    for(int i=0;i<n;i++){
+            scanf("%c",&c);
+            while(c<'a'||c>'z')
+              scanf("%c",&c);
+            t[i]=c-'a'+1;
+            t[n+i]=c-'a'+1;
+    }
+    t[2*n]=27;
+    t[2*n+1]=t[2*n+2]=t[2*n+3]=0;
+    aa(2*n+1,27,sa,t);
+    for(int i=0;i<=n;i++)
+      if(sa[i]<n){
+        printf("%d\n",sa[i]);
+        break;
+      }
+}/*
+	ID:echooat1
+	LANG:C++
+	TASK:hidden
+	*/
+#include <cstring>
+#include <string>
+#include <fstream>
+#include <cstdio>
+#define min(a,b) ((a)<(b)?(a):(b))
+#define len 100002
+using namespace std;
+string st;size_t n=0;
+int main(int argc,char** argv){
+	FILE *fin,*fout;
+	fin=fopen("hidden.in","r");fout=fopen("hidden.out","w");
+	fscanf(fin,"%ld",&n);
+	char ch[100];
+	while(fscanf(fin,"%s",&ch)){
+		string ss=ch;
+		st=st+ss;
+		if(st.length()==n)break;
+	}
+	st=st+st;
+	string ss=st;
+	size_t p1=0,p2=1;
+	while(p1<=n&&p2<=n+1){
+		size_t k=0;
+		while(st[p1+k]==st[p2+k]&&k<n)
+			k++;
+		if(k==n)break;
+		if(st[p1+k]>st[p2+k]){p1+=(k+1);if(p1==p2)p1++;}
+			else {p2+=(k+1);if(p1==p2)p2++;}
+	}
+	long ans=0;
+	if(p1>n)ans=p2;
+	if(p2>n)ans=p1;
+	if(p1<=n&&p2<=n)ans=min(p1,p2);
+	fprintf(fout,"%ld\n",ans);
+	fclose(fin);fclose(fout);
+	return 0;
+}

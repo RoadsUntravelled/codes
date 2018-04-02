@@ -1,0 +1,376 @@
+/*
+ID: cmykrgb1
+PROG: schlnet
+LANG: C++
+*/
+//written by CmYkRgB123
+#include <iostream>
+#include <fstream>
+#define MAXN 101
+#define max(x,y) ((x)>(y)?x:y)
+ 
+using namespace std;
+ 
+ifstream fi("schlnet.in");
+ofstream fo("schlnet.out");
+ 
+int N,M;
+int adjl[MAXN][MAXN],fdjl[MAXN][MAXN];
+bool vis[MAXN],dis[MAXN][MAXN];
+int belong[MAXN],ind[MAXN],oud[MAXN],i0,o0;
+ 
+ 
+void init()
+{
+	int t,i;
+	fi >> N;
+	for (i=1;i<=N;i++)
+	{
+		fi >> t;
+		while (t)
+		{
+			adjl[i][ ++adjl[i][0] ]=t;
+			fdjl[t][ ++fdjl[t][0] ]=i;
+			fi >> t;
+		}
+	}
+}
+ 
+void dfs(int i)
+{
+	int j,k;
+	vis[i]=true;
+	for (k=1;k<=adjl[i][0];k++)
+	{
+		j=adjl[i][k];
+		if (!vis[j])
+			dfs(j);
+	}
+}
+ 
+void fdfs(int i)
+{
+	int j,k;
+	belong[i]=M;
+	for (k=1;k<=fdjl[i][0];k++)
+	{
+		j=fdjl[i][k];
+		if (vis[j] && !belong[j])
+			fdfs(j);
+	}
+}
+ 
+void solve()
+{
+	int i,j,k;
+	for (i=1;i<=N;i++)
+	{
+		if (!belong[i])
+		{
+			dfs(i);
+			M++;
+			fdfs(i);
+			memset(vis,0,sizeof(vis));
+		}
+	}
+	for (i=1;i<=N;i++)
+	{
+		for (k=1;k<=adjl[i][0];k++)
+		{
+			j=adjl[i][k];
+			dis[belong[i]][belong[j]]=true;
+		}
+	}
+	for (i=1;i<=M;i++)
+	{
+		for (j=1;j<=M;j++)
+		{
+			if (i!=j && dis[i][j])
+			{
+				oud[i]++;
+				ind[j]++;
+			}
+		}
+	}
+	for (i=1;i<=M;i++)
+	{
+		if (ind[i]==0)
+			i0++;
+		if (oud[i]==0)
+			o0++;
+	}
+}
+ 
+void print()
+{
+	if (M==1)
+		fo << 1 << endl << 0 << endl;
+	else
+	{
+		fo << i0 << endl;
+		fo << max(i0,o0) << endl;
+	}
+	fi.close();
+	fo.close();
+}
+ 
+int main()
+{
+	init();
+	solve();
+	print();
+	return 0;
+}/*
+ID: cn.qinz1
+PROG: schlnet
+LANG: C++
+*/
+//Floyd方法，但挺快的
+#include<iostream>
+using namespace std;
+int main()
+{
+	freopen("schlnet.in","r",stdin);
+	freopen("schlnet.out","w",stdout);
+ 
+	bool map[100][100],map2[100][100];
+	int i,j,k,n,in[100]={0},out[100]={0},con[100],ans1=0,ans2=0,cnt=0;
+	memset(map,false,sizeof(map));
+	memset(con,-1,sizeof(con));
+	scanf("%d",&n);
+	for(i=0;i<n;i++)
+		while(scanf("%d",&k)&&k)
+		{
+			out[i]++;
+			in[k-1]++;
+			map[i][k-1]=true;
+		}
+	memcpy(map2,map,sizeof(map));
+	for(k=0;k<n;k++)
+		for(i=0;i<n;i++)
+			for(j=0;j<n;j++)
+				if(map[i][k]&&map[k][j])
+					map[i][j]=true;
+	for(i=0;i<n;i++)
+	{
+		if(con[i]==-1)
+			con[i]=i;
+		else
+		{
+			in[con[i]]+=in[i];
+			out[con[i]]+=out[i];
+		}
+		for(j=0;j<n;j++)
+			if(map[i][j]&&map[j][i])
+			{
+				con[j]=con[i];
+				if(map2[i][j])
+				{
+					in[con[i]]--;
+					out[con[i]]--;
+				}
+			}
+	}
+	for(i=0;i<n;i++)
+		if(con[i]==i)
+		{
+			cnt++;
+			if(in[i]==0)
+				ans1++;
+			if(out[i]==0)
+				ans2++;
+		}
+	if(cnt==1)
+		printf("1\n0\n");
+	else
+		printf("%d\n%d\n",ans1,ans1>ans2?ans1:ans2);
+	return 0;
+}tarjan求强连通分量
+/*
+TASK:schlnet
+LANG:C++
+*/
+#include<cstdio>
+#include<cstring>
+#include<algorithm>
+#include<iostream>
+ 
+#define maxn 101
+ 
+using namespace std;
+ 
+int links[maxn][maxn] , n , step , top , Cnt , t = 0;
+int connect[maxn][maxn];
+int indegree[maxn] , outdegree[maxn] , slack[maxn*10];
+bool visit[maxn];
+int Belong[maxn] , LOW[maxn] , DFN[maxn];
+int in[maxn];
+ 
+void tarjan(int u){
+    LOW[u] = DFN[u] = ++step;
+    visit[u] = true;
+    slack[++top] = u;
+    for (int i = 1 ; i <= links[u][0] ; i++)
+        {
+            int v = links[u][i];
+            if (!DFN[v])
+                {
+                    tarjan(v);
+                    LOW[u] = min(LOW[u] , LOW[v]);
+                    }
+            else
+                {
+                    if (visit[v])
+                        LOW[u] = min(LOW[u] , DFN[v]);
+                    }
+        }
+    if (LOW[u] == DFN[u])
+        {
+            Cnt++;
+            int v;
+            do
+            {
+                v = slack[top--];
+                Belong[v] = Cnt;
+                visit[v] = false;
+            }
+            while (u!=v);
+        }
+    }
+int main(){
+    freopen("schlnet.in","r",stdin);
+    freopen("schlnet.out","w",stdout);
+    scanf("%d",&n);
+    memset(connect,false,sizeof(connect));
+    for (int i = 1 ; i <= n ; i++)
+        {
+            int to;
+            scanf("%d",&to);
+            while (to){
+                links[i][++links[i][0]] = to;
+                connect[i][to] = true;
+                scanf("%d",&to);
+            }
+        }
+    memset(DFN,0,sizeof(DFN));
+    memset(LOW,0,sizeof(LOW));
+    memset(visit,0,sizeof(visit));
+    step = top = Cnt = 0 ;
+    for (int i = 1 ; i <= n ; i++)
+        if (!DFN[i]) tarjan(i);
+    memset(in,0,sizeof(in));
+    for (int i = 1 ; i <= n ; i++)
+        for (int j = 1 ; j <= n ; j++)
+                if (Belong[i]!=Belong[j] && connect[i][j])
+                        in[Belong[j]]++;
+    for (int i = 1 ; i <= Cnt ; i++)
+            if (!in[i]) t++;
+    cout<<t<<endl;
+    memset(indegree,0,sizeof(indegree));
+    memset(outdegree,0,sizeof(outdegree));
+    for (int i = 1 ; i <= n ; i++)
+        for (int j = 1 ; j <= n ; j++)
+                if (Belong[i]!=Belong[j] && connect[i][j])
+                    {
+                        indegree[Belong[j]]++;
+                        outdegree[Belong[i]]++;
+                    }
+    int zero_in = 0 , zero_out = 0;
+    for (int i = 1 ; i <= Cnt ; i++)
+        {
+            if (!outdegree[i]) ++zero_out;
+            if (!indegree[i]) ++zero_in;
+        }
+    if (Cnt == 1)
+        cout<<"0"<<endl;
+    else
+        cout<<max(zero_in,zero_out)<<endl;
+    return 0;
+    }kosaraju+缩点。。
+ 
+Compiling...
+Compile: OK
+ 
+Executing...
+   Test 1: TEST OK [0.000 secs, 3068 KB]
+   Test 2: TEST OK [0.011 secs, 3068 KB]
+   Test 3: TEST OK [0.000 secs, 3068 KB]
+   Test 4: TEST OK [0.011 secs, 3068 KB]
+   Test 5: TEST OK [0.011 secs, 3068 KB]
+   Test 6: TEST OK [0.011 secs, 3068 KB]
+   Test 7: TEST OK [0.000 secs, 3068 KB]
+   Test 8: TEST OK [0.000 secs, 3068 KB]
+   Test 9: TEST OK [0.000 secs, 3068 KB]
+   Test 10: TEST OK [0.000 secs, 3068 KB]
+   Test 11: TEST OK [0.000 secs, 3068 KB]
+ 
+All tests OK.
+YOUR PROGRAM ('schlnet') WORKED FIRST TIME!  That is fantastic
+-- and a rare thing.  Please accept these special automated
+congratulations.
+ 
+/*
+	ID:echooat1
+	LANG:C++
+	TASK:schlnet
+	*/
+#include <fstream>
+#include <cstring>
+#define max(a,b) ((a)>(b)?(a):(b))
+#define V 105
+using namespace std;
+ifstream fin("schlnet.in");ofstream fout("schlnet.out");
+long n=0,f[V]={0},tim=0;bool hash[V]={0},a[V][V]={0};
+long cnt=0,big[V]={0};
+long c[V][V]={0},inp[V]={0},oup[V]={0};
+void dfs(long u){
+	hash[u]=1;
+	for(long i=1;i<=n;i++)
+		if(!hash[i]&&a[u][i])
+			dfs(i);
+	f[++tim]=u;
+}
+void dfs2(long u){
+	hash[u]=1;
+	big[u]=cnt;
+	for(long i=n;i>=1;i--)
+		if(!hash[f[i]]&&a[f[i]][u])
+			dfs2(f[i]);
+}
+int main(int argc,char** argv){
+	fin >>n;
+	for(long i=1;i<=n;i++){
+		long u;
+		fin >>u;
+		while(u){
+			a[i][u]=true;
+			fin >>u;
+		}
+	}
+	for(long i=1;i<=n;i++)
+		if(!hash[i])dfs(i);
+	memset(hash,0,sizeof hash);
+	for(long j=n;j>=1;j--)
+		if(!hash[f[j]]){
+			cnt++;
+			dfs2(f[j]);
+		}
+	for(long i=1;i<=n;i++)
+		for(long j=1;j<=n;j++)
+			if(a[i][j]&&big[i]!=big[j])
+				c[big[i]][big[j]]=true;
+	for(long i=1;i<=cnt;i++)
+		for(long j=1;j<=cnt;j++)
+			if(c[i][j]){
+				inp[j]++;oup[i]++;
+			}
+	long ans1=0,ans2=0;
+	for(long i=1;i<=cnt;i++){
+		if(!inp[i])ans1++;
+		if(!oup[i])ans2++;
+		}
+	if(cnt-1)
+	fout <<ans1<<endl<<max(ans1,ans2)<<endl;
+	else fout <<1<<endl<<0<<endl;
+	return 0;
+}

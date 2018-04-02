@@ -1,0 +1,525 @@
+/*
+PROB : fence3
+ID :  h1y1m11
+LANG : C++
+*/
+//遗传算法 huyuanming
+#include <iostream>
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+ 
+#define inf 10000000000000.0
+#define maxn 155
+#define pn 200
+int n;
+ 
+struct line {
+	double x1, y1, x2, y2;
+};
+ 
+struct point {
+	double x, y, sum;
+};
+ 
+line l[maxn];
+point p[pn + 1];
+point bp;
+ 
+inline double dis(double x1, double y1, double x2, double y2) {
+	return hypot(x1 - x2, y1 - y2);
+}
+ 
+inline double min(double a, double b) {
+	return a < b ? a : b;
+}
+ 
+double count(double x, double y) {
+	double sum = 0;
+	for (int i = 1; i <= n; i++) {
+		if (l[i].y1 == l[i].y2)
+			if (l[i].x1 <= x && x <= l[i].x2 || l[i].x1 >= x && x >= l[i].x2)
+				sum += fabs(l[i].y1 - y);
+			else
+				sum += min(dis(x, y, l[i].x1, l[i].y1),
+						   dis(x, y, l[i].x2, l[i].y2));
+		else
+			if (l[i].y1 <= y && y <= l[i].y2 || l[i].y1 >= y && y >= l[i].y2)
+				sum += fabs(l[i].x1 - x);
+			else
+				sum += min(dis(x, y, l[i].x1, l[i].y1),
+						   dis(x, y, l[i].x2, l[i].y2));
+	}
+	return sum;
+}
+ 
+void init() {
+	for (int i = 1; i <= pn; i++) {
+		p[i].x = (double)(rand() % 100);
+		p[i].y = (double)(rand() % 100);
+		p[i].sum = count(p[i].x, p[i].y);
+	}
+	bp.sum = inf;
+	p[0].sum = inf;
+}
+ 
+int choose() {
+	int b = 0;
+	for (int i = 1; i <= 10; i++) {
+		int k = rand() % pn + 1;
+		if (p[k].sum < p[b].sum)
+			b = k;
+	}
+	return b;
+}
+ 
+double rate() {
+	return (rand() % 140 - 70) / 100.0;
+}
+ 
+void mix(int a, int b) {
+	point na, nb;
+	na.x = (p[a].x + p[b].x) / 2 + (fabs(p[a].x - p[b].x) + 0.1) * rate();
+	na.y = (p[a].y + p[b].y) / 2 + (fabs(p[a].y - p[b].y) + 0.1) * rate();
+	na.sum = count(na.x, na.y);
+	p[rand() % pn + 1] = na;
+	if (na.sum < bp.sum)
+		bp = na;
+}
+ 
+void sim() {
+	int a, b;
+	a = choose();
+	b = choose();
+	mix(a, b);
+}
+ 
+int main() {
+	freopen("fence3.in", "r", stdin);
+	freopen("fence3.out", "w", stdout);
+	srand(123);
+	scanf("%d", &n);
+	for (int i = 1; i <= n; i++)
+		scanf("%lf%lf%lf%lf", &l[i].x1, &l[i].y1, &l[i].x2, &l[i].y2);
+	init();
+	for (int i = 1; i <= 1000; i++)
+		sim();
+	printf("%.1lf %.1lf %.1lf\n", bp.x, bp.y, bp.sum);
+	fclose(stdin);
+	fclose(stdout);
+	return 0;
+}
+/*
+ID: cmykrgb1
+PROG: fence3
+LANG: C++
+*/
+ 
+#include <iostream>
+#include <fstream>
+#include <cmath>
+#define MAXN 151
+#define sec 50
+#define INF 0x7FFFFFFF
+ 
+using namespace std;
+ 
+typedef struct
+{
+	int x1,x2,y1,y2;
+}line;
+ 
+ifstream fi("fence3.in");
+FILE *fo=fopen("fence3.out","w");
+ 
+line L[MAXN];
+line mp;
+int ansx,ansy,N;
+double anst;
+ 
+void swap(int &x,int &y)
+{
+	int z=x;
+	x=y;
+	y=z;
+}
+ 
+void init()
+{
+	int i;
+	mp.x1=mp.y1=INF;
+	anst=INF;
+	fi >> N;
+	for (i=1;i<=N;i++)
+	{
+		fi >> L[i].x1 >> L[i].y1 >> L[i].x2 >> L[i].y2;
+		L[i].x1*=10; L[i].x2*=10; L[i].y1*=10; L[i].y2*=10;
+		if (L[i].x1>L[i].x2) swap(L[i].x1,L[i].x2);
+		if (L[i].y1>L[i].y2) swap(L[i].y1,L[i].y2);
+		if (L[i].x1<mp.x1) mp.x1=L[i].x1;
+		if (L[i].y1<mp.y1) mp.y1=L[i].y1;
+		if (L[i].x2>mp.x2) mp.x2=L[i].x2;
+		if (L[i].y2>mp.y2) mp.y2=L[i].y2;
+	}
+}
+ 
+inline double dis(int x1,int y1,int x2,int y2)
+{
+	return sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2));
+}
+ 
+double count(int x,int y)
+{
+	double d=0;
+	int i;
+	for (i=1;i<=N;i++)
+	{
+		if (L[i].y1==L[i].y2) //平行于x轴
+		{
+			if (x>=L[i].x1 && x<=L[i].x2) //垂线
+				d+=abs(y-L[i].y1);
+			else if (x<=L[i].x1) 
+				d+=dis(x,y,L[i].x1,L[i].y1); //左斜线
+			else
+				d+=dis(x,y,L[i].x2,L[i].y2); //右斜线
+		}
+		else //平行于y轴
+		{
+			if (y>=L[i].y1 && y<=L[i].y2) //垂线
+				d+=abs(x-L[i].x1);
+			else if (y<L[i].y1)
+				d+=dis(x,y,L[i].x1,L[i].y1); //下斜线
+			else
+				d+=dis(x,y,L[i].x2,L[i].y2); //上斜线
+		}
+	}
+	return d;
+}
+ 
+void search()
+{
+	int i,j,px,py;
+	double dist;
+	for (i=mp.x1;i<=mp.x2;i+=sec) //第一遍扫描
+	{
+		for (j=mp.y1;j<=mp.y2;j++)
+		{
+			dist=count(i,j);
+			if (dist<anst)
+			{
+				anst=dist;
+				px=i;
+				py=j;
+			}
+		}
+	}
+ 
+	for (i=px-sec;i<=px+sec;i++) //第二遍扫描
+	{
+		for (j=py-sec;j<=py+sec;j++)
+		{
+			dist=count(i,j);
+			if (dist<=anst)
+			{
+				anst=dist;
+				ansx=i;
+				ansy=j;
+			}
+		}
+	}
+}
+ 
+void print()
+{
+	double ax,ay;
+	ax=ansx/10.0;
+	ay=ansy/10.0;
+	anst/=10.0;
+	fprintf(fo,"%.1lf %.1lf %.1lf\n",ax,ay,anst);
+	fclose(fo);
+	fi.close();
+}
+ 
+int main()
+{
+	init();
+	search();
+	print();
+	return 0;
+}
+/*
+TASK:fence3
+LANG:C++
+*/
+ 
+#include<iostream>
+#include<iomanip>
+#include<fstream>
+#include<math.h>
+using namespace std;
+ 
+struct Vec //Vector
+{
+	double x;
+	double y;
+	double operator *(Vec u)
+	{
+		return x*u.y-y*u.x;
+	}
+};
+ 
+Vec fz(Vec u) //垂直向量 
+{
+	Vec t;
+	t.x=u.y;
+	t.y=-u.x;
+	return t;
+}
+ 
+struct Pnt //Point
+{
+	double x;
+	double y;
+	Vec operator >(Pnt u)
+	{
+		Vec t;
+		t.x=u.x-x;
+		t.y=u.y-y;
+		return t;
+	}
+}Tr,R;
+double Res=9999999;
+ 
+struct Line //Line
+{
+	Pnt a;
+	Pnt b;
+}X[201];
+int n;
+ 
+double abs_i(double x) 
+{
+	if(x>0)
+		return x;
+	else
+		return -x;
+}
+double Len(Vec u) // |Vector|
+{
+	return sqrt(u.x*u.x+u.y*u.y);
+}
+ 
+double Dis(Pnt P,Line L) //Dis(Point,Line)
+{
+	double d=99999999;
+	Vec A=P>L.a;
+	Vec B=P>L.b;
+	Vec C=(fz(L.a>L.b));
+	if(((A*C)*(B*C))<0)
+		d=abs_i(A*B)/Len(L.a>L.b);
+	d=min(d,Len(A));
+	d=min(d,Len(B));
+	return d;
+}
+ 
+double SGM() //Sigma{Dis(Point,Line[i])}
+{
+	double ret=0;
+	for(int i=1;i<=n;i++)
+		ret+=Dis(Tr,X[i]);
+	return ret;
+}
+ 
+int main()
+{
+	ifstream cin("fence3.in");
+	ofstream cout("fence3.out");
+	cin>>n;
+	for(int i=1;i<=n;i++)
+		cin>>X[i].a.x>>X[i].a.y>>X[i].b.x>>X[i].b.y;
+	for(double i=0;i<=100;i+=5)
+		for(double j=0;j<=100;j+=5)
+		{
+			Tr.x=i,Tr.y=j;
+			double sg=SGM();
+			if(sg<Res)
+			{
+				Res=sg;
+				R=Tr;
+			}
+		}
+	for(double i=R.x-5;i<=R.x+5;i+=0.1)
+		for(double j=R.y-5;j<=R.y+5;j+=0.1)
+		{
+			Tr.x=i,Tr.y=j;
+			double sg=SGM();
+			if(sg<Res)
+			{
+				Res=sg;
+				R=Tr;
+			}
+		}
+	cout<<fixed<<setprecision(1);
+	cout<<R.x<<" "<<R.y<<" "<<Res<<endl;
+	//system("pause");
+	return 0;
+}/*
+  ID:jiazhip1
+  PROG:fence3
+  LANG:C++
+*/
+ 
+#include <iostream>
+#include <cmath>
+#include <ctime>
+ 
+using namespace std;
+ 
+const int start = 10, delta = 1, times = 100;
+ 
+int p1[151], p3[151], p2[151], p4[151], n;
+double t1, t2, ans;
+ 
+double dist(double x1, double y1, double x2, double y2)
+  {
+    return sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2));
+  }
+ 
+bool check(double x, double y)
+  {
+    double total = 0;
+    for (int i = 1; i <= n; i ++)
+      if (p1[i] == p3[i])
+        if (p2[i] <= y && y <= p4[i] || p4[i] <= y && y <= p2[i])
+          total += abs(x-p1[i]);
+        else
+          total += min(dist(x, y, p1[i], p2[i]), dist(x, y, p3[i], p4[i]));
+      else
+        if (p1[i] <= x && x <= p3[i] || p3[i] <= x && x <= p1[i])
+          total += abs(y-p2[i]);
+        else
+          total += min(dist(x, y, p1[i], p2[i]), dist(x, y, p3[i], p4[i]));
+    if (total < ans)
+      {
+        ans = total, t1 = x, t2 = y;
+        return true;
+      }
+    else
+      return false;
+  }
+ 
+int main()
+  {
+    int i, j, t, now1, now2, bak1, bak2;
+    srand(time(0));
+ 
+    freopen("fence3.in", "r", stdin);
+    freopen("fence3.out", "w", stdout);
+ 
+    scanf("%d", &n);
+    for (i = 1; i <= n; i ++)
+      scanf("%d%d%d%d", &p1[i], &p2[i], &p3[i], &p4[i]);
+ 
+    ans = 1e100, now1 = rand() % 1001, now2 = rand() % 1001;
+    check(double(now1)/10, double(now2)/10);
+    for (i = start; i > 0; i -= delta)
+      for (j = 1; j <= times; j ++)
+        {
+          bak1 = now1, bak2 = now2, t = rand() % 4;
+          if (t == 0) now1 += i;
+          if (t == 1) now1 -= i;
+          if (t == 2) now2 += i;
+          if (t == 3) now2 -= i;
+          if (! check(double(now1)/10, double(now2)/10))
+            now1 = bak1, now2 = bak2;
+        }
+ 
+    printf("%0.1lf %0.1lf %0.1lf\n", t1, t2, ans);
+ 
+    return 0;
+  }// 模拟退火。。
+ 
+Compiling...
+Compile: OK
+ 
+Executing...
+   Test 1: TEST OK [0.011 secs, 3012 KB]
+   Test 2: TEST OK [0.022 secs, 3012 KB]
+   Test 3: TEST OK [0.076 secs, 3012 KB]
+   Test 4: TEST OK [0.086 secs, 3012 KB]
+   Test 5: TEST OK [0.184 secs, 3012 KB]
+   Test 6: TEST OK [0.184 secs, 3012 KB]
+   Test 7: TEST OK [0.130 secs, 3012 KB]
+   Test 8: TEST OK [0.151 secs, 3012 KB]
+   Test 9: TEST OK [0.205 secs, 3012 KB]
+   Test 10: TEST OK [0.151 secs, 3012 KB]
+   Test 11: TEST OK [0.173 secs, 3012 KB]
+   Test 12: TEST OK [0.205 secs, 3012 KB]
+ 
+All tests OK.
+ 
+ 
+#include <fstream>
+#include <ctime>
+#include <cmath>
+#include <iomanip>
+#define V 150
+#define sqr(q) ((q)*(q))
+#define ex(a,b) ({long c;c=(a);(a)=(b);(b)=c;})
+#define ou(x,y,x1,y1) (sqrt(sqr((x)-(x1))+sqr((y)-(y1))))
+using namespace std;
+struct re{
+	long x1,y1,x2,y2;
+}l[V];
+ifstream fin("fence3.in");ofstream fout("fence3.out");
+long n=0;
+double dis(double x,double y,long k){
+	if(l[k].x1==l[k].x2){
+		if(y<l[k].y1)return ou(x,y,l[k].x1,l[k].y1);
+		if(y>l[k].y2)return ou(x,y,l[k].x2,l[k].y2);
+		return fabs(x-l[k].x1);
+	}else{
+		if(x<l[k].x1)return ou(x,y,l[k].x1,l[k].y1);
+		if(x>l[k].x2)return ou(x,y,l[k].x2,l[k].y2);
+		return fabs(y-l[k].y1);
+	}
+}
+int main(int argc,char** argv){
+	srand(size_t(time(NULL)));
+	fin >>n;
+	double x=rand()%100,y=rand()%100;double t=100;double best=0;
+	for(long i=1;i<=n;i++){
+		fin >>l[i].x1>>l[i].y1>>l[i].x2>>l[i].y2;
+		if(l[i].x1>l[i].x2)ex(l[i].x1,l[i].x2);
+		if(l[i].y1>l[i].y2)ex(l[i].y1,l[i].y2);
+		best+=dis(x,y,i);
+	}
+	long d=31;double temp1,temp2;
+	while(t>10e-3){
+		for(long i=1;i<=500;i++){
+			double x1,y1;
+				x1=t*(double(rand())/double(RAND_MAX))*(2*(rand()%2)-1);
+				y1=sqrt(sqr(t)-sqr(x1))*(2*(rand()%2)-1)+y;
+			x1+=x;
+			double temp=0;
+			for(long k=1;k<=n;k++)temp+=dis(x1,y1,k);
+			double p=temp-best,yy=0;
+			if(p<0){
+				yy=1;
+				temp1=x1;temp2=y1;best=temp;
+			}else
+				yy=exp(-p/t);
+			double q=double(rand())/double(RAND_MAX);
+			if(q<yy)
+				{x=x1;
+					y=y1;}
+			}
+		d++;
+		t=t/(log10(d)/log10(20));
+		}
+	fin.close();
+	fout <<fixed<<setprecision(1);
+	fout<<temp1<<' '<<temp2<<' '<<best<<endl;
+	return 0;
+}

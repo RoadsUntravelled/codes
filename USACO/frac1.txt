@@ -1,0 +1,257 @@
+/*
+ID:ybojan2
+LANG:C++
+TASK:frac1
+*/
+ 
+#include <iostream>
+#include <fstream>
+ 
+using namespace std;
+ 
+int n,a[100000],b[100000],len=0;
+ 
+ 
+void swap(int &x,int &y)
+{
+     int tmp=x;
+     x=y;
+     y=tmp;
+}
+ 
+int gcd(int x,int y)
+{
+    if (x>y) swap(x,y);
+    if (x==0) return y;
+    return (gcd(y%x,x));
+}
+ 
+void sort(int l,int r)
+{
+     int i=l,j=r;
+     float mid=(float)a[(i+j)/2]/(float)b[(i+j)/2];
+     for (;;)
+     {
+         for (;(float)a[i]/(float)b[i]<mid;i++) {}
+         for (;(float)a[j]/(float)b[j]>mid;j--) {}
+         if (i<=j)
+         {
+                  swap(a[i],a[j]);
+                  swap(b[i],b[j]);
+                  i++;
+                  j--;
+         }
+         if (i>j) break;
+     }
+     if (l<j) sort(l,j);
+     if (i<r) sort(i,r);
+}
+ 
+int main()
+{
+    ifstream fin("frac1.in");
+    ofstream fout("frac1.out");
+ 
+    fin>>n;
+    len++;
+    a[len]=0;
+    b[len]=1;
+    len++;
+    a[len]=1;
+    b[len]=1;
+    for (int i=2;i<=n;i++)
+    {
+        for (int j=1;j<=i-1;j++)
+        {
+            if (gcd(i,j)==1)
+            {
+                            len++;
+                            a[len]=j;
+                            b[len]=i;
+            }
+        }
+    }
+ 
+ 
+    sort(1,len);  
+    for (int i=1;i<=len;i++)
+        fout<<a[i]<<"/"<<b[i]<<endl;
+    return 0;
+}来自Russ的数学算法的实现，使用链表
+/*
+ID: hetong01
+LANG: C++
+TASK: frac1
+*/
+#include<iostream>
+#include<stdio.h>
+#include<cstdlib>
+ 
+using namespace std;
+ 
+ 
+struct fraclist
+{
+    int a,b;
+    struct fraclist *next;
+};
+ 
+int n,i,j,k,flag;
+fraclist *head,p1,p2,*p,*q;
+ 
+int main()
+{
+    freopen("frac1.in","r",stdin);
+    freopen("frac1.out","w",stdout);
+    cin>>n;
+    head=&p1;
+    p1.next=&p2;
+    p1.a=0;
+    p1.b=1;
+    p2.a=1;
+    p2.b=1;
+    p2.next=NULL;
+    flag=1;
+    while (flag)
+    {
+        p=&p1;
+        flag=0;
+        while (p->next!=NULL)
+        {
+            q=(struct fraclist *)malloc(sizeof(struct fraclist));
+            q->a=p->a+p->next->a;
+            q->b=p->b+p->next->b;
+            if (q->b<=n)
+            {
+                q->next=p->next;
+                p->next=q;
+                p=q->next;
+                flag=1;
+            }
+            else
+            {
+                free(q);
+                p=p->next;
+            }
+        }
+    }
+    p=&p1;
+    while (p!=NULL)
+    {
+        cout<<p->a<<"/"<<p->b<<endl;
+        q=p->next;
+        //free(p);
+        p=q;
+    }
+    return 0;
+}HASH:
+#include<fstream>
+using namespace std;
+ifstream  cin("frac1.in");
+ofstream  cout("frac1.out");
+int a[100000];
+bool HZh(int a,int b)
+{
+   int i;
+   for(i=2;i<=b;i++)
+      if(a%i==b%i && a%i==0)
+         return 0;
+   return 1;
+}
+ 
+bool Maxx(int a,int b)
+{
+   if((a/1000)*(b%1000)>(b/1000)*(a%1000))
+      return 1;
+   else
+      return 0;
+}
+ 
+void Qsort(int s,int e)
+{
+   if(s>e)
+      return;
+   int i=s,j=e;
+   int x=a[s];
+   while(i<j)
+   {
+      while(i<j && Maxx(a[j],x))
+         j--;
+      a[i]=a[j];
+      while(i<j && !Maxx(a[i],x))
+         i++;
+      a[j]=a[i];
+   }
+   a[i]=x;
+   Qsort(s,i-1);
+   Qsort(i+1,e);
+}
+ 
+int main()
+{
+   int n;
+   int i,j;
+   int wei=0;
+ 
+   cin>>n;
+   cout<<"0/1"<<endl;
+ 
+   for(i=1;i<=n;i++)
+      for(j=1;j<i;j++)
+         if(HZh(i,j))
+            a[wei++]=j*1000+i;
+ 
+   Qsort(0,wei-1);
+ 
+   for(i=0;i<wei;i++)
+      cout<<a[i]/1000<<"/"<<a[i]%1000<<endl;//注意要乘1000，而不是10或100.
+   cout<<"1/1"<<endl;
+   return 0;
+}//最好想到的算法
+/*
+ID: 
+PROG: frac1
+LANG: C++
+*/
+ 
+#include<fstream>
+#include<cstdlib>
+using namespace std;
+ 
+ifstream fin("frac1.in");
+ofstream fout("frac1.out");
+ 
+class dnum{
+	public:
+	int u;
+	int d;
+};
+ 
+int cmp(const void*,const void*);
+int gcd(int,int);
+ 
+int main(){
+	dnum nums[160*160];
+	int n,num_len=0;
+	fin>>n;
+	for(int i=1;i<=n;i++)
+		for(int j=i;j<=n;j++)
+			if(gcd(i,j)==1){
+				nums[num_len].u=i;
+				nums[num_len++].d=j;
+			}
+	qsort(nums,num_len,sizeof(nums[0]),cmp);
+	fout<<"0/1"<<endl;
+	for(int i=0;i<num_len;i++)
+		fout<<nums[i].u<<'/'<<nums[i].d<<endl;
+	return 0;
+}
+ 
+int cmp(const void*a,const void*b){
+	return -(((dnum*)b)->u*((dnum*)a)->d-((dnum*)a)->u*((dnum*)b)->d);
+}
+ 
+int gcd(int m,int n){
+	if(m%n==0)return n;
+	gcd(n,m%n);
+}

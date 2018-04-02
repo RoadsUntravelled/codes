@@ -1,0 +1,26 @@
+Hidden Password隐藏口令
+译 by KD
+ 描述有时候程序员有很奇怪的方法来隐藏他们的口令。Billy"Hacker"Geits会选择一个字符串S（由L个小写字母组成，5<=L<=100,000），然后他把S顺时针绕成一个圈，每次取一个做开头字母并顺时针依次取字母而组成一个字符串。这样将得到一些字符串，他把它们排序后取出第一个字符串。把这个字符串的第一个字母在原字符串中的位置做为口令。
+第一个字母所在的位置是0
+如字符串alabala，按操作得到7个字符串，排序后得： 
+aalabal
+abalaal
+alaalab
+alabala
+balaala
+laalaba
+labalaa 
+第一个字符串为aalabal，这个a在原字符串位置为6，则6为口令。
+当字符串相同时，输出编号最小的（即对于aaaa输出0）
+ 格式PROGRAM NAME: hidden
+INPUT FORMAT:
+(file hidden.in)
+INPUT FORMAT 
+第一行：一个数：L
+第二行：字符串：S(每行72个字符，最后一行可能不够）
+OUTPUT FORMAT:
+(file hidden.out)
+一行，为得到的口令
+ SAMPLE INPUT7
+alabala
+ SAMPLE OUTPUT6

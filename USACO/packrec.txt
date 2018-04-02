@@ -1,0 +1,419 @@
+/*
+ID: MasterRay
+LANG: C++
+TASK: packrec
+*/
+ 
+#include <algorithm>
+#include <climits>
+#include <cstdio>
+using namespace std;
+ 
+bool flag[10] = {};
+int res[101], res_area = INT_MAX;
+struct rectangle
+{
+	int x, y;
+}a[4], rec;
+ 
+void Record()
+{
+	if (rec.x*rec.y < res_area)
+	{
+		res_area = rec.x*rec.y;
+		fill_n(res+1, 100, 0);
+	}
+	if (rec.x*rec.y == res_area)
+		res[min(rec.x, rec.y)] = 1;
+}
+ 
+void Calc()
+{
+	//case 1
+	rec.x = 0; rec.y = 0;
+	for (int i = 0; i < 4; ++i)
+	{
+		rec.x += a[i].x;
+		if (a[i].y > rec.y) rec.y = a[i].y;
+	}
+	Record();
+	//case 2
+	rec.x = 0; rec.y = 0;
+	for (int i = 1; i < 4; ++i)
+	{
+		rec.x += a[i].x;
+		if (a[i].y > rec.y) rec.y = a[i].y;
+	}
+	if (a[0].x > rec.x) rec.x = a[0].x;
+	rec.y += a[0].y;
+	Record();
+	//case 3
+	rec.x = max(a[0].x+a[1].x, a[2].x)+a[3].x;
+	rec.y = max(max(a[0].y, a[1].y)+a[2].y, a[3].y);
+	Record();
+	//case 4, 5
+	rec.x = a[0].x+max(a[1].x, a[2].x)+a[3].x;
+	rec.y = max(max(a[0].y, a[1].y+a[2].y), a[3].y);
+	Record();
+	//case 6
+	rec.x = a[0].x+a[1].x;
+	rec.y = max(a[0].y+a[2].y, a[1].y+a[3].y);
+	if (a[0].y < a[1].y)
+		rec.x = max(rec.x, a[2].x+a[1].x);
+	if (a[0].y+a[2].y > a[1].y)
+		rec.x = max(rec.x, a[2].x+a[3].x);
+	if (a[1].y < a[0].y)
+		rec.x = max(rec.x, a[0].x+a[3].x);
+	rec.x = max(rec.x, a[2].x);
+	rec.x = max(rec.x, a[3].x);
+	Record();
+}
+ 
+void Rotate(int k)
+{
+	if (k == 4) Calc();
+	else
+	{
+		Rotate(k+1); swap(a[k].x, a[k].y);
+		Rotate(k+1); swap(a[k].x, a[k].y);
+	}
+}
+ 
+void Permutate(int k)
+{
+	if (k == 4) Rotate(0);
+	else
+	{
+		for (int i = k; i < 4; ++i)
+		{
+			swap(a[k], a[i]);
+			Permutate(k+1);
+			swap(a[k], a[i]);
+		}
+	}
+}
+ 
+int main()
+{
+	freopen("packrec.in", "r", stdin);
+	freopen("packrec.out", "w", stdout);
+	for (int i = 0; i < 4; ++i)
+		scanf("%d%d", &a[i].x, &a[i].y);
+	Permutate(0);
+	printf("%d\n", res_area);
+	for (int i = 1; i <= 100; ++i)
+        if (res[i])
+            printf("%d %d\n", i, res_area/i);
+}
+/*
+ID: Your ID
+PROG: packrec
+LANG: C++
+*/
+#include <iostream>
+#include <fstream>
+#include <vector>
+using namespace std;
+ 
+int p[4];
+bool e[4];
+int sq;
+ 
+typedef struct {
+    int x, y;
+}matrix;
+ 
+matrix mat[ 4 ],mat2[ 4 ];
+vector < matrix > ans;
+ 
+inline int Max( int x, int y ) {
+    return ( x > y ) ? x : y;
+}
+ 
+void update ( matrix tmp , int cas) {
+    if ( tmp.x > tmp.y ) {
+        int temp = tmp.x;
+        tmp.x = tmp.y;
+        tmp.y = temp;
+    }
+    if ( tmp.x * tmp.y < sq ) {
+        sq = tmp.x * tmp.y;
+        ans.clear();
+        ans.push_back( tmp );
+    }
+    else
+        if ( tmp.x * tmp.y == sq) {
+        int SZ = ans.size();
+        for (int i = 0; i < SZ; i++) {
+            if ( tmp.x == ans[ i ].x && tmp.y == ans[ i ].y )
+                return;
+        }
+        ans.push_back ( tmp );
+    }
+}
+ 
+int calc() {
+    matrix tmp;
+    int i;
+ 
+    // case 1
+    tmp.x = 0;
+    tmp.y = 0;
+    for (i = 0; i < 4; i++) {
+        tmp.x += mat[ p[ i ] ].x;
+        tmp.y = Max ( tmp.y, mat[ p[ i ] ].y);
+    }
+    update ( tmp , 1 );
+ 
+    // case 2
+    tmp.x = 0;
+    tmp.y = 0;
+    for (i = 0; i < 3; i++) {
+        tmp.x += mat[ p[ i ] ].x;
+        tmp.y = Max ( tmp.y, mat[ p[ i ] ].y );
+    }
+    tmp.x = Max ( tmp.x , mat[ p[ 3 ] ].x );
+    tmp.y += mat[ p[ 3 ] ].y;
+    update ( tmp , 2);
+ 
+    // case 3
+    tmp.x = Max ( mat[ p[ 0 ] ].x + mat[ p[ 1 ] ].x , mat[ p[ 2 ] ].x ) + mat[ p [ 3 ] ].x;
+    tmp.y = Max ( Max (mat[ p[ 0 ] ].y, mat[ p[ 1 ] ].y) + mat[ p[ 2 ] ].y , mat[ p[ 3 ] ]. y );   
+    update ( tmp , 3);
+ 
+    // case 4
+    tmp.x = mat[ p[ 0 ] ].x + mat[ p[ 3 ] ].x;
+    tmp.x += Max( mat[ p[ 1 ] ].x, mat[ p[ 2 ] ].x );
+    tmp.y = Max( mat[ p[ 0 ] ].y, mat[ p[ 3 ] ].y );
+    tmp.y = Max( tmp.y, mat[ p[ 1 ] ].y + mat[ p[ 2 ] ].y );
+    update ( tmp , 4);
+ 
+    // case 5
+    tmp.x = Max( mat[ p[ 0 ] ].x, mat[ p[ 1 ] ].x );
+     tmp.x += mat[ p[ 2 ] ].x + mat[ p[ 3 ] ].x;
+    tmp.y = Max( Max( mat[ p[ 0 ] ].y + mat[ p[ 1 ] ].y, mat[ p[ 2 ] ].y ), mat[ p[ 3 ] ].y );
+    update ( tmp , 5);   
+ 
+    // case 6   ps : Think About All the Cases
+ 
+    tmp.x = Max ( mat[ p[ 0 ] ].x + mat[ p[ 2 ] ].x , mat[ p[ 1 ] ].x + mat[ p[ 3 ] ].x ) ;
+ 
+    if ( mat[ p[ 2 ] ].x < mat[ p[ 3 ] ].x && mat[ p[ 0 ] ].x > mat[ p[ 1 ] ].x &&
+            mat[ p[ 0 ] ].y < mat[ p[ 2 ] ].y && mat[ p[ 1 ] ].y > mat[ p[ 3 ] ].y ) {
+        tmp.y = Max( mat[ p[ 0 ] ].y + mat[ p[ 1 ] ].y, mat[ p[ 2 ] ].y + mat[ p[ 3 ] ].y );
+ 
+    }
+    else
+        tmp.y =   Max ( mat[ p[ 0 ] ].y , mat[ p[ 2 ] ].y ) + Max (mat[ p[ 1 ] ].y , mat[ p[ 3 ] ].y );
+ 
+    update( tmp , 6);
+ 
+    return 0;
+}
+ 
+int main() {
+    int i, j;
+    int dfs(int dep);
+    ifstream fin( "packrec.in" );
+    ofstream fout( "packrec.out" );
+    for (i = 0; i < 4; i++) {
+        fin >> mat[ i ].x >> mat[ i ].y;   
+    }
+    for (i = 0; i < 4; i++) {
+        e[ i ] = false;
+    }
+    sq = 1000000;
+    dfs( 0 );
+    int sz = ans.size();
+    matrix tmp;
+    for (i = 0; i < sz; i++)
+        for (j = i + 1; j < sz; j++) {
+            if ( ans[ i ].x > ans[ j ].x || ( ans[ i ].x == ans[ j ].x && ans[ i ].y > ans[ j ].y ) ) {
+                tmp = ans[ i ];
+                ans[ i ] = ans[ j ];
+                ans[ j ] = tmp;
+            }
+        }
+    fout << ans[ 0 ].x * ans[ 0 ].y << endl;
+    for (i = 0; i < ans.size(); i++) {
+        fout << ans[ i ].x << ' ' << ans[ i ].y << endl;
+    }
+    return 0;
+}
+int dfs(int dep) {
+    int temp;
+    int i, j ,k;
+    if (dep == 4) {
+        for (k = 0; k < 4; k++) {
+            mat2[ k ].x = mat[ k ].x;
+            mat2[ k ].y = mat[ k ].y;
+        }
+         for ( j = 0; j < 15; j++) {
+            for (k = 0; k < 4; k++) {
+                if ( j & (1 << k) ) {
+                    mat[ p[ k ] ].x = mat2[ p[ k ] ].y;
+                    mat[ p[ k ] ].y = mat2[ p[ k ] ].x;
+                }
+                else {
+                    mat[ p[ k ] ].x = mat2[ p[ k ] ].x;
+                    mat[ p[ k ] ].y = mat2[ p[ k ] ].y;
+                }
+            calc();
+            }
+        }
+        return 0;
+    }
+    else {
+        for (i = 0; i < 4; i++) {
+            if (!e[ i ]) {
+                p[ dep ] = i;
+                e[ i ] = true;
+                dep++;
+                dfs( dep );
+                dep--;
+                e[ i ] = false;
+            }           
+        }
+    }
+    return 0;
+}
+ 
+//对于生成下一个排列建议用next_permutation(permutation, permutation + 4)!/*
+   !~!欢迎大家访问我的博客   http://blog.sina.com.cn/rtmiracle   
+TASK: packrec
+LANG: C++
+ 
+Compiling...
+Compile: OK
+ 
+Executing...
+   Test 1: TEST OK [0.000 secs, 2880 KB]
+   Test 2: TEST OK [0.000 secs, 2880 KB]
+   Test 3: TEST OK [0.011 secs, 2880 KB]
+   Test 4: TEST OK [0.000 secs, 2880 KB]
+   Test 5: TEST OK [0.000 secs, 2880 KB]
+   Test 6: TEST OK [0.011 secs, 2880 KB]
+   Test 7: TEST OK [0.000 secs, 2880 KB]
+   Test 8: TEST OK [0.011 secs, 2880 KB]
+   Test 9: TEST OK [0.000 secs, 2880 KB]
+   Test 10: TEST OK [0.000 secs, 2880 KB]
+   Test 11: TEST OK [0.000 secs, 2880 KB]
+   Test 12: TEST OK [0.011 secs, 2880 KB]
+   Test 13: TEST OK [0.000 secs, 2880 KB]
+   Test 14: TEST OK [0.000 secs, 2880 KB]
+   Test 15: TEST OK [0.011 secs, 2880 KB]
+   Test 16: TEST OK [0.000 secs, 2880 KB]
+   Test 17: TEST OK [0.000 secs, 2880 KB]
+   Test 18: TEST OK [0.000 secs, 2880 KB]
+   Test 19: TEST OK [0.000 secs, 2880 KB]
+   Test 20: TEST OK [0.000 secs, 2880 KB]
+   Test 21: TEST OK [0.000 secs, 2880 KB]
+ 
+All tests OK.
+ 
+YOUR PROGRAM ('packrec') WORKED FIRST TIME! That's fantastic -- and a rare thing. Please accept these special automated congratulations. 
+ 
+ 
+  PROG:packrec
+  LANG: C++
+*/
+#include <cstdio>
+#include <iostream>
+using namespace std;
+int total,MIN=32767,a[5][3],Ans[100][3],a1,a2,a3,a4,b1,b2,b3,b4;
+void Init()
+{
+  freopen("packrec.in","r",stdin);
+  freopen("packrec.out","w",stdout);
+  for (int i=1;i<5;i++)
+    scanf("%d %d",&a[i][1],&a[i][2]);
+}
+void Updata(int x,int y)
+{
+  if (x*y>MIN)
+    return;
+  if (x*y<MIN)
+  {
+    MIN=x*y;
+    total=0;
+  }
+  if (x>y)
+    swap(x,y);
+  for (int i=1;i<=total;i++)
+    if (x==Ans[i][1]&&y==Ans[i][2])
+      return;
+  total++;
+  Ans[total][1]=x; Ans[total][2]=y;
+}
+void Work()
+{
+  int h1=a[a1][b1],h2=a[a2][b2],h3=a[a3][b3],h4=a[a4][b4],w1=a[a1][3-b1],w2=a[a2][3-b2],w3=a[a3][3-b3],w4=a[a4][3-b4],width,height;
+ 
+  width=w1+w2+w3+w4;//第一次
+  height=max(max(max(h1,h2),h3),h4);
+  Updata(width,height);
+ 
+  width=max(w1+w2+w3,w4);//第二次
+  height=max(max(h1,h2),h3)+h4;
+  Updata(width,height);
+ 
+  width=max(w1+w2,w3)+w4;//第三次
+  height=max(max(h1,h2)+h3,h4);
+  Updata(width,height);
+ 
+  width=w1+w2+max(w3,w4);//第四次
+  height=max(max(h1,h2),h3+h4);
+  Updata(width,height);
+ 
+  height=max(h1+h3,h2+h4);
+  if (h3>=h2+h4)
+     width=max(w1,w3+max(w2,w4));
+  if (h3>h4&&h3<h2+h4)
+     width=max(w1+w2,w3+max(w2,w4));
+  if (h3<h4&&h4<h1+h3)
+     width=max(w1+w2,w4+max(w1,w3));
+  if (h4>=h1+h3)
+     width=max(w2,w4+max(w1,w3));
+  if (h3==h4)
+     width=max(w1+w2,w3+w4);
+  Updata(width,height);//第五次
+}
+void Slove()
+{
+  for (a1=1;a1<5;a1++)
+    for (a2=1;a2<5;a2++)
+      if (a1!=a2)
+        for (a3=1;a3<5;a3++)
+        if (a3!=a2&&a3!=a1)
+        {
+          a4=10-a1-a2-a3;//第一个四重循环枚举每个矩形的摆放位置
+          for (b1=1;b1<3;b1++)
+            for (b2=1;b2<3;b2++)
+              for (b3=1;b3<3;b3++)
+                for (b4=1;b4<3;b4++)//第二个四重循环枚举每个矩形的摆放形式（横放或者竖放）
+                  Work();
+        }
+}
+void Print()
+{
+  int i,j;
+  for (i=1;i<total;i++)
+    for (j=i+1;j<=total;j++)
+      if (Ans[i][1]>Ans[j][1])
+      {
+        swap(Ans[i][1],Ans[j][1]);
+        swap(Ans[i][2],Ans[j][2]);
+      }
+  printf("%d\n",MIN);
+  for (i=1;i<=total;i++)
+    printf("%d %d\n",Ans[i][1],Ans[i][2]);
+  fclose(stdin);
+  fclose(stdout);
+}
+int main()
+{
+  Init();
+  Slove();
+  Print();
+  return 0;
+}

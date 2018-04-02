@@ -1,0 +1,188 @@
+/*
+	ID: lvxiao31
+	PROG: friday
+	LANG: C++
+*/
+#include <fstream>
+using namespace std;
+ 
+ifstream fin("friday.in");
+ofstream fout("friday.out");
+ 
+int main()
+{
+	static int tot[7];
+	int i,n,y,m,d,w=1,days[12]={31,28,31,30,31,30,31,31,30,31,30,31};
+	fin>>n;
+	for (y=1900;y<=1900+n-1;y++)
+	{
+		days[1]+=(y%100)&&!(y&3)||!(y%400);
+		for (m=0;m<=11;m++)
+			for (d=1;d<=days[m];d++)
+				tot[w==6?w=0:++w]+=(d==13);
+		days[1]-=(y%100)&&!(y&3)||!(y%400);
+	}
+	for (i=0;i<=5;i++)
+		fout<<tot[i]<<' ';
+	fout<<tot[6]<<endl;
+	return 0;
+}/*
+  ID : Your ID
+  PROG : friday
+  LANG : C++
+*/
+#include <iostream>
+#include <fstream>
+const int a[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+int mark[7];
+using namespace std;
+int n, now, month;
+int main(void)
+{
+    ifstream fin ("friday.in");   
+    ofstream fout ("friday.out");
+    now = 13; mark[6]++;
+    fin >> n;
+    for (int i = 1; i <= n; i++)
+      for (int j = 0; j < 12; j++)
+      {
+        now += a[j];
+        if ( ( (1899 + i) % 400 == 0 || ( (1899 + i) % 4 == 0 && (1899 + i) % 100 != 0 ) ) && j == 1)
+           now++;
+        now %= 7;
+        if (i != n || j != 11)
+           mark[now]++;
+      }
+    fout << mark[6] << " ";
+    for (int i = 0; i < 5; i ++)
+      fout << mark[i] << " ";
+    fout << mark[5] << endl;
+}#include <iostream>
+using namespace std;
+ 
+const int day[12]={31,28,31,30,31,30,31,31,30,31,30,31};
+ 
+int n,times[8];
+ 
+int leap(int year){
+    if (year %4 ==0 && year %100 !=0 || year %400 ==0) return 1;
+    else return 0;
+}
+ 
+void clt(int num){
+     times[0]=1;int date;
+     for(int year=1900;year<1900+num;year++)
+             for(int month=1;month<=12;month++){
+             date=5+times[0];
+             if(date>7) date-=7;
+             times[date]++;
+             if(leap(year) && month==2)
+             times[0]++;
+             else
+             times[0]+=day[month-1]%7;
+             if(times[0]>7)
+             times[0]-=7;
+     }
+}
+ 
+int main(){
+    freopen("friday.in","r",stdin);
+    freopen("friday.out","w",stdout);
+    cin>>n;
+    memset(times,0,sizeof(times));
+    clt(n);
+    cout<<times[6]<<' '<<times[7];
+    for(int i=1;i<=5;i++)
+    cout<<' '<<times[i];
+    cout<<endl;
+    return 0;
+}/*
+ID:gjl87911
+PROG:friday
+LANG:C++
+*/
+#include<iostream>
+#include<fstream>
+using namespace std;
+int main()
+{
+ bool isleap(int y);
+ ifstream fin("friday.in");
+ ofstream fout("friday.out");
+ int sun=0,mon=0,tue=0,wed=0,thu=0,fri=0,sat=0;
+ int num;
+ fin>>num;
+ int tmp=6;
+ for(int i=0;i<num;i++)
+ {
+  int year=1900+i;
+  for(int j=1;j<=12;j++)
+  {
+   switch(tmp%7)
+   {
+    case 1:mon++;break;
+    case 2:tue++;break;
+    case 3:wed++;break;
+    case 4:thu++;break;
+    case 5:fri++;break;
+    case 6:sat++;break;
+    case 0:sun++;
+   }
+   if(j==1||j==3||j==5||j==7||j==8||j==10||j==12) tmp+=31;
+   else if(j==2)
+   {
+    if(isleap(year)) tmp+=29;
+    else tmp+=28;    
+   }
+   else tmp+=30;  
+  }
+ }
+ 
+ fout<<sat<<" "<<sun<<" "<<mon<<" "<<tue<<" "<<wed<<" "<<thu<<" "<<fri<<endl;
+ 
+ return 0; 
+}
+ 
+ 
+bool isleap(int y)
+{
+ if((y%4==0&&y%100!=0)||(y%400==0)) return 1;
+ else return 0; 
+}/*
+	ID:linuxco1
+	PROG: friday
+	LANG: C++
+*/
+#include<fstream>
+#include<iomanip>
+using namespace std;
+ifstream fin("friday.in");
+ofstream fout("friday.out");
+int a[1000]={0},i,j,n,week,month[13]={0,31,28,31,30,31,30,31,31,30,31,30,31};
+//bool flag[401];
+int main()
+{	fin>>n;
+	//n=1;
+//	meset(a,0,sizeof(a));
+	int count=13;
+	for(i=0;i<n;i++)
+	{	if(((1900+i)%4==0&&(1900+i)%100!=0)||((1900+i)%400==0))
+		month[2]=29;
+		else month[2]=28;
+		for(j=1;j<=12;j++)
+		{	week=count%7;
+			if(week>3)
+				week-=4;
+				//else if (week==3);
+			else week+=3;
+			a[week]++;
+			count+=month[j];
+		}
+	}
+	//for(i=0;i<7;i++)
+		//fout<<a[i]<<"	"<<i<<endl;
+		fout<<a[2]<<"	"<<a[3]<<"	"<<a[4]<<"	"<<a[5]<<"	"<<a[6]<<"	"<<a[0]<<"	"<<a[1]<<endl;
+	fout.close();
+	fin.close();
+	return 0;
+}

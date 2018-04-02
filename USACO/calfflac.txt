@@ -1,0 +1,1071 @@
+暴搜：
+Compiling...
+Compile: OK
+Executing...
+  Test 1: TEST OK [0.000 secs, 3052 KB]
+  Test 2: TEST OK [0.000 secs, 3052 KB]
+  Test 3: TEST OK [0.000 secs, 3052 KB]
+  Test 4: TEST OK [0.011 secs, 3056 KB]
+  Test 5: TEST OK [0.000 secs, 3052 KB]
+  Test 6: TEST OK [0.011 secs, 3056 KB]
+  Test 7: TEST OK [0.000 secs, 3060 KB]
+  Test 8: TEST OK [0.119 secs, 3056 KB]
+using namespace std;
+int main()
+{
+ ifstream infile;
+ ofstream outfile;
+ infile.open("calfflac.in");
+ outfile.open("calfflac.out");
+ char a[20000],b[20000];
+ int c[20000],i=0,j=i;
+ for(;a[i]=infile.get(),a[i]>0;i++)
+   if(a[i]>='a'&&a[i]<='z')
+   {
+     b[j++]=a[i]-32;
+     c[j-1]=i;
+   }
+   else if(a[i]>='A'&&a[i]<='Z')
+   {
+     b[j++]=a[i];
+     c[j-1]=i;
+   }
+ int jishu,oushu,zhengwen,js,jw,os,ow;
+ zhengwen=j-1;
+ jishu=1;
+ oushu=0;
+ for(i=1;i<=zhengwen-2;i++)
+ {
+   int jmax=1;
+   for(j=1;(i-j>=0&&i+j<=zhengwen)&&(b[i-j]==b[i+j]);j++)
+     jmax+=2;
+   if(jmax>jishu)
+   {
+     jishu=j+j-1;
+     js=c[i-j+1];
+     jw=c[i+j-1];
+   }
+ }
+ for(i=0;i<=zhengwen-2;i++)
+ {
+   int omax=0;
+   for(j=0;(i-j>=0&&i+j+1<=zhengwen)&&(b[i-j]==b[i+j+1]);j++)
+     omax+=2;
+   if(omax>oushu)
+   {
+     oushu=j+j;
+     os=c[i-j+1];
+     ow=c[i+j];
+   }  
+ }
+ int kt,Jw,S;
+ if(oushu>jishu)
+ {
+   kt=os;
+   Jw=ow;
+ }
+ else
+ {
+   kt=js;
+   Jw=jw;
+ }
+ for(i=kt;i<=Jw;i++)if((a[i]>='A'&&a[i]<='Z')||(a[i]>='a'&&a[i]<='z'))S++;
+ outfile<<S<<endl;
+ for(i=kt;i<=Jw;i++)outfile<<a[i];
+ outfile<<endl;
+ infile.close();
+ outfile.close();
+ return 0;
+}
+我看别人和我的文件流出入方式好像不太一样啊
+————
+
+
+Compiling...
+Compile: OK
+ 
+Executing...
+   Test 1: TEST OK [0.032 secs, 3184 KB]
+   Test 2: TEST OK [0.000 secs, 3184 KB]
+   Test 3: TEST OK [0.000 secs, 3184 KB]
+   Test 4: TEST OK [0.000 secs, 3184 KB]
+   Test 5: TEST OK [0.011 secs, 3184 KB]
+   Test 6: TEST OK [0.000 secs, 3184 KB]
+   Test 7: TEST OK [0.011 secs, 3184 KB]
+   Test 8: TEST OK [0.076 secs, 3184 KB]
+ 
+All tests OK.
+ 
+#include <iostream>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <string>
+#include <map>
+#include <list>
+using namespace std;
+ 
+FILE *in, *out;
+ 
+void openfile() { in = fopen("calfflac.in", "r"); out = fopen("calfflac.out", "w+"); }
+void closefile() { fclose(in); fclose(out); }
+ 
+/** TODO VAR. */
+struct strtype {
+    char ch;
+    int pos;
+};
+int n = 0, vcnt = 0, maxop, maxed, maxlen = 0;
+char str[20010];
+strtype s[20010];
+ 
+int main()
+{
+    openfile();
+    while(!feof(in))
+    {
+        fscanf(in, "%c", str + n);
+        if((str[n] >= 'a' && str[n] <= 'z') || 
+            (str[n] >= 'A' && str[n] <= 'Z'))
+        {
+            s[vcnt].ch = str[n];
+            s[vcnt].pos = n;
+            if(isalpha(s[vcnt].ch)) s[vcnt].ch = tolower(s[vcnt].ch);
+            vcnt++;
+        }
+ 
+        n++;
+    }
+    str[n] = '\0';
+ 
+    for(int i = 0; i < vcnt; i++)
+    {
+        int j, k;
+        for(j = i, k = i; j >= 0 && k < vcnt; j--, k++)
+            if(s[k].ch != s[j].ch || (j == 0 || k == vcnt - 1))
+            {
+                if(s[k].ch != s[j].ch) k--, j++;
+                if(maxlen < k - j + 1)
+                {
+                    maxlen = k - j + 1;
+                    maxop = j, maxed = k;
+                }
+ 
+                break;
+            }
+    }
+ 
+    for(int i = 0; i < vcnt; i++)
+    {
+        int j, k;
+        for(j = i, k = i + 1; j >= 0 && k < vcnt; j--, k++)
+            if(s[k].ch != s[j].ch || (j == 0 || k == vcnt - 1))
+            {
+                if(s[k].ch != s[j].ch) k--, j++;
+                if(maxlen < k - j + 1)
+                {
+                    maxlen = k - j + 1;
+                    maxop = j, maxed = k;
+                }
+ 
+                break;
+            }
+    }
+ 
+    fprintf(out, "%d\n", maxlen);
+    for(int i = s[maxop].pos; i <= s[maxed].pos; i++)
+        fprintf(out, "%c", str[i]);
+ 
+    fprintf(out, "\n");
+ 
+    closefile();
+    return 0;
+}TRW 简洁高效程序：
+Executing...
+   Test 1: TEST OK [0.000 secs, 3048 KB]
+   Test 2: TEST OK [0.000 secs, 3048 KB]
+   Test 3: TEST OK [0.022 secs, 3048 KB]
+   Test 4: TEST OK [0.011 secs, 3048 KB]
+   Test 5: TEST OK [0.000 secs, 3048 KB]
+   Test 6: TEST OK [0.000 secs, 3048 KB]
+   Test 7: TEST OK [0.000 secs, 3048 KB]
+   Test 8: TEST OK [0.036 secs, 3048 KB]
+ 
+#include<fstream> //TRW
+#include<cstring>
+#include<ctype.h>
+#include<stdio.h>
+using namespace std;
+ifstream fin("calfflac.in");
+ofstream fout("calfflac.out");
+char a[20010],b[20010];
+int n,maxl=0,begin;
+void solve(){
+     for(int i=0;i<n;i++){
+       int j,k,s;
+       j=i-1,k=i+1,s=1;
+       while(j>=0 && k<n && b[j]==b[k]){j--;k++;s+=2;}
+       if(s>maxl){maxl=s;begin=j+1;}
+       j=i,k=i+1,s=0;
+       while(j>=0 && k<n && b[j]==b[k]){j--;k++;s+=2;}
+       if(s>maxl){maxl=s;begin=j+1;}
+     }
+}
+int main(){
+    char *p,*q,c;
+    p=a,q=b;
+    while (!fin.eof()){
+     c=fin.get();
+     if(isalpha(c))*q++=tolower(c);
+     *p++=c;
+    }
+    *p='\0',*q='\0';
+    n=strlen(b);int i;p=a;
+    solve();
+    for(i=0;*p;p++)if(isalpha(*p) && i++==begin) break;
+    fout<<maxl<<endl;
+    for(i=0;i<maxl && *p;p++){
+      fout<<*p;
+      if(isalpha(*p)) i++;
+    }
+    fout<<"\n";
+}这个 ac 了
+/*
+ID: qykcdgm1
+LANG: C
+TASK: calfflac
+*/
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h> 
+#define N 20010
+#define U 82
+ 
+char s[N];
+int slen;
+ 
+typedef struct mid Mid;
+struct mid {
+	int lf;
+	int rt;
+};
+ 
+int isequal(char a, char b) {
+	if (a == b || toupper(a) == b || a == toupper(b)) return 1;
+	return 0;
+}
+ 
+Mid cal(int lf, int rt)
+{
+	Mid res;
+	int i = lf, j = rt;
+ 
+	res.lf = lf, res.rt = rt;
+ 
+	while(1) {
+		for (i--; i >= 0; i--) if (isalpha(s[i])) break;
+		for (j++; j < slen; j++) if (isalpha(s[j])) break;
+		if (i == -1 || j == slen) break;
+		if (isequal(s[i], s[j])) res.lf = i, res.rt = j;
+		else break;
+	}
+ 
+	return res;
+}
+ 
+// compare & store
+void cns(Mid x, Mid *max)
+{
+	if (clen(x) > clen(*max)) max->lf = x.lf, max->rt = x.rt;
+}
+ 
+int clen(Mid a)
+{
+	int c, i;
+ 
+	for (c = 0, i = a.lf; i <= a.rt; i++) if (isalpha(s[i])) c++;
+ 
+	return c;
+}
+ 
+ 
+main() {
+    FILE *fin  = fopen ("calfflac.in", "r");
+    FILE *fout = fopen ("calfflac.out", "w");
+    char unit[U];
+ 
+    int i, j, k;
+    Mid max;
+ 
+    s[0] = '\0';
+    while (fgets(unit, U, fin) != NULL) strcat(s, unit);
+ 
+    max.lf = 0, max.rt = 0;	
+    slen = strlen(s);
+    for (i = 0; i < slen; i++) if (isalpha(s[i])) {
+	for (j = i + 1; j < slen; j++) if (isalpha(s[j])) {
+	    if (isequal(s[i], s[j])) cns(cal(i, j), &max);
+	    break;
+	}
+	for (k = i - 1; k >= 0; k--) if (isalpha(s[k])) {
+	    if (isequal(s[k], s[j])) cns(cal(k, j), &max);
+	    break;
+	    }
+	}
+ 
+	if (max.rt - max.lf == 0) fprintf(fout, "0\n");
+	else {
+		fprintf(fout, "%i\n", clen(max));
+		s[max.rt+1] = '\0';
+		fprintf(fout, "%s\n", s+max.lf);
+	}
+    exit (0);
+}
+此程序有问题！WA Test：term_sett
+/*
+ID: MasterRay
+LANG: C++
+TASK: calfflac
+*/
+ 
+#include <algorithm>
+#include <cstdio>
+using namespace std;
+ 
+char a[40002], b[20001];
+int arr[4][40002], h[40002], idx[20000], *sa;
+ 
+void F(char a[], int n)
+{
+	int *rank = arr[1], *nsa = arr[2], *cnt = arr[3];
+	sa = arr[0];
+	fill_n(cnt, 256, 0);
+	for (int i = 0; i < n; ++i)
+		++cnt[a[i]];
+	for (int i = 1; i < 256; ++i)
+		cnt[i] += cnt[i-1];
+	for (int i = n; --i >= 0; )
+		sa[--cnt[a[i]]] = i;
+	rank[sa[0]] = 0;
+	for (int i = 1; i < n; ++i)
+	{
+		rank[sa[i]] = rank[sa[i-1]];
+		if (a[sa[i]] != a[sa[i-1]])
+			++rank[sa[i]];
+	}
+	for (int k = 1; k < n && rank[sa[n-1]] != n-1; k *= 2)
+	{
+		for (int i = 0; i < n; ++i)
+			cnt[rank[sa[i]]] = i;
+		for (int i = n; --i >= 0; )
+			if (sa[i] >= k)
+				nsa[cnt[rank[sa[i]-k]]--] = sa[i]-k;
+		for (int i = n-k; i < n-k/2; ++i)
+			nsa[cnt[rank[i]]] = i;
+		swap(sa, nsa);
+		cnt[sa[0]] = 0;
+		for (int i = 1; i < n; ++i)
+		{
+			cnt[sa[i]] = cnt[sa[i-1]];
+			if (rank[sa[i]] != rank[sa[i-1]] || rank[sa[i]+k] != rank[sa[i-1]+k])
+				++cnt[sa[i]];
+		}
+		swap(rank, cnt);
+	}
+	h[0] = 0;
+	for (int k = 0, i = 0; i < n; ++i)
+		if (rank[i])
+		{
+			for (int j = sa[rank[i]-1]; a[j+k] == a[i+k]; ++k);
+			h[rank[i]] = k;
+			if (k) --k;
+		}
+}
+ 
+int main()
+{
+	freopen("calfflac.in", "r", stdin);
+	freopen("calfflac.out", "w", stdout);
+	int size = 0, n, max_h = 0, res = -1;
+	for (int i = 0; (b[i] = getchar()) != EOF; ++i);
+	for (int i = 0; b[i]; ++i)
+		if (isalpha(b[i]))
+		{
+			a[size] = tolower(b[i]);
+			idx[size++] = i;
+		}
+	n = size*2+2;
+	a[size] = '\1';
+	reverse_copy(a, a+size, a+size+1);
+	//a[n] = '\0';
+	F(a, n);
+	for (int i = 1; i < n; ++i)
+		if ((sa[i] < size) ^ (sa[i-1] < size)
+			&& (h[i] > max_h || h[i] == max_h && min(sa[i], sa[i-1]) < res))
+			max_h = h[i], res = min(sa[i], sa[i-1]);
+	printf("%d\n", max_h);
+	for (res = idx[res]; max_h; ++res)
+	{
+		putchar(b[res]);
+		if (isalpha(b[res])) --max_h;
+	}
+	putchar('\n');
+}/*
+    ID : Your ID
+    PROG : calfflac
+    LANG : C++
+*/
+#include <iostream>
+#include <stdio.h>
+char a[20001], b[20001];
+int n, m, t[20001], left, right, max;
+void check(int l, int r)
+{
+     while (l >= 1 && r <= n)
+     {
+        if (b[l] == b[r])
+        {
+           l--; r++;
+        }
+        else break;
+     }
+     if (r - l - 1 > max)
+     {
+        max = r - l - 1;
+        left = t[l + 1];
+        right = t[r - 1];
+     }
+}
+int main(void)
+{
+    freopen ("calfflac.in", "r",  stdin);
+    freopen ("calfflac.out", "w", stdout);
+    char ch;
+    while (scanf ("%c", &ch) != EOF)
+    {
+       n++;
+       a[n] = ch;
+    }
+    for (int i = 1; i <= n; i++)
+      if ((a[i] >= 'a' && a[i] <= 'z') || (a[i] >= 'A' && a[i] <= 'Z'))
+         {
+            m++;
+            if (a[i] >= 97) b[m] = a[i] - 32;
+            else b[m] = a[i];
+            t[m] = i;
+         }
+    for (int i = 1; i <= m; i++)
+      {
+          check(i - 1, i + 1);
+          check(i, i + 1);
+      }
+   printf ("%d\n", max);
+   for (int i = left; i <= right; i++)
+     printf ("%c", a[i]);
+   printf ("\n");
+}/*
+TASK:calfflac
+LANG:C++
+*/
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <cstring>
+#include <climits>
+#include <algorithm>
+ 
+#define Maxn 50000
+#define Maxm 16
+#define Maxb 10000
+#define Fin "calfflac.in"
+#define Fout "calfflac.out"
+ 
+using namespace std;
+ifstream fin(Fin);
+ofstream fout(Fout);
+ 
+int Left[Maxn+1],Right[Maxn+1],A[Maxn+1],Stack[Maxn+1],Posi[Maxn+1];
+int s[Maxn+1],SA[Maxn+1],Rank[Maxn+1],h[Maxn+1],Height[Maxn+1];
+int Log2n[Maxb+1],Kind[Maxb+1];
+int Block[Maxb+1][Maxm+1];
+int Q[10000+1][13+1][13+1];
+int Temp[13+1];
+int Eular[2*Maxn+1],D[2*Maxn+1];
+int n,Count,Head,SOpen,l,b;
+ 
+int Min(int a,int b);
+void Push(int x);
+int Top();
+int Pop();
+void BuildCT();
+void DFS(int X,int w);
+void Init();
+void Work(int w);
+void InitInRmq(int x,int w);
+void InitSTBlock();
+int GetBlockRmq(int s,int t);
+int GetInRmq(int x,int s,int t);
+int GetRmq(int s,int t);
+ 
+int GetInRmq(int x,int s,int t)
+{
+	int GetInRmq;
+	GetInRmq=Q[Kind[x]][s][t];
+	return GetInRmq;
+}
+ 
+int GetBlockRmq(int s,int t)
+{
+	long GetBlockRmq;
+	long Len;
+	Len=Log2n[t-s+1];
+	GetBlockRmq=Min(Block[s][Len],Block[t-(1<<Len)+1][Len]);
+	return GetBlockRmq;
+}
+ 
+void InitSTBlock()
+{
+	long i,j,t,M=0;
+	l=0;
+	while((1<<l)<=Count)
+		l++;
+	l--;
+	l=l/2;
+	if(l==0)
+		l=1;
+	t=0;
+	b=1;
+	D[0]=LONG_MAX;
+	for(i=1;i<=Count;i++)
+	{
+		if(t==l)
+		{
+			Block[b][0]=A[Eular[M]];
+			t=0;
+			b++;
+			M=0;
+		}
+		if(D[i]<D[M])
+			M=i;
+		t++;
+	}
+	Block[b][0]=M;
+	t=1;
+	while((1<<t)-1<=b)
+	{
+		for(i=1<<(t-1);i<=(1<<t)-1;i++)
+			Log2n[i]=t-1;
+		t++;
+	}
+	for(i=1<<(t-1);i<=b;i++)
+		Log2n[i]=t-1;
+	for(i=1;i<=t;i++)
+	{
+		for(j=1;j<=b-(1<<i)+1;j++)
+			Block[j][i]=Min(Block[j][i-1],Block[j+(1<<(i-1))][i-1]);
+	}
+	Temp[0]=LONG_MAX;
+	InitInRmq(2,0);
+	M=0;
+	for(i=1;i<=b-1;i++)
+	{
+		t=0;
+		for(j=1;j<=l-1;j++)
+		{
+			t=t*2;
+			if(D[M+j+1]>D[M+j])
+				t++;
+		}
+		Kind[i]=t;
+		M+=l;
+	}
+	t=0;
+	for(j=M+1;j<=Count-1;j++)
+	{
+		t=t*2;
+		if(D[j+1]>D[j])
+			t++;
+	}
+	for(j=Count;j<=M+l-1;j++)
+		t=t*2;
+	Kind[b]=t;
+}
+ 
+void InitInRmq(int x,int w)
+{
+	if(x==l+1)
+		Work(w);
+	else
+	{
+		Temp[x]=Temp[x-1]+1;
+		InitInRmq(x+1,w*2+1);
+		Temp[x]=Temp[x-1]-1;
+		InitInRmq(x+1,w*2);
+	}
+}
+ 
+void Work(int w)
+{
+	int i,j,M;
+	for(i=1;i<=l;i++)
+	{
+		M=0;
+		for(j=i;j<=l;j++)
+		{
+			if(Temp[j]<Temp[M])
+				M=j;
+			Q[w][i][j]=M;
+		}
+	}
+}
+ 
+int sx[Maxn+1];
+int sw[Maxn+1];
+int sn[Maxn+1];
+ 
+void DFS(int X,int w)
+{
+	sx[0]=X;sw[0]=w;sn[0]=0;
+	int dep=0;
+	while(dep>=0){
+		switch(dep[sn]){
+			case 1:goto label1;
+			case 2:goto label2;
+		}
+		Count++;
+		Eular[Count]=sx[dep];
+		D[Count]=sw[dep];
+		if(Posi[sx[dep]]==0)
+			Posi[sx[dep]]=Count;
+		if(Left[sx[dep]]>0){
+			sx[dep+1]=Left[sx[dep]];
+			sw[dep+1]=sw[dep]+1;
+			sn[dep]=1;sn[dep+1]=0;dep++;
+			continue;
+label1:     Count++;
+			Eular[Count]=sx[dep];
+			D[Count]=sw[dep];
+		}
+		if(Right[sx[dep]]>0){
+			sx[dep+1]=Right[sx[dep]];
+			sw[dep+1]=sw[dep]+1;
+			sn[dep]=2;sn[dep+1]=0;dep++;
+			continue;
+label2:     Count++;
+			Eular[Count]=sx[dep];
+			D[Count]=sw[dep];
+		}
+		dep--;
+	}
+}
+ 
+void BuildCT()
+{
+	int P;
+	P=0;
+	while((A[Count]<A[Top()])&&(SOpen>0))
+		P=Pop();
+	Right[Top()]=Count;
+	if(P!=0)
+	{
+		if(P==Head)
+			Head=Count;
+		Left[Count]=P;
+	}
+	Push(Count);
+}
+ 
+int Pop()
+{
+	int Pop;
+	Pop=Stack[SOpen];
+	SOpen--;
+	return Pop;
+}
+ 
+int Top()
+{
+	int Top;
+	Top=Stack[SOpen];
+	return Top;
+}
+ 
+void Push(int x)
+{
+	SOpen++;
+	Stack[SOpen]=x;
+}
+ 
+int Min(int a,int b)
+{
+	int Min;
+	if(a<b)
+		Min=a;
+	else
+		Min=b;
+	return Min;
+}
+ 
+inline bool leq(int a1, int a2, int b1, int b2) // lexicographic order
+{
+	return(a1 < b1 || a1 == b1 && a2 <= b2);
+} // for pairs
+ 
+inline bool leq(int a1, int a2, int a3, int b1, int b2, int b3)
+{
+	return(a1 < b1 || a1 == b1 && leq(a2,a3, b2,b3));
+} // and triples
+ 
+// stably sort a[0..n-1] to b[0..n-1] with keys in 0..K from r
+static void radixPass(int* a, int* b, int* r, int n, int K)
+{
+	// count occurrences
+	int* c = new int[K + 1]; // counter array
+	for (int i = 0; i <= K; i++) c[i] = 0; // reset counters
+	for (int i = 0; i < n; i++) c[r[a[i]]]++; // count occurrences
+	for (int i = 0, sum = 0; i <= K; i++) // exclusive prefix sums
+	{
+		int t = c[i]; c[i] = sum; sum += t;
+	}
+	for (int i = 0; i < n; i++) b[c[r[a[i]]]++] = a[i]; // sort
+	delete [] c;
+}
+ 
+// find the suffix array SA of T[0..n-1] in {1..K}^n
+// require T[n]=T[n+1]=T[n+2]=0, n>=2
+void suffixArray(int* T, int* SA, int n, int K) {
+ 
+	int n0=(n+2)/3, n1=(n+1)/3, n2=n/3, n02=n0+n2;
+	int* R = new int[n02 + 3]; R[n02]= R[n02+1]= R[n02+2]=0;
+	int* SA12 = new int[n02 + 3]; SA12[n02]=SA12[n02+1]=SA12[n02+2]=0;
+	int* R0 = new int[n0];
+	int* SA0 = new int[n0];
+ 
+	//******* Step 0: Construct sample ********
+	// generate positions of mod 1 and mod 2 suffixes
+	// the "+(n0-n1)" adds a dummy mod 1 suffix if n%3 == 1
+	for (int i=0, j=0; i < n+(n0-n1); i++) if (i%3 != 0) R[j++] = i;
+ 
+	//******* Step 1: Sort sample suffixes ********
+	// lsb radix sort the mod 1 and mod 2 triples
+	radixPass(R , SA12, T+2, n02, K);
+	radixPass(SA12, R , T+1, n02, K);
+	radixPass(R , SA12, T , n02, K);
+	// find lexicographic names of triples and
+	// write them to correct places in R
+ 
+	int name = 0, c0 = -1, c1 = -1, c2 = -1;
+	for (int i = 0; i < n02; i++) {
+		if (T[SA12[i]] != c0 || T[SA12[i]+1] != c1 || T[SA12[i]+2] != c2)
+		{
+			name++; c0 = T[SA12[i]]; c1 = T[SA12[i]+1]; c2 = T[SA12[i]+2];
+		}
+		if (SA12[i] % 3 == 1) { R[SA12[i]/3] = name; } // write to R1
+		else {
+			R[SA12[i]/3 + n0] = name;
+		} // write to R2
+	}
+	// recurse if names are not yet unique
+	if (name < n02) {
+		suffixArray(R, SA12, n02, name);
+		// store unique names in R using the suffix array
+		for (int i = 0; i < n02; i++) R[SA12[i]] = i + 1;
+	} else // generate the suffix array of R directly
+		for (int i = 0; i < n02; i++) SA12[R[i] - 1] = i;
+ 
+	//******* Step 2: Sort nonsample suffixes ********
+	// stably sort the mod 0 suffixes from SA12 by their first character
+	for (int i=0, j=0; i < n02; i++) if (SA12[i] < n0) R0[j++] = 3*SA12[i];
+	radixPass(R0, SA0, T, n0, K);
+ 
+	//******* Step 3: Merge ********
+	// merge sorted SA0 suffixes and sorted SA12 suffixes
+	for (int p=0, t=n0-n1, k=0; k < n; k++) {
+#define GetI() (SA12[t] < n0 ? SA12[t] * 3 + 1 : (SA12[t] - n0) * 3 + 2)
+		int i = GetI(); // pos of current offset 12 suffix
+		int j = SA0[p]; // pos of current offset 0 suffix
+		if (SA12[t] < n0 ? // different compares for mod 1 and mod 2 suffixes
+			leq(T[i], R[SA12[t] + n0], T[j], R[j/3]) :
+		leq(T[i],T[i+1],R[SA12[t]-n0+1], T[j],T[j+1],R[j/3+n0]))
+		{ // suffix from SA12 is smaller
+			SA[k] = i; t++;
+			if (t == n02) // done --- only SA0 suffixes left
+				for (k++; p < n0; p++, k++) SA[k] = SA0[p];
+		} else { // suffix from SA0 is smaller
+			SA[k] = j; p++;
+			if (p == n0) // done --- only SA12 suffixes left
+				for (k++; t < n02; t++, k++) SA[k] = GetI();
+		}
+	}
+	delete [] R; delete [] SA12; delete [] SA0; delete [] R0;
+}
+ 
+void Init()
+{
+	memset(Q,0,sizeof(Q));
+	int i;
+	for(i=1;i<=n;i++)
+		A[i]=Height[i];
+	Count=0;
+	Head=1;
+	Push(1);
+	for(Count=2;Count<=n;Count++)
+		BuildCT();
+	Count=0;
+	DFS(Head,0);
+}
+ 
+int GetRmq(int s,int t)
+{
+	int i,bs,bt,tb,tl,tr,x;
+	s=Posi[s];
+	t=Posi[t];
+	if(s>t)
+	{
+		bs=s;
+		s=t;
+		t=bs;
+	}
+	bs=(s-1)/l+2;
+	bt=(t-1)/l;
+	if(bs<=bt)
+		tb=GetBlockRmq(bs,bt);
+	else
+		tb=INT_MAX;
+	if(bs<=bt+1)
+	{
+		tl=A[Eular[GetInRmq(bs-1,s-(bs-2)*l,l)+(bs-2)*l]];
+		tr=A[Eular[GetInRmq(bt+1,1,t-bt*l)+bt*l]];
+	}
+	else
+	{
+		tl=INT_MAX;
+		tr=A[Eular[GetInRmq(bt+1,s-bt*l,t-bt*l)+bt*l]];
+	}
+	x=tb;
+	if(tl<x)
+		x=tl;
+	if(tr<x)
+		x=tr;
+	return x;
+}
+ 
+void InitLcp()
+{
+	memset(h,0,sizeof(h));
+	int j,t;
+	h[0]=1;
+	for(int i=1;i<=n;i++){
+		if(h[i-1]>0)
+			j=h[i-1]-1;
+		t=SA[Rank[i]+1];
+		while(s[i+j]==s[t+j]) j++;
+		h[i]=j;
+	}
+	for(int i=1;i<=n;i++) Height[i]=h[SA[i]];
+}
+ 
+int main()
+{
+	char ch;
+	int j=0;
+	for(int i=0;fin>>ch;i++){
+		if(isalpha(ch)){
+			s[j]=tolower(ch);
+			j++;
+		}
+	}
+	n=j;
+	s[n]='#';
+	for(int i=0;i<n;i++) s[n+i+1]=s[n-i-1];
+	n=n*2+2;
+	s[n-1]='$';
+	suffixArray(s,SA,n,255);
+	if(n==1){
+		SA[1]=1;
+		Rank[1]=1;
+		s[1]=s[0];
+	}else{
+		for(int i=n;i>0;i--){
+			SA[i]=SA[i-1]+1;
+			s[i]=s[i-1];
+			Rank[SA[i]]=i;
+		}
+	}
+	SA[0]=0;s[0]=0;
+	InitLcp();
+	Init();
+	InitSTBlock();
+	int maxp=0,maxc=0;bool odd;
+	for(int i=1;i<=(n-2)/2;i++){
+		int jason330=min(Rank[i],Rank[n-i]);
+		int jason770=max(Rank[i],Rank[n-i]);
+		int temp=GetRmq(jason330,jason770-1);
+		if(temp>maxp){
+			maxp=temp;maxc=i;odd=true;
+		}
+		jason330=min(Rank[i],Rank[n-i+1]);
+		jason770=max(Rank[i],Rank[n-i+1]);
+		temp=GetRmq(jason330,jason770-1);
+		if(temp>maxp){
+			maxp=temp;maxc=i;odd=false;
+		}
+	}
+	int start,end;
+	if(odd) start=maxc-maxp+1,end=maxc+maxp-1;
+	else start=maxc-maxp,end=maxc+maxp-1;
+	if(start>((n-2)/2)) {
+		int ttt=start;
+		start=n-end;
+		end=n-ttt;
+	}
+	fin.close();
+	ifstream ans(Fin);
+	fout<<end-start+1<<endl;
+	j=0;
+	while(j<start){
+		ans.get(ch);
+		if(isalpha(ch)) j++;
+	}
+	ans.unget();
+	while(j<=end){
+		ans.get(ch);
+		fout.put(ch);
+		if(isalpha(ch)) j++;
+	}
+	fout<<endl;
+}
+{Orz神牛，这是传说中O(n)RMQ(+-1RMQ+LCA+笛卡尔树)+O(n) Suffix Array}程序三：
+/*
+ ID:nettle99
+ PROG:calfflac
+ LANG:C++
+ */
+ 
+ #include <fstream>
+ using namespace std;
+ 
+ ifstream fin("calfflac.in");
+ ofstream fout("calfflac.out");
+ int a[20000][2]={0},mx=1,lef=0,rig=0;
+ int Deal(string s)
+ {
+ int l=s.size(),k=0;
+   for (int i=0;i<l;i++)
+     {
+       if ('a'<=s[i] && s[i]<='z') {a[k][0]=s[i]-'a'+1;a[k][1]=i;k++;}
+       if ('A'<=s[i] && s[i]<='Z') {a[k][0]=s[i]-'A'+1;a[k][1]=i;k++;}
+     }
+   return k;
+ }
+ 
+ void Max(int i,int m)
+ {
+ int l=i-1,r=i+1,le=0,ri=0;
+   while (a[l][0]==a[r][0])
+     {
+       le=l;ri=r;
+       if (l>-1) l--;
+       if (r<m) r++;
+       if (i-l!=r-i) break;
+     }
+   if (ri-le+1>mx) {lef=a[le][1];rig=a[ri][1];mx=ri-le+1;}
+   if (a[i][0]==a[i+1][0])
+     {
+       l=i-1;r=i+2;
+       while (a[l][0]==a[r][0])
+         {
+           le=l;ri=r;
+           if (l>-1) l--;
+           if (r<m) r++;
+           if (i-l!=r-i-1) break;
+         }
+       if (ri-le+1>mx) {lef=a[le][1];rig=a[ri][1];mx=ri-le+1;}
+     }
+   return ;
+ }
+ 
+  int main()
+ {
+ char c;
+ string s="";
+   while (!fin.eof())
+     {
+       c=fin.get();
+       if (!fin.eof()) s+=c;
+     }
+ int m;
+   m=Deal(s);
+   for (int i=1;i<m-1;i++)
+     Max(i,m);
+   fout<<mx<<endl;
+   for (int i=lef;i<=rig;i++)
+     fout<<s[i];
+   fout<<endl;
+   fin.close();
+   fout.close();
+   return 0;
+ }/*
+  ID:sgfreed1
+  PROG:calfflac
+  LANG:C++
+*/
+ 
+#include <fstream>
+#include <string>
+ 
+ 
+using namespace std;
+ 
+ifstream fin("calfflac.in");
+ofstream fout("calfflac.out");
+ 
+const long maxn=20001;
+ 
+long maxhead,maxend,maxr,f[maxn],t=0;
+ 
+string a="",b="";
+ 
+bool flag;
+ 
+int main()
+{
+	while(!fin.eof())
+	{
+	a+=fin.get();
+	}
+	for(int i=0;i<a.size();++i)
+	{
+	if(a[i]>='a'&&a[i]<='z')b+=a[i],f[t++]=i;
+	if(a[i]>='A'&&a[i]<='Z')b+=char(a[i]-'A'+'a'),f[t++]=i;
+	}
+	for(long long i=1;i<b.size();++i)
+	{
+		long long m=i-1,n=i+1,r=0;
+		while(b[m]==b[n])
+		{
+			r++,m--,n++,flag=1;
+		}
+		if(2*r+1>maxr)
+			maxr=2*r+1,maxhead=f[i-r],maxend=f[i+r];
+		m=i-1,n=i,r=0;
+		while(b[m]==b[n])
+		{
+			r++,m--,n++;
+		}
+		if(2*r>maxr)
+		    maxr=2*r,maxhead=f[i-r],maxend=f[i+r-1];
+	}
+	if(!flag)
+	{
+		fout<<1<<endl;
+		fout.close();
+		return 0;
+	}
+	fout<<maxr<<endl;
+	for(int i=maxhead;i<=maxend;++i)
+	fout<<a[i];
+	fout<<endl;
+	fout.close();
+	return 0;
+}

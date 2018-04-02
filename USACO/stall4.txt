@@ -1,0 +1,331 @@
+匈牙利算法
+/*
+  ID:p.tiany1
+  PROG:stall4
+  LANG:C++
+*/
+#  include<iostream>
+#  include<cstring>
+using namespace std;
+const  int  maxn=208;
+bool  get[maxn];
+int  n,m,a[maxn][maxn],ans,match[maxn];
+void  init()
+{
+      freopen("stall4.in","r",stdin);
+      freopen("stall4.out","w",stdout);
+      int  i,j;
+      scanf("%d%d",&n,&m);      
+      for  (i=1;i<=n;i++)
+      {
+           scanf("%d",&a[i][0]);
+           for  (j=1;j<=a[i][0];j++)
+                scanf("%d",&a[i][j]);
+      }
+}
+bool  dfs(int k)
+{
+      int i,j;
+      for  (i=1;i<=a[k][0];i++)
+      {
+           j=a[k][i];     
+           if  (!get[j])//判断j是否被搜过（即是否在增广路上或是否永远不可能在增广路上） 
+           {
+                get[j]=1;   //标记被搜过 （即在增广路上或永远不可能在增广路上） 
+                if  (!match[j]||dfs(match[j]))//match[j]表示他所配对的奶牛 
+                {
+                     match[j]=k;
+                     return  true;   
+                }
+           }
+      }           
+      return  false;
+}
+void  work()
+{
+      int i;
+      for   (i=1;i<=n;i++)
+      {
+            if  (dfs(i))  ans++;   //dfs(i)表示以i为一个端点的增广路是否存在   
+            memset(get,0,sizeof(get));
+      }      
+ 
+}
+void  out()
+{
+      printf("%d\n",ans);      
+      fclose(stdin);
+      fclose(stdout);
+}
+int  main()
+{
+     init();     
+     work();
+     out();
+     return  0;
+}SAP算法(构造网络流)
+思路清晰，代码简短
+/*
+ID:ybojan2
+LANG:C++
+TASK:stall4
+*/
+#include <fstream>
+using namespace std;
+ifstream cin("stall4.in");
+ofstream cout("stall4.out");
+ 
+int n,m,c[500][500],h[500],vh[500],flow,delta;
+bool found;
+void aug(int v)
+{
+     if (v==n){
+               flow+=delta;
+               found=true;
+               return;
+               }
+     int i,temp=delta,minh=n-1;
+     for (i=1;i<=n;i++)
+         if (c[v][i]>0){
+                        if (h[i]+1==h[v]){
+                                          delta=min(delta,c[v][i]);
+                                          aug(i);
+                                          if (h[1]>=n) return;
+                                          if (found) break;
+                                          delta=temp;
+                                          }
+                        minh=min(minh,h[i]);
+                        }
+     if (found){
+                c[v][i]-=delta;
+                c[i][v]+=delta;
+                }
+     else{
+          vh[h[v]]--;
+          if (vh[h[v]]==0) h[1]=n;
+          h[v]=minh+1;
+          vh[h[v]]++;
+          }
+}
+int main()
+{
+    memset(c,0,sizeof(c));
+    memset(h,0,sizeof(h));
+    memset(vh,0,sizeof(vh));
+    cin>>n>>m;
+    for (int i=1;i<=n;i++)
+    {
+        int s,x;
+        cin>>s;
+        for (int j=1;j<=s;j++)
+        {
+            cin>>x;
+            c[i+1][n+1+x]=1;
+        }
+    }
+    for (int i=1;i<=n;i++) c[1][1+i]=1;
+    for (int i=1;i<=m;i++) c[i+1+n][n+m+2]=1;
+    n=n+m+2;
+    vh[0]=n;
+    flow=0;
+    while (h[1]<n)
+    {
+          delta=2147483647;
+          found=false;
+          aug(1);
+    }
+    cout<<flow<<endl;
+    return 0;
+}
+匈牙利算法
+/*
+ID: cmykrgb1
+PROG: stall4
+LANG: C++
+*/
+//written by CmYkRgB123
+#include <iostream>
+#include <fstream>
+#define MAX 402
+#define PV 200
+using namespace std;
+ifstream fi("stall4.in");
+ofstream fo("stall4.out");
+int N,M,mat;
+int adjl[MAX][MAX];
+int match[MAX];
+bool onpath[MAX];
+ 
+void init()
+{
+	int i,j,a,b;
+	fi >> N >> M;
+	for (i=1;i<=N;i++)
+	{
+		fi >> a;
+		for (j=1;j<=a;j++)
+		{
+			fi >> b;
+			adjl[i][ ++adjl[i][0] ]=b+PV;
+			adjl[b+PV][ ++adjl[b+PV][0] ]=i;//这个代码此处貌似有问题！
+		}
+	}
+}
+ 
+bool cross(int i)
+{
+	int k,j;
+	for (k=1;k<=adjl[i][0];k++)
+	{
+		j=adjl[i][k];
+		if (!onpath[j])
+		{
+			onpath[j]=true;
+			if (!match[j] || cross(match[j]))
+			{
+				match[j]=i;
+				return true;
+			}
+		}
+	}
+	return false;
+}
+ 
+void hungary()
+{
+	int i;
+	for (i=1;i<=N;i++)
+	{
+		if (cross(i))
+			mat++;
+		memset(onpath,0,sizeof(onpath));
+	}
+}
+ 
+void print()
+{
+	fo << mat << endl;
+	fi.close();
+	fo.close();
+}
+ 
+int main()
+{
+	init();
+	hungary();
+	print();
+	return 0;
+}USER: CmYkRgB CmYkRgB [cmykrgb1]
+TASK: stall4
+LANG: C++
+Compiling...
+Compile: OK
+Executing...
+  Test 1: TEST OK [0.022 secs, 3476 KB]
+  Test 2: TEST OK [0.000 secs, 3476 KB]
+  Test 3: TEST OK [0.011 secs, 3472 KB]
+  Test 4: TEST OK [0.000 secs, 3476 KB]
+  Test 5: TEST OK [0.000 secs, 3476 KB]
+  Test 6: TEST OK [0.000 secs, 3472 KB]
+  Test 7: TEST OK [0.000 secs, 3472 KB]
+  Test 8: TEST OK [0.000 secs, 3472 KB]
+  Test 9: TEST OK [0.011 secs, 3476 KB]
+All tests OK.
+
+直接Edmonds-Karp也不是想象中那么慢，不知道用pascal做的那位怎么超时了?
+Compiling...
+Compile: OK
+Executing...
+  Test 1: TEST OK [0.000 secs, 6840 KB]
+  Test 2: TEST OK [0.011 secs, 6836 KB]
+  Test 3: TEST OK [0.000 secs, 6836 KB]
+  Test 4: TEST OK [0.000 secs, 6840 KB]
+  Test 5: TEST OK [0.000 secs, 6836 KB]
+  Test 6: TEST OK [0.032 secs, 6836 KB]
+  Test 7: TEST OK [0.151 secs, 6840 KB]
+  Test 8: TEST OK [0.464 secs, 6840 KB]
+  Test 9: TEST OK [0.421 secs, 6840 KB]
+All tests OK.
+下面是模型转换的全解
+/*
+TASK:stall4
+LANG:C++
+*/
+ 
+//这样比匈牙利慢不少 
+#include <fstream>
+#define maxint 1000000000
+ 
+using namespace std;
+ 
+ifstream cin ("stall4.in");
+ofstream cout ("stall4.out");
+ 
+long n,m;
+long i,j,k;
+long ans,add;
+long x,y,len;
+long b[1010];
+long c[1010];
+long d[1010];
+long a[1010][1010];
+ 
+long find ()
+{
+     long f;
+     for (i=0;i<=n+m+1;i++)//这里的总数不要错 
+         {
+         b[i]=c[i]=0;
+         d[i]=-1;
+         }
+     b[0]=maxint;
+     while (1)
+           {
+           k=0;
+           j=-1;
+           for (i=0;i<=n+m+1;i++)//这里的总数不要错 
+               if ((c[i]==0)&&(b[i]>k)) {
+                                        k=b[i];
+                                        j=i;
+                                        }
+           if (j==-1) return (0);
+           if (j==n+m+1) break;//这里的总数不要错 
+           c[j]=1;
+           for (i=0;i<=n+m+1;i++)//这里的总数不要错 
+               if ((k>b[i])&&(a[j][i]>b[i])) {
+                                             b[i]=min(k,a[j][i]);
+                                             d[i]=j;
+                                             }
+           }
+     i=n+m+1;//这里的总数不要错 
+     while (d[i]!=-1)
+           {
+           a[d[i]][i]-=b[n+m+1];//这里的总数不要错 
+           a[i][d[i]]+=b[n+m+1];//这里的总数不要错 
+           i=d[i];
+           }
+     return (b[n+m+1]);//这里的总数不要错 
+}
+ 
+int main ()
+{
+    cin>>n>>m;//一共有m+n+2个点,0是源,m+n+1是汇,1~n是左轴, n+1~n+m是右轴
+    for (i=1;i<=n;i++)
+        {
+        cin>>x;
+        for (j=1;j<=x;j++)
+            {
+            cin>>y;
+            y+=n;//处理右轴 
+            a[i][y]=1;
+            }
+        }
+    for (i=1;i<=n;i++)//源到左轴连边 
+        a[0][i]=1;
+    for (i=n+1;i<=n+m;i++)//右轴到汇连边 
+        a[i][n+m+1]=1;
+    while (add=find ())
+          ans+=add;
+    cout<<ans<<endl;
+    return (0);
+}用Edmonds-Karp + BFS找增广路最慢的低于0.1s

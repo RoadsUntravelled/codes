@@ -1,0 +1,75 @@
+#include <stdio.h>
+ 
+const int code[10][3] = {{0,0,0},{1,0,0},{2,0,0},{3,0,0},{1,1,0},{0,1,0},{1,1,0},{2,1,0},{3,1,0},{1,0,1}},
+	s[10][30] = {{0,0,0},{1,0,0},{3,0,0},{6,0,0},{7,1,0},{7,2,0},{8,3,0},{10,4,0},{13,5,0},{14,5,1}};
+int res[9];
+ 
+int main()
+{
+	int n;
+	freopen("preface.in", "r", stdin);
+	freopen("preface.out", "w", stdout);
+	scanf("%d", &n);
+	for (int pri = 0, k = 1; k <= n; k *= 10, pri += 2)
+	{
+		for (int i = 0; i < 3; ++i)
+		{
+			res[i+pri] += n/(k*10)*s[9][i]*k;
+			if (n/k%10) res[i+pri] += s[n/k%10-1][i]*k;
+			res[i+pri] += (n%k+1)*code[n/k%10][i];
+		}
+	}
+	for (int i = 0; i < 7; ++i)
+		if (res[i]) printf("%c %d\n", "IVXLCDM"[i], res[i]);
+}
+ 
+/*
+PROB:preface
+LANG:C++
+*/
+#include<stdio.h>
+#include<assert.h>
+ 
+int main()
+{
+    FILE *fin,*fout;
+    int i,v,x,l,c,d,m,j,k,n;
+    fin=fopen("preface.in","r");
+    fout=fopen("preface.out","w");
+    assert(fin!=NULL && fout!=NULL);
+    fscanf(fin,"%d",&n);
+    i=0;
+    v=0;
+    x=0;
+    l=0;
+    c=0;
+    d=0;
+    m=0;
+      for (j=1;j<=n;j++)
+        {
+          k=j;
+            while (k>0)
+              {
+                  if (k>=1000) {k-=1000;m++;}
+                  if (k>=900 && k<1000) {k-=900;c++;m++;}
+                  if (k>=500 && k<900) {k-=500;d++;}
+                  if (k>=400 && k<500) {k-=400;c++;d++;}
+                  if (k>=100 && k<400) {k-=100;c++;}
+                  if (k>=90 && k<100) {k-=90;x++;c++;}
+                  if (k>=50 && k<90) {k-=50;l++;}
+                  if (k>=40 && k<50) {k-=40;x++;l++;}
+                  if (k>=10 && k<40) {k-=10;x++;}
+                  if (k>=9 && k<10) {k-=9;i++;x++;}
+                  if (k>=5 && k<9) {k-=5;v++;}
+                  if (k>=4 && k<5) {k-=4;i++;v++;}
+                  if (k>=1 && k<4) {k-=1;i++;}
+              }
+        }
+      if (i!=0) fprintf(fout,"I %d\n",i);
+      if (v!=0) fprintf(fout,"V %d\n",v);
+      if (x!=0) fprintf(fout,"X %d\n",x);
+      if (l!=0) fprintf(fout,"L %d\n",l);
+      if (c!=0) fprintf(fout,"C %d\n",c);
+      if (d!=0) fprintf(fout,"D %d\n",d);
+      if (m!=0) fprintf(fout,"M %d\n",m);
+}

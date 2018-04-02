@@ -1,0 +1,431 @@
+/*
+USER: Long Guo [jscompa1]
+TASK: rectbarn
+LANG: C++
+ 
+Compiling...
+Compile: OK
+ 
+Executing...
+   Test 1: TEST OK [0.000 secs, 11612 KB]
+   Test 2: TEST OK [0.000 secs, 11612 KB]
+   Test 3: TEST OK [0.000 secs, 11616 KB]
+   Test 4: TEST OK [0.011 secs, 11616 KB]
+   Test 5: TEST OK [0.011 secs, 11612 KB]
+   Test 6: TEST OK [0.043 secs, 11608 KB]
+   Test 7: TEST OK [0.076 secs, 11612 KB]
+   Test 8: TEST OK [0.346 secs, 11616 KB]
+   Test 9: TEST OK [0.475 secs, 11612 KB]
+   Test 10: TEST OK [0.464 secs, 11616 KB]
+ 
+All tests OK.
+Your program ('rectbarn') produced all correct answers!  This is your
+submission #6 for this problem.  Congratulations!
+ 
+C++真快啊 比我用PASCAL写快了0.3s
+但是空间多了1.5M
+就当是空间换时间吧
+不知道为什么,我用PASCAL写的时候只用一维的f,l,r就对了,用C++在第九个点挂了 
+*/
+#include<iostream>
+#define OO 10000000
+using namespace std;
+int main()
+{
+    int i,j,R,C,P,x,y,last,now,ans,f[2][3001],l[2][3001],r[2][3001],left[3001],right[3002];
+    bool broke[3001][3001];
+    freopen("rectbarn.in","r",stdin);
+    freopen("rectbarn.out","w",stdout);
+    cin>>R>>C>>P;
+    for (i=0;i<P;i++)
+    {
+        cin>>x>>y;
+        broke[y][x]=true;//郁闷...改成broke[x][y]就错了
+    }
+    ans=1;now=0;last=1;
+    for (i=1;i<=C;i++)
+    {
+        now^=1;last^=1;
+        left[0]=0;right[R+1]=0;
+        for (j=1;j<=R;j++)
+          if (broke[i][j]) left[j]=0;
+          else left[j]=left[j-1]+1;
+        for (j=R;j>0;j--)
+          if (broke[i][j]) right[j]=0;
+          else right[j]=right[j+1]+1;
+        for (j=1;j<=R;j++)
+        {
+            if (broke[i][j])
+            {
+                            f[now][j]=0;l[now][j]=OO;r[now][j]=OO;
+            }
+            else
+            {
+                f[now][j]=f[last][j]+1;
+                l[now][j]=min(l[last][j],left[j]);
+                r[now][j]=min(r[last][j],right[j]);
+            }
+            ans=max(ans,f[now][j]*(l[now][j]+r[now][j]-1));
+        }
+    }
+    if (P==0) cout<<R*C<<endl;//特殊判断没有障碍的情况
+    else cout<<ans<<endl;
+    return 0;
+}
+My USACO solution:hi.baidu.com/pwecarCompile: OK
+ 
+Executing...
+   Test 1: TEST OK [0.011 secs, 11764 KB]
+   Test 2: TEST OK [0.000 secs, 11764 KB]
+   Test 3: TEST OK [0.000 secs, 11764 KB]
+   Test 4: TEST OK [0.011 secs, 11764 KB]
+   Test 5: TEST OK [0.000 secs, 11764 KB]
+   Test 6: TEST OK [0.032 secs, 11764 KB]
+   Test 7: TEST OK [0.043 secs, 11764 KB]
+   Test 8: TEST OK [0.130 secs, 11764 KB]
+   Test 9: TEST OK [0.194 secs, 11764 KB]
+   Test 10: TEST OK [0.184 secs, 11764 KB]
+ 
+All tests OK.
+ 
+朴素的最大子矩阵。。。
+ 
+/*
+ID: zsyzgu1
+PROG: rectbarn
+LANG: C++
+*/
+#include<stdio.h>
+ 
+const int maxn=3000+10;
+ 
+int n,m,p;
+ 
+bool map[maxn][maxn];
+ 
+int l[maxn];
+int r[maxn];
+int h[maxn];
+ 
+int min(int x,int y) //x==0 时表示不存在
+{
+    if (x<y && x!=0) return x;
+                     return y;
+}
+ 
+int max(int x,int y)
+{
+    if (x>y) return x;
+             return y;
+}
+ 
+void init()
+{   
+    scanf("%d%d%d",&n,&m,&p);
+ 
+    for (int i=1;i<=p;i++)
+    {
+        int x,y; scanf("%d%d",&x,&y);
+        map[x][y]=true;
+    }
+}
+ 
+void doit()
+{
+    int ans=0;
+ 
+    for (int i=1;i<=n;i++)
+    {
+        int k=0; //记录连续几个空格
+        for (int j=1;j<=m;j++)
+            if (map[i][j]==false)
+            {
+                h[j]=h[j]+1;
+                l[j]=min(l[j],++k);
+            } else 
+            {
+                h[j]=0;
+                l[j]=0;
+                k=0;
+            }
+ 
+        k=0;
+        for (int j=m;j>=1;j--)
+            if (map[i][j]==false)
+            {
+                r[j]=min(r[j],++k);
+                ans=max(ans,h[j]*(l[j]+r[j]-1));
+            } else
+            {
+                r[j]=0;
+                k=0;
+            }
+    }
+ 
+    printf("%d\n",ans);
+}
+ 
+int main()
+{
+    freopen("rectbarn.in"  , "r" , stdin  );
+    freopen("rectbarn.out" , "w" , stdout );
+ 
+    init();
+    doit();
+ 
+    return 0;
+}/*
+PROG:rectbarn
+LANG:C++
+ID:301523
+*/
+/* 
+1：by wkn 2：时间复杂度为RC 3：算法来源于 福州第三中学 王知昆的03年国家队集训论文《浅谈用极大化思想解决最大子矩形问题》可从OIBH下载
+4：C++的优越啊，可以动态分配数组 5：PASCAL的 oier们可以用数组的迭代来实现
+*/
+ 
+#include<fstream>
+#include<iostream>
+#include<cstdlib>// for qsort 
+using namespace std;
+ 
+ifstream fin("rectbarn.in");
+ofstream fout("rectbarn.out");
+ 
+const int MAX=100000000;
+const int Maxp=42000+1;
+const int Maxl=3000+1;
+ 
+struct Node
+{
+       int x,y;
+}a[Maxp];
+int *L[Maxl],*R[Maxl],*H[Maxl]; 
+int m,n,p,i,j;/* m,n 代表 R，C */
+ 
+ 
+int compare(const void* p1,const void* p2)
+{
+    return ( ((Node*)p1)->x- ((Node*)p2)->x )*Maxl+( ((Node*)p1)->y- ((Node*)p2)->y );
+} /* qsort 比较函数 先按横坐标再按纵坐标 */
+inline int Max(int a,int b){return a>b ? a:b;};
+inline int Min(int a,int b){return a<b ? a:b;};
+int main()
+{
+    /*initialize*/
+    fin>>m>>n>>p;
+    for (i=1;i<=p;i++) fin>>a[i].x>>a[i].y;
+    /*work:before*/
+    for (i=1;i<=m;i++)
+    {
+    p++;
+    a[p].x=i;a[p].y=0;
+    p++;
+    a[p].x=i;a[p].y=n+1;    
+    }/*预处理：将左右边界加入a中*/  
+    qsort(a+1,p,sizeof(Node),compare);
+    L[0]=new int[Maxp];
+    R[0]=new int[Maxp];
+    H[0]=new int[Maxp];
+    for (int k=0;k<=n;k++)
+    {
+        L[0][k]=MAX;
+        R[0][k]=MAX;
+        H[0][k]=0;
+    }/*赋初值*/ 
+    int point=1,ans=0;
+    /*work:main*/
+    for (i=1;i<=m;i++)
+    {
+        L[i]=new int[Maxp];
+        R[i]=new int[Maxp];
+        H[i]=new int[Maxp];
+        for (int k=0;k<=n;k++)
+        {
+        L[i][k]=MAX;
+        R[i][k]=MAX;
+        H[i][k]=0;
+        }    
+        for (j=0;j<=n+1;j++)
+        {
+            bool pp=true;
+            while (i==a[point].x && j==a[point].y) {point++;pp=false;}
+            if (pp)
+                 {
+                 H[i][j]=H[i-1][j]+1;
+                 L[i][j]=Min(L[i-1][j],j-a[point-1].y);
+                 R[i][j]=Min(R[i-1][j],a[point].y-j);
+                 int t=H[i][j]*(L[i][j]+R[i][j]-1);
+                 if (t>ans) ans=t;
+                 } 
+        }
+        delete [] L[i-1];
+        delete [] R[i-1];
+        delete [] H[i-1];/*删除空间*/ 
+    }
+    fout<<ans<<endl;
+    return 0;
+}
+/*
+TASK:rectbarn
+LANG:C++
+*/
+ 
+#include<iostream>
+#include<fstream>
+using namespace std;
+ 
+int m,n;
+bool x[3003][3003];
+short c[3003][2];
+int bef[3002],bac[3002];
+int r;
+ 
+void search(int l)
+{
+for(int i=1;i<=n;i++)
+{
+int j=i-1;
+while(j>=1 && c[j][l%2]>=c[i][l%2])
+j=bef[j];
+bef[i]=j;
+}
+for(int i=n;i>=1;i--)
+{
+int j=i+1;
+while(j<=n && c[j][l%2]>=c[i][l%2])
+j=bac[j];
+bac[i]=j;
+}
+for(int i=1;i<=n;i++)
+r=max(r,(bac[i]-bef[i]-1)*c[i][l%2]);
+}
+ 
+int main()
+{
+ifstream cin("rectbarn.in");
+ofstream cout("rectbarn.out");
+ 
+int p;
+cin>>n>>m>>p;
+memset(x,0,sizeof(x));
+memset(c,0,sizeof(c));
+r=0;
+for(int i=1;i<=n;i++)
+for(int j=1;j<=m;j++)
+x[i][j]=1;
+for(int i=1;i<=p;i++)
+{
+int t1,t2;
+cin>>t1>>t2;
+x[t1][t2]=0;
+}
+for(int j=m;j>=1;j--)
+{
+for(int i=1;i<=n;i++)
+if(x[i][j])
+c[i][j%2]=c[i][(j+1)%2]+1;
+else
+c[i][j%2]=0;
+search(j);
+}
+cout<<r<<endl;
+//system("pause");
+return 0;
+}求最大子矩形，可以参见国家队论文的极大化思想，复杂度O（n*m），那个悬线的思想太NB了。。
+ 
+另外注意用滚动数组优化内存。。
+ 
+Compiling...
+Compile: OK
+ 
+Executing...
+   Test 1: TEST OK [0.011 secs, 15056 KB]
+   Test 2: TEST OK [0.011 secs, 15056 KB]
+   Test 3: TEST OK [0.011 secs, 15056 KB]
+   Test 4: TEST OK [0.000 secs, 15056 KB]
+   Test 5: TEST OK [0.011 secs, 15056 KB]
+   Test 6: TEST OK [0.043 secs, 15056 KB]
+   Test 7: TEST OK [0.065 secs, 15056 KB]
+   Test 8: TEST OK [0.216 secs, 15056 KB]
+   Test 9: TEST OK [0.313 secs, 15056 KB]
+   Test 10: TEST OK [0.302 secs, 15056 KB]
+ 
+All tests OK.
+YOUR PROGRAM ('rectbarn') WORKED FIRST TIME!  That is fantastic
+-- and a rare thing.  Please accept these special automated
+congratulations.
+ 
+ 
+ 
+/*
+	ID:echooat1
+	LANG:C++
+	TASK:rectbarn
+	*/
+#include <fstream>
+#include <cstring>
+#define max(a,b) ((a)>(b)?(a):(b))
+#define min(a,b) ((a)<(b)?(a):(b))
+#define len 3500
+using namespace std;
+ 
+ifstream fin("rectbarn.in");
+ofstream fout("rectbarn.out");
+ 
+long left_t[len]={0},right_t[len]={0},hight[len]={0};
+long left_s[len]={0},right_s[len]={0},hight_s[len]={0};
+long n,m,p;
+bool hash[len][len]={0};
+ 
+int main(int argc,char** argv){
+	fin >>n>>m>>p;
+	for(long i=1;i<=p;i++){
+		long l1,l2;
+		fin >>l1>>l2;
+		hash[l1][l2]=true;
+	}
+ 
+	for(long i=1;i<=n;i++){
+		hash[i][0]=hash[i][m+1]=true;
+	}
+	for(long j=1;j<=m;j++){
+		hash[0][j]=hash[n+1][j]=true;
+		left_s[j]=0;
+		right_s[j]=m+1;
+	}
+	long ans=0;
+	for(long i=1;i<=n;i++){
+		long l[len]={0},temp=0,r[len]={0},temp1=m+1;
+		for(long j=1;j<=m;j++){
+			if(!hash[i][j])
+				l[j]=temp+1;
+					else temp=j;
+			if(!hash[i][m-j+1])
+				r[m-j+1]=temp1-1;
+					else temp1=m-j+1;
+		}
+		for(long j=1;j<=m;j++){
+			if(hash[i][j]){
+				left_t[j]=0;
+				right_t[j]=m;
+				hight[j]=0;
+			}
+			else {
+				left_t[j]=max(l[j],left_s[j]);
+				right_t[j]=min(r[j],right_s[j]);
+				hight[j]=hight_s[j]+1;
+				ans=max(ans,hight[j]*(right_t[j]-left_t[j]+1));
+			}
+		}
+		memcpy(left_s,left_t,sizeof left_t);
+		memcpy(right_s,right_t,sizeof right_t);
+		memcpy(hight_s,hight,sizeof hight);
+		memset(left_t,0,sizeof left_t);
+		memset(right_t,0,sizeof right_t);
+		memset(hight,0,sizeof hight);
+	}
+	fout <<ans<<endl;
+	fin.close();fout.close();
+	return 0;
+}

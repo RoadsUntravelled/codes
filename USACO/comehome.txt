@@ -1,0 +1,145 @@
+/*
+ID:ybojan2
+LANG:C++
+TASK:comehome
+*/
+ 
+#include <iostream>
+#include <fstream>
+ 
+using namespace std;
+ 
+int ord(char c)
+{
+    if ((c>='a')&&(c<='z')) return (c-'a'+27);
+    if ((c>='A')&&(c<='Z')) return (c-'A'+1);
+}
+ 
+int main()
+{
+    ifstream fin("comehome.in");
+    ofstream fout("comehome.out");
+ 
+    int p,map[53][53];
+    fin>>p;
+    for (int i=1;i<=52;i++)
+        for (int j=1;j<=52;j++)
+            map[i][j]=1000000000;
+    for (int i=1;i<=p;i++)
+    {
+        char c;
+        int x,y,d;
+        fin>>c;
+        x=ord(c);
+        fin>>c;
+        y=ord(c);
+        fin>>d;
+        if (d<map[x][y]){
+                         map[x][y]=d;
+                         map[y][x]=d;
+                         }
+    }
+    for (int k=1;k<=52;k++)
+        for (int i=1;i<=52;i++)
+            for (int j=1;j<=52;j++)
+                if (map[i][k]+map[k][j]<map[i][j])
+                   map[i][j]=map[i][k]+map[k][j];
+    int res=2147483647,k;
+    for (int i=1;i<=25;i++)
+        if (map[i][26]<res){
+                          res=map[i][26];
+                          k=i;
+                          }
+    fout<<(char)(k+'A'-1)<<" "<<res<<endl;
+    return 0;
+}/*
+ID: MasterRay
+LANG: C++
+TASK: comehome
+*/
+ 
+#include <algorithm>
+#include <climits>
+#include <cstdio>
+using namespace std;
+ 
+bool flag[52] = {};
+int a[52][52], dist[52];
+ 
+int main()
+{
+	int p;
+	freopen("comehome.in", "r", stdin);
+	freopen("comehome.out", "w", stdout);
+	for (int i = 0; i < 52; ++i)
+		fill_n(a[i], 52, INT_MAX/2);
+	for (scanf("%d", &p); p; --p)
+	{
+		char u, v;
+		int w;
+		scanf("%*c%c %c%d", &u, &v, &w);
+		u = islower(u) ? u-'a' : u-'A'+26;
+		v = islower(v) ? v-'a' : v-'A'+26;
+		if (w < a[u][v])
+			a[u][v] = w, a[v][u] = w;
+	}
+	copy(a[51], a[51]+52, dist);
+	for(;;)
+	{
+		int min_dist = INT_MAX, u;
+		for (int i = 0; i < 51; ++i)
+			if (!flag[i] && dist[i] < min_dist)
+				min_dist = dist[i], u = i;
+		if (u >= 26) return printf("%c %d\n", u-26+'A', min_dist), 0;
+		flag[u] = true;
+		for (int i = 0; i < 51; ++i)
+			if (!flag[i] && dist[u]+a[u][i] < dist[i])
+				dist[i] = dist[u]+a[u][i];
+	}
+}/*
+	ID:echooat1
+	LANG:C++
+	TASK:comehome
+	*/
+#include <fstream>
+using namespace std;
+int main(int argc,char** argv){
+	ifstream fin("comehome.in");
+	ofstream fout("comehome.out");
+	long a[53][53]={0};
+	long m;
+	fin >>m;fin.get();
+	bool hash[53]={false};
+	for(long i=1;i<=52;i++)
+		for(long j=1;j<=52;j++)
+			if(i!=j)
+			a[i][j]=19940522;
+	for(long i=1;i<=m;i++){
+		long ch,cr,n;
+		long l1,l2;
+		ch=fin.get();fin.get();
+		cr=fin.get();fin >>n;
+		if(ch<='Z'){l1=ch-'A'+1;hash[l1]=true;}
+		if(ch>='a')l1=ch-'a'+27;
+		if(cr<='Z'){l2=cr-'A'+1;hash[l2]=true;}
+		if(cr>='a')l2=cr-'a'+27;
+		if(a[l1][l2]>n)a[l1][l2]=n;
+		a[l2][l1]=a[l1][l2];
+		fin.get();
+	}
+	for(long k=1;k<=52;k++)
+		for(long j=1;j<=52;j++)
+			for(long i=1;i<=52;i++)
+				if(a[i][k]+a[k][j]<a[i][j])
+					a[i][j]=a[i][k]+a[k][j];
+	long ans=19940523;
+	char temp;
+	for(long i=1;i<=52;i++)
+		if(a[26][i]<ans&&hash[i]&&i!=26){
+			ans=a[26][i];
+			temp=i+'A'-1;
+		}
+	fout <<temp<<' '<<ans<<endl;
+	fin.close();fout.close();
+	return 0;
+}

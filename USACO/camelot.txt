@@ -1,0 +1,662 @@
+/*
+  ID:p.tiany1
+  PROG:camelot
+  LANG:C++
+*/
+#  include<iostream>
+#  include<cstring>
+#  include<cmath>
+using namespace std;
+const  int  dx[9]={0,0,0,1,1,1,-1,-1,-1},dy[9]={0,1,-1,0,1,-1,0,1,-1},oo=2147483647;
+const  int  tx[9]={0,1,1,-1,-1,2,2,-2,-2},ty[9]={0,2,-2,2,-2,1,-1,1,-1};
+struct  arr
+{
+        int  x,y;        
+}a[1000],b[9],h[1000];
+int  n,m,dist[1000],ans,tot,sum,dd[1000],vv[1000],d[40][40][40][40];
+void  init()
+{
+      freopen("camelot.in","r",stdin);
+      freopen("camelot.out","w",stdout);
+      int  i,j,k;
+      char  c;
+      scanf("%d%d%*c",&n,&m);
+      tot=-1;
+      while  (scanf("%c",&c)!=EOF)  
+      {
+             if  (c<65||c>90)  continue;
+             scanf("%d",&a[++tot].x);
+             a[tot].y=c-64;      
+      }
+      b[0].x=a[0].x;b[0].y=a[0].y;
+      for  (i=1;i<=8;i++)
+      {
+           b[i].x=b[0].x+dx[i];
+           b[i].y=b[0].y+dy[i];
+      }
+       //b数组存入国王范围+-1的点 
+}
+int  sovle(int x1,int y1)//求这个点到其他点的最短路 
+{
+     if(x1<1||x1>n||y1<1||y1>m)  return  -1;
+     int  head,tail,t[50][50],i,j,p[1000],x,y;
+     memset(t,0,sizeof(t));
+     head=0;tail=1;h[1].x=x1;h[1].y=y1;p[1]=0;d[x1][y1][x1][y1]=0;t[x1][y1]=1;
+     while  (head!=tail)
+     {
+            head++;       
+            for  (i=1;i<=8;i++)
+            {
+                 x=h[head].x+tx[i];
+                 y=h[head].y+ty[i];     
+                 if  (x>=1&&x<=n&&y>=1&&y<=m&&t[x][y]==0)
+                 {
+                         tail++;
+                         h[tail].x=x;h[tail].y=y;
+                         p[tail]=p[head]+1;
+                         d[x1][y1][x][y]=p[tail];
+                         t[x][y]=1;
+                 }
+            }
+     }
+     return -1;
+}    
+void  work()
+{
+      int  i,j,k,l,step,cutmax,kingd;
+      ans=oo;
+      memset(dd,50,sizeof(dd));
+      memset(d,-1,sizeof(d));
+      for  (i=1;i<=tot;i++)
+           sovle(a[i].x,a[i].y);
+      for  (i=0;i<=8;i++)
+           sovle(b[i].x,b[i].y);
+      for  (i=1;i<=tot;i++)
+        for  (j=0;j<=8;j++)
+        {
+                    step=d[a[i].x][a[i].y][b[j].x][b[j].y];
+                    if  (step<0)  continue;
+                    if  (step<dd[i])
+                    {
+                        dd[i]=step+(j>0);
+                        vv[i]=j;    
+                    }
+        }
+      for   (i=1;i<=n;i++)
+        for  (j=1;j<=m;j++)
+        {
+             kingd=abs(i-b[0].x)+abs(j-b[0].y);
+             for  (k=1;k<=tot;k++)
+             {
+                  dist[k]=d[a[k].x][a[k].y][i][j];
+                  if  (dist[k]<0)  break;
+             }
+             if   (dist[k]<0)  continue;
+             cutmax=0;
+             for  (k=1;k<=tot;k++)
+             {
+                  step=d[b[vv[k]].x][b[vv[k]].y][i][j];     
+                  if  (dist[k]+kingd-(step+dd[k])>cutmax)  cutmax=dist[k]+kingd-(step+dd[k]);  
+             }
+             sum=kingd;
+             for  (k=1;k<=tot;k++)
+                  sum+=dist[k];
+             sum-=cutmax;
+             if  (sum<ans)  ans=sum;
+        }      
+}
+void  out()
+{
+      printf("%d\n",ans);      
+      fclose(stdin);
+      fclose(stdout);
+}
+int  main()
+{
+     init();
+     work();
+     out();
+     return  0;     
+}
+/*
+  竟然过了！。。。 
+  基本想法是先预处理出需要的最短路，
+  然后枚举每一个格子作为汇聚点，然后再枚举每一个骑士和国王相会，此汇聚点在国王+-1(有伪证明)的范围内，
+  计算出汇聚后所减少的步数的最大值即cutmax，总复杂度为O（(n*m)^2）
+*//*
+ID:myshfz1
+PROG:camelot
+LANG:C++
+*/
+ 
+#include<iostream>
+#include<fstream>
+ 
+#define maxColumns 26
+#define maxRows 30
+#define maxint 9999999
+ 
+using namespace std;
+ 
+ifstream fin("camelot.in");
+ofstream fout("camelot.out");
+ 
+const int knightStep[8][2]={{1,2},{2,1},{2,-1},{1,-2},{-1,-2},{-2,-1},{-2,1},{-1,2}};
+ 
+int step[maxColumns][maxRows][maxColumns][maxRows];
+bool hash[maxColumns][maxRows];
+int king[2],knight[maxColumns*maxRows+1][2];
+int r,c,totKnight=-1;
+int ans=maxint;
+ 
+void bfs(int x,int y)
+{
+	int queue[maxColumns*maxRows][2];
+	int tail=-1,head=0;
+	for(int i=0;i<c;i++)
+	for(int j=0;j<r;j++)
+	{
+		hash[i][j]=false; step[x][y][i][j]=maxint;
+	}
+	queue[0][0]=x; queue[0][1]=y; step[x][y][x][y]=0; hash[x][y]=true;
+ 
+	while(tail<head)
+	{
+		tail++;
+		for(int i=0;i<8;i++)
+		{
+			int tx=queue[tail][0]+knightStep[i][0];
+			int ty=queue[tail][1]+knightStep[i][1];
+			if((tx>=0)&&(tx<c)&&(ty>=0)&&(ty<r)&&(!hash[tx][ty]))
+			{
+				step[x][y][tx][ty]=step[x][y][queue[tail][0]][queue[tail][1]]+1;
+				queue[++head][0]=tx; queue[head][1]=ty;
+				hash[tx][ty]=true;
+			}
+		}
+	}
+}
+ 
+int tryit(int x,int y)
+{
+	int sum=0;
+	for(int k=0;k<totKnight;k++) sum+=step[knight[k][0]][knight[k][1]][x][y];
+ 
+	int ans=sum+max(abs(king[0]-x),abs(king[1]-y));
+	for(int tx=max(0,king[0]-1);tx<=min(c-1,king[0]+1);tx++)
+	for(int ty=max(0,king[1]-1);ty<=min(r-1,king[1]+1);ty++)
+	for(int k=0;k<totKnight;k++)
+		ans=min(ans,sum-step[knight[k][0]][knight[k][1]][x][y]+step[knight[k][0]][knight[k][1]][tx][ty]+step[tx][ty][x][y]+max(abs(king[0]-tx),abs(king[1]-ty)));
+ 
+	return ans;
+}
+ 
+void calcStep()
+{
+	for(int i=0;i<c;i++)
+	for(int j=0;j<r;j++)
+		bfs(i,j);
+}
+ 
+void init()
+{
+	fin>>r>>c;
+	char row; int column;
+	fin>>row>>column; 
+	king[0]=static_cast<int>(row-'A'); 
+	king[1]=column-1;
+ 
+	while(fin)
+	{
+		fin>>row>>column;
+		knight[++totKnight][0]=static_cast<int>(row-'A');
+		knight[totKnight][1]=column-1;
+	}
+}
+ 
+void answer()
+{
+	for(int i=0;i<c;i++)
+	for(int j=0;j<r;j++)
+		ans=min(ans,tryit(i,j));
+	fout<<ans<<endl;
+	//cout<<ans<<endl;
+}
+ 
+int main()
+{
+	init();
+	calcStep();
+	answer();
+}//一定要注意横纵坐标的顺序！ 
+ 
+/*
+ID:ybojan2
+LANG:C++
+TASK:camelot
+*/
+ 
+#include <iostream>
+#include <fstream>
+ 
+using namespace std;
+ 
+struct data{
+       int x,y,d;
+}q[10000];
+ 
+bool use[40][40];
+int l,r,n,m,x[1001],y[1001],kx,ky,d[40][40][40][40],tt=0,res=2147483647,step[8][2]={{1,2},{2,1},{-1,2},{2,-1},{1,-2},{-2,1},{-1,-2},{-2,-1}};
+ 
+int main()
+{
+    ifstream fin("camelot.in");
+    ofstream fout("camelot.out");
+ 
+    char cy;
+    fin>>n>>m;
+    fin>>cy>>kx;
+    ky=cy-'A'+1;
+    while (!fin.eof())
+    {
+          tt++;
+          fin>>cy>>x[tt];
+          y[tt]=cy-'A'+1;
+    }
+    tt++;
+    for (int i=1;i<=n;i++)
+        for (int j=1;j<=m;j++)
+            for (int k=1;k<=n;k++)
+                for (int t=1;t<=m;t++)
+                    d[i][j][k][t]=10000000;
+    for (int i=1;i<=n;i++)
+        for (int j=1;j<=m;j++)
+        {
+           memset(q,0,sizeof(q));
+           memset(use,false,sizeof(use));
+           l=1;
+           r=1;
+           q[1].x=i;
+           q[1].y=j;
+           use[i][j]=true; 
+           d[i][j][i][j]=0;
+           for(;;)
+           {
+                  for (int k=0;k<=7;k++)
+                  {
+                      int xx=q[l].x+step[k][0],yy=q[l].y+step[k][1];
+                      if (((xx>=1)&&(xx<=n)&&(yy>=1)&&(yy<=m)&&(!use[xx][yy]))){
+                                                                                r++;
+                                                                                q[r].x=xx;
+                                                                                q[r].y=yy;
+                                                                                d[i][j][xx][yy]=q[l].d+1;
+                                                                                q[r].d=d[i][j][xx][yy];
+                                                                                use[xx][yy]=true;
+                                                                                }
+                  }
+                  l++;
+                  if (l>r) break;
+           }
+        }
+ 
+    for (int i=1;i<=n;i++)
+        for (int j=1;j<=m;j++)
+        {
+            int minn=2147483647,sum=0;
+            for (int k=1;k<=tt;k++)
+                sum+=d[i][j][x[k]][y[k]];
+            if (sum+max(abs(kx-i),abs(ky-j))<minn) minn=sum+max(abs(kx-i),abs(ky-j));
+            for (int xx=max(1,kx-2);xx<=min(n,kx+2);xx++)
+                for (int yy=max(1,ky-2);yy<=min(m,ky+2);yy++)
+                    for (int k=1;k<=tt;k++)
+                    {
+                        int now=sum-d[i][j][x[k]][y[k]]+d[x[k]][y[k]][xx][yy]+d[xx][yy][i][j]+max(abs(kx-xx),abs(ky-yy));
+                        if (now<minn) minn=now;
+                    }
+            if (minn<res) res=minn;
+        }
+    fout<<res<<endl;
+    return 0;
+}
+/*
+ID:nettle99
+PROG:camelot
+LANG:C++
+*/
+ 
+#include <fstream>
+#define MAXX 27
+#define MAXY 31
+#define MAXN 781
+#define BIG 9999
+#define abs(x) ((x) > 0 ? (x) : -(x))
+#define max(x, y) ((x) > (y) ? (x) : (y))
+using namespace std;
+const int dr[9][2] = {{0,0},{-2,-1},{-2,1},{2,-1},{2,1},{1,2},{1,-2},{-1,2},{-1,-2}};
+ 
+ifstream fin("camelot.in");
+ofstream fout("camelot.out");
+ 
+struct chess
+{
+  short x, y;
+} q[MAXN], g[MAXN], king;
+short f[MAXX][MAXY][MAXX][MAXY], X, Y, N;
+ 
+void Init()
+{
+char c;
+  fin >> Y >> X;
+  fin >> c >> king.y;
+  king.x = c - 'A' + 1;
+int j;
+  N = 0;
+  while (fin >> c >> j)
+    {
+      g[++N].x = c - 'A' + 1;
+      g[N].y = j;
+    }
+  return ;
+}
+ 
+bool vis[MAXX][MAXY];
+void BFS(int xx, int yy)
+{
+int l, r, x, y;
+  memset(q, 0, sizeof(q));
+  memset(vis, 0, sizeof(vis));
+  f[xx][yy][xx][yy] = 0;
+  vis[xx][yy] = true;
+  l = 0, r = 1;
+  q[r].x = xx, q[r].y = yy;
+  while (l < r)
+    {
+      l++;
+      for (int i = 1; i <= 8; i++)
+        {
+          x = q[l].x + dr[i][0];
+          y = q[l].y + dr[i][1];
+          if (x < 1 || x > X || y < 1 || y > Y) continue;
+          if (vis[x][y]) continue;
+          r++;
+          q[r].x = x, q[r].y = y;
+          vis[x][y] = true;
+          f[xx][yy][x][y] = f[xx][yy][q[l].x][q[l].y] + 1;
+        }
+    }
+  return ;
+}
+ 
+int MIN, kx1, kx2, ky1, ky2;
+chess re;
+void count(int x, int y)
+{
+int now = 0, now2;
+  for (int i = 1; i <= N; i++)
+    now += f[g[i].x][g[i].y][x][y];
+  if (now >= MIN) return ;
+int i, j, tmp;
+  for (i = kx1; i <= kx2; i++)
+    for (j = ky1; j <= ky2; j++)
+      for (int t = 1; t <= N; t++)
+        {
+          now2 = now - f[g[t].x][g[t].y][x][y];
+          tmp = max(abs(king.x - i), abs(king.y - j));
+          tmp += f[g[t].x][g[t].y][i][j] + f[i][j][x][y];
+          if (now2 + tmp < MIN) MIN = now2 + tmp;
+        }
+  return ;
+}
+ 
+void Doit()
+{
+  if (N == 0) {fout << 0 << endl; return ;}
+  for (int i1 = 1; i1 <= X; i1++)
+    for (int j1 = 1; j1 <= Y; j1++)
+      for (int i2 = 1; i2 <= X; i2++)
+        for (int j2 = 1; j2 <= Y; j2++)
+          f[i1][j1][i2][j2] = BIG;
+  for (int i = 1; i <= X; i++)
+    for (int j = 1; j <= Y; j++)
+      BFS(i, j);
+  MIN = BIG;
+  kx2 = king.x + 2 > X ? X : king.x + 2;
+  ky2 = king.y + 2 > Y ? Y : king.y + 2;
+  kx1 = king.x - 2 < 1 ? 1 : king.x - 2;
+  ky1 = king.y - 2 < 1 ? 1 : king.y - 2;
+  for (int i = 1; i <= X; i++)
+    for (int j = 1; j <= Y; j++)
+      count(i, j);
+  fout << MIN << endl;
+  return ;
+}
+ 
+int main()
+{
+  Init();
+  Doit();
+  return 0;
+}十分萎靡,错了两次.
+第一次判断MIN写错了,第二次偶居然忽略了王可以斜着走,OTZ.
+还好总算是过了. 
+总共120行.
+  Test 1: TEST OK [0.000 secs, 4224 KB]
+  Test 2: TEST OK [0.011 secs, 4224 KB]
+  Test 3: TEST OK [0.011 secs, 4220 KB]
+  Test 4: TEST OK [0.011 secs, 4220 KB]
+  Test 5: TEST OK [0.054 secs, 4224 KB]
+  Test 6: TEST OK [0.086 secs, 4220 KB]
+  Test 7: TEST OK [0.011 secs, 4224 KB]
+  Test 8: TEST OK [0.000 secs, 4220 KB]
+  Test 9: TEST OK [0.022 secs, 4220 KB]
+  Test 10: TEST OK [0.097 secs, 4220 KB]
+  Test 11: TEST OK [0.000 secs, 4220 KB]
+  Test 12: TEST OK [0.011 secs, 4220 KB]
+  Test 13: TEST OK [0.022 secs, 4220 KB]
+  Test 14: TEST OK [0.011 secs, 4220 KB]
+  Test 15: TEST OK [0.011 secs, 4224 KB]
+  Test 16: TEST OK [0.011 secs, 4224 KB]
+  Test 17: TEST OK [0.000 secs, 4224 KB]
+  Test 18: TEST OK [0.000 secs, 4224 KB]
+  Test 19: TEST OK [0.011 secs, 4224 KB]
+--Nettle99 17:39 2009年2月1日 (CST)
+/*
+ID:death941
+LANG:C++
+PROB:camelot
+*/
+#include <iostream>
+#include <memory.h>
+#include <stdio.h>
+#include <math.h>
+#include <limits.h>
+using namespace std;
+const int move[8][2]={{1,2},{-1,2},{1,-2},{-1,-2},{2,1},{-2,1},{2,-1},{-2,-1}};
+int map [35][35][35][35];
+int x,y,nk;
+struct {int x;int y;} king;
+struct {int x;int y;} knight[35*35];
+struct {int x,y;} lie[35*35*2]; 
+int ans;
+int stdpoi[35][35];
+ 
+void Cib(){
+	cin>>y>>x;
+	char temp;
+	cin>>temp; king.x=temp-'A';
+	cin>>king.y; king.y--;
+ 
+	nk=0; memset(knight,0,sizeof(knight));
+	while (cin>>temp>>knight[nk].y){
+		knight[nk].x=temp-'A'; knight[nk].y--;
+		nk++;		
+	}
+}
+ 
+int max(int a,int b){
+	return a>b?a:b;
+}
+ 
+int min(int a,int b){
+	return max(0,a>b?b:a);
+}
+ 
+bool judge(int i,int j){
+	if (i>=x || j>=y || i<0 || j<0) return false ;
+	else return true;
+}
+ 
+void Map_cib(){
+ 
+	memset(map,-1,sizeof(map));
+	for (int i=0;i<x;i++) 
+		for (int j=0;j<y;j++){
+		map[i][j][i][j]=0;
+ 
+		for (int syz=0;syz<35*35*2;syz++) {lie[syz].x=0; lie[syz].y=0;}
+		int l=0,r=0; lie[l].x=i; lie[l].y=j;
+ 
+		while (l<=r){
+			for (int k=0;k<8;k++) {
+				if (map[i][j][lie[l].x+move[k][0]][lie[l].y+move[k][1]]==-1 && judge(lie[l].x+move[k][0],lie[l].y+move[k][1]) ){
+					map[i][j][lie[l].x+move[k][0]][lie[l].y+move[k][1]]=map[i][j][lie[l].x][lie[l].y]+1;
+					r++;
+					lie[r].x=lie[l].x+move[k][0];
+					lie[r].y=lie[l].y+move[k][1];
+				}
+			}
+			++l;
+		}
+	}
+}
+ 
+ 
+ 
+void Enum(){
+	ans=INT_MAX;
+	for (int i=0;i<x;i++)
+		for (int j=0;j<y;j++)
+			for (int ii=0;ii<x;ii++)
+				for (int jj=0;jj<y;jj++) if (map[i][j][ii][jj]==-1) map[i][j][ii][jj]=10000;
+	memset(stdpoi,0,sizeof(stdpoi));
+	for (int i=0;i<x;i++) for (int j=0;j<y;j++) {
+		int ts=0;
+		for (int n=0;n<nk;n++) ts+=map[knight[n].x][knight[n].y][i][j];
+		stdpoi[i][j]=ts;
+		ts+=max(abs(king.x-i),abs(king.y-j));
+		if (ans>ts) ans=ts;
+	}
+ 
+	for (int i=max(king.x-5,0);i<=min(king.x+5,x-1);i++) 
+		for (int j=max(king.y-5,0);j<=min(king.y+5,y-1);j++)
+			for (int n=0;n<nk;n++) 
+				for (int ei=0;ei<x;ei++) 
+					for (int ej=0;ej<y;ej++) {
+						int ts=stdpoi[ei][ej]-map[knight[n].x][knight[n].y][ei][ej]+max(abs(king.x-i),abs(king.y-j))+map[ei][ej][i][j]+map[knight[n].x][knight[n].y][i][j];
+						if (ts<ans) ans=ts;
+					}
+	cout <<ans<<endl;
+}
+int main(){
+ 
+	freopen ("camelot.in","r",stdin);
+	freopen ("camelot.out","w",stdout);
+	Cib();
+	Map_cib();
+	Enum();
+}C++语言: Codee#13595
+/*
+    ID:echoaot1
+    LANG:C++
+    TASK:camelot
+    */
+#include <fstream>
+#include <cstring>
+#define min(a,b) ((a)<(b)?(a):(b))
+#define max(a,b) ((a)>(b)?(a):(b))
+#define ma 19940522
+using namespace std;
+ifstream fin("camelot.in");
+ofstream fout("camelot.out");
+long n=0,m=0,dis[40][40][40][40]={0},ans=0,c[1000][3]={0},o1,o2;
+bool hash[40][40]={0};
+long l=0;
+int fim[8][2]={1,2,1,-2,-1,2,-1,-2,2,1,-2,1,2,-1,-2,-1};
+void bfs(long l1,long l2){
+    long d[3000][3]={0};
+    long head=1,tail=1;
+    d[1][0]=l1;d[1][1]=l2;
+    while(head<=tail){
+        long t1=d[head][0],t2=d[head][1],step=d[head++][2];
+        dis[l1][l2][t1][t2]=step;
+        for(long i=0;i<8;i++){
+            long u1=t1+fim[i][0],u2=t2+fim[i][1];
+            if(u1<1||u2<1||u1>n||u2>m)continue;
+            if(!hash[u1][u2]){
+                hash[u1][u2]=1;
+                d[++tail][0]=u1;
+                d[tail][1]=u2;
+                d[tail][2]=step+1;
+            }
+        }
+}
+}
+int main(int argc,char** argv){
+    memset(dis,1,sizeof dis);
+    fin >>n>>m;fin.get();
+    string st;
+    getline(fin,st);
+    c[++l][2]=st[0]-'A'+1;
+    st.erase(0,2);
+    long temp=0;
+    for(long i=0;i<st.length();i++)
+        temp=temp*10+st[i]-'0';
+    c[l][1]=temp;
+    while(getline(fin,st)){
+        while(st.length()!=0){
+            c[++l][2]=st[0]-'A'+1;
+            long t=0,p=2,i=2;
+            while(st[i]!=' '&&st[i]!='\0'){
+                t=t*10+st[i]-'0';
+                p++;i++;
+            }
+            c[l][1]=t;
+            st.erase(0,p+1);
+        }
+    }
+    for(long i=1;i<=n;i++)
+        for(long j=1;j<=m;j++){
+            memset(hash,0,sizeof hash);
+            hash[i][j]=true;
+            bfs(i,j);
+            }
+    long ans=ma;
+    o1=c[1][1];o2=c[1][2];
+    for(long i=1;i<=n;i++)
+        for(long j=1;j<=m;j++){
+            long temp=0;
+            for(long k=2;k<=l;k++)
+                    temp+=dis[c[k][1]][c[k][2]][i][j];
+            if(temp<0)continue;
+            if(temp>ans)continue;
+            for(long p1=-2;p1<=2;p1++)
+                for(long p2=-2;p2<=2;p2++){
+            c[1][1]=o1+p1;c[1][2]=o2+p2;
+            if(c[1][1]<1||c[1][2]<1||c[1][1]>n||c[1][2]>m)continue;
+            long o=0,mama=-ma;
+            long step=max(abs(c[1][1]-o1),abs(c[1][2]-o2));
+            for(long k=2;k<=l;k++)
+                if(dis[c[k][1]][c[k][2]][i][j]-dis[c[k][1]][c[k][2]][c[1][1]][c[1][2]]>mama){
+                    o=k;
+                    mama=dis[c[k][1]][c[k][2]][i][j]-dis[c[k][1]][c[k][2]][c[1][1]][c[1][2]];
+                }
+            ans=min(min(ans,temp+max(abs(o1-i),abs(o2-j))),step+temp-dis[c[o][1]][c[o][2]][i][j]+dis[c[1][1]][c[1][2]][i][j]+dis[c[o][1]][c[o][2]][c[1][1]][c[1][2]]);
+            if(ans==10){
+                ans=10;
+            }
+            }
+        }
+    fout <<ans<<endl;
+    fin.close();fout.close();
+    return 0;
+}

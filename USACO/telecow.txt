@@ -1,0 +1,482 @@
+/*
+ID: cmykrgb1
+PROG: telecow
+LANG: C++
+*/
+ 
+//Written by CmYkRgB123
+ 
+ 
+    #include <iostream>
+    #include <fstream>
+    #define MAX 201
+    #define INF 0x7FFFFFFF
+ 
+    using namespace std;
+ 
+    class Tadjl //邻接表ADT
+    {
+    public:
+        int cnt;
+        int to[MAX];
+        Tadjl(){cnt=0;}
+        void ins(int k){to[++cnt]=k;}
+    };
+ 
+    class Tqueue //队列ADT，用于宽搜标号
+    {
+    private:
+        long first,last;
+        long list[MAX*MAX];
+    public:
+        long size;
+ 
+        Tqueue()
+        {
+            reset();
+        }
+ 
+        void reset()
+        {
+            first=1;
+            last=size=0;
+        }
+ 
+        void ins(long k)
+        {
+            size++;
+            list[++last]=k;
+        }
+ 
+        long del()
+        {
+            size--;
+            return list[first++];
+        }
+    };
+ 
+    class Tstack //堆栈ADT 用于存储增广路
+    {
+    public:
+        int stack[MAX];
+        int top;
+        int min,p;
+        void reset()
+        {
+            top=0;
+            min=INF;
+        }
+ 
+        Tstack()
+        {
+            reset();
+        }
+        void ins(int k)
+        {
+            stack[++top]=k;
+        }
+        void del()
+        {
+            top--;
+        }
+    };
+ 
+    ifstream fi("telecow.in");
+    ofstream fo("telecow.out");
+    Tqueue Q;
+    Tstack AP;
+    int c1,c2,RN,RM,S,T,netflow; //S为源点 T为汇点 netflow为最大流
+    Tadjl adjl[MAX]; //拆点后的原图邻接表
+    int odis[MAX][MAX],dis[MAX][MAX],Flow[MAX][MAX]; //odis为拆点后的原图邻接矩阵 dis为剩余图邻接矩阵 Flow为流量图邻接矩阵
+    int level[MAX],set[MAX];//level为层次标号 set为最小割集
+    bool used[MAX];
+ 
+    void init() //初始化，拆点
+    {
+        int i,a,b,a1,a2,b1,b2,c;
+        fi >> RN >> RM >> c1 >> c2;
+        if (c1>c2) {c=c1;c1=c2;c2=c;}
+        for (i=1;i<=RN;i++)
+        {
+            a=i*2-1;b=i*2;
+            adjl[a].ins(b);
+            dis[a][b]=1;
+            adjl[b].ins(a);
+            dis[b][a]=0;
+        }
+        for (i=1;i<=RM;i++)
+        {
+            fi >> a >> b;
+            if (a>b) {c=a;a=b;b=c;}
+            a1=a*2-1;a2=a1+1;
+            b1=b*2-1;b2=b1+1;
+            adjl[a2].ins(b1);
+            dis[a2][b1]=INF;
+            adjl[b1].ins(a2);
+            dis[b1][a2]=0;
+            adjl[b2].ins(a1);
+            dis[b2][a1]=INF;
+            adjl[a1].ins(b2);
+            dis[a1][b2]=0;
+        }
+        S=c1*2;
+        adjl[T=c2*2-1].cnt=0;
+        memcpy(odis,dis,sizeof(dis));
+    }
+ 
+    void Dinic_level() //宽搜，标号层次图
+    {
+        int i,j,k;
+        Q.reset();
+        memset(used,0,sizeof(used));
+        memset(level,0,sizeof(level));
+        Q.ins(S);
+        while (Q.size)
+        {
+            i=Q.del();
+            used[i]=true;
+            for (k=1;k<=adjl[i].cnt;k++)
+            {
+                j=adjl[i].to[k];
+                if (!dis[i][j]) continue;
+                if (used[j] || j==1) continue;
+                level[j]=level[i]+1;
+                Q.ins(j);
+            }
+        }
+    }
+ 
+    void Dinic_Argument() //进行增广
+    {
+        int i,u,v;
+        AP.stack[0]=S;
+        for (i=1;i<=AP.top;i++)
+        {
+            u=AP.stack[i-1];
+            v=AP.stack[i];
+            if (dis[u][v]<AP.min)
+            {
+                AP.min=dis[u][v];
+                AP.p=u;
+            }
+        }
+        for (i=AP.top;i>=1;i--)
+        {
+            u=AP.stack[i-1];
+            v=AP.stack[i];
+            Flow[u][v]+=AP.min;
+            dis[u][v]-=AP.min;
+            dis[v][u]+=AP.min;
+        }
+    }
+ 
+    bool Dinic_dfs(int u) //深搜最大流
+    {
+        int outdegree=0;
+        int i,v;
+        bool B;
+        if (u!=T)
+        {
+            for (i=1;i<=adjl[u].cnt;i++)
+            {
+                v=adjl[u].to[i];
+                if (level[v]==level[u]+1 && dis[u][v])
+                {
+                    outdegree++;
+                    AP.ins(v);
+                    B=Dinic_dfs(v);
+                    AP.del();
+                    if (B && u!=AP.p) //退回从源点能到达的最远点
+                        return true;
+                }
+            }
+            if (outdegree==0)
+                level[u]=0;
+        }
+        else
+        {
+            Dinic_Argument();
+            return true;
+        }
+        return false;
+    }
+ 
+    void Dinic()
+    {
+        memset(Flow,0,sizeof(Flow));
+        for (;;)
+        {
+            Dinic_level();
+            if (level[T]==0)
+                return;
+            AP.reset();
+            Dinic_dfs(S);
+        }
+    }
+ 
+    int getflow()
+    {
+        int i,flow=0;
+        for (i=1;i<=RN*2;i++)
+            flow+=Flow[S][i];
+        return flow;
+    }
+ 
+    void Getset() //多次最大流，求最小割集
+    {
+        int i,a,b,nowflow,cnt=0;
+        Dinic();
+        netflow=getflow();
+ 
+ 
+        for (i=1;i<=RN;i++)
+        {
+            if (i!=c1 && i!=c2)
+            {
+                a=i*2-1;b=a+1;
+                odis[a][b]=0;
+                memcpy(dis,odis,sizeof(odis));
+                Dinic();
+                nowflow=getflow();
+                if (nowflow+1==netflow-cnt)
+                    set[++cnt]=i;
+                else
+                    odis[a][b]=1;
+            }
+            if (cnt==netflow)
+                return;
+        }
+    }
+ 
+    void print()
+    {
+        int i;
+        fo << netflow << endl << set[1];
+ 
+        for (i=2;i<=netflow;i++)
+            fo <<' ' << set[i];
+        fo << endl;
+        fi.close();
+        fo.close();
+    }
+ 
+    int main()
+    {
+        init();
+        Getset();
+        print();
+        return 0;
+    }// Dinic + FloodFill
+/*
+PROG: telecow
+LANG: C++
+*/
+ 
+#include <stdio.h>
+#include <string.h>
+ 
+const long MAXN = 222;
+const long MAXM = 3333;
+ 
+long head[MAXN], next[MAXM], edge[MAXM], weight[MAXM];
+long n, s, t;
+ 
+long a[MAXN], b[MAXN], c[MAXN];
+long h[MAXN];
+ 
+long i, j, k, l, m, tot = 1;
+ 
+inline void add_edge(const long u, const long v, const long w) {
+	edge[++tot] = v;
+	weight[tot] = w;
+	next[tot] = head[u];
+	head[u] = tot;
+ 
+	edge[++tot] = u;
+	weight[tot] = 0;
+	next[tot] = head[v];
+	head[v] = tot;
+}
+ 
+void fill(const long vtx) {
+	h[vtx] = 1;
+	for (long i = head[vtx]; i; i = next[i])
+		if (weight[i] > 0 && !h[edge[i]]) fill(edge[i]);
+}
+ 
+int main() {
+	freopen("telecow.in", "rt", stdin);
+	freopen("telecow.out", "wt", stdout);
+	memset(head, 0, sizeof head);
+	for (scanf("%d%d%d%d", &n, &m, &s, &t); m; --m) {
+		scanf("%d%d", &i, &j);
+		add_edge(i + 100, j, 2147483647);
+		add_edge(j + 100, i, 2147483647);
+	}
+ 
+	a[0] = (s += 100);
+	for (i = 1; i <= n; ++i) add_edge(i, i + 100, 6000 + i);
+	for (tot = 0; ; ) {
+		memset(h, 255, sizeof h), h[s] = 0;
+		for (j = -1, k = 0; j < k; )
+			for (m = a[++j], i = head[m]; i; i = next[i])
+				if (weight[i] > 0 && h[(l = edge[i])] < 0) a[++k] = l, h[l] = h[m] + 1;
+		if (h[t] < 0) break;
+ 
+		a[1] = s, b[1] = head[s], c[1] = 2147483647;
+		for (m = 1; m; ) {
+			k = a[m], l = c[m];
+			if (k == t) {
+				tot += l;
+				for (i = --m; i; --i) {
+					weight[b[i]] -= l;
+					weight[b[i] ^ 1] += l;
+					if (!(c[i] -= l)) m = i - 1;
+				}
+				continue;
+			}
+			for (; b[m]; b[m] = next[b[m]]) {
+				i = edge[b[m]], j = weight[b[m]];
+				if (j > 0 && h[i] == h[k] + 1) {
+					a[++m] = i;
+					b[m] = head[i];
+					c[m] = j < l ? j : l;
+					break;
+				}
+			}
+			if (!b[m]) {
+				h[k] = -1, --m;
+				b[m] = next[b[m]];
+			}
+		}
+	}
+ 
+	memset(h, 0, sizeof h);
+	fill(s);
+	printf("%d\n", tot / 6000);
+	for (j = 0, i = 1; i <= n; ++i)
+		if (h[i] && !h[i + 100]) {
+			j ? printf(" ") : j = 1;
+			printf("%d", i);
+		}
+	printf("\n");
+	return 0;
+}// This code is from oimaster (http://hi.baidu.com/oimaster)
+ 
+#include <iostream>
+#include <cstring>
+#include <climits>
+ 
+using namespace std;
+ 
+struct node
+  {
+    int data, weight;
+    node *next, *anti;
+  } *ge[201], *path[201], *di[201], edge[3000];
+ 
+int dist[201], pre[201], queue[201], a[601], b[601], choose[101], top = 0;
+bool v[201], check[101];
+ 
+node *Add_Edge(int a, int b, int w)
+  {
+    node *p = &edge[top ++];
+    p->data = b, p->weight = w, p->next = ge[a], ge[a] = p;
+    return p;
+  }
+ 
+void Ins_Edge(int a, int b, int w)
+  {
+    node *p1 = Add_Edge(a, b, w), *p2 = Add_Edge(b, a, 0);
+    p1->anti = p2, p2->anti = p1;
+  }
+ 
+bool BFS(int s, int t)  // 为Dinic算法求标号
+  {
+    int head, tail;
+    memset(dist, -1, sizeof(dist));
+    dist[s] = 0, queue[1] = s;
+    for (head = tail = 1; head <= tail; head ++)
+      for (node *p = ge[queue[head]]; p != NULL; p = p->next)
+        if (p->weight && dist[p->data] == -1)
+          {
+            dist[p->data] = dist[queue[head]] + 1;
+            queue[++ tail] = p->data;
+            if (p->data == t) return true;
+          }
+    return false;
+  }
+ 
+int Max_Flow(int s, int t)  // Dinic算法求最大流
+  {
+    int i, total, flow;
+    bool flag;
+    node *p;
+    for (total = 0; BFS(s, t); )
+      {
+        memcpy(di, ge, sizeof(ge));
+        for (i = s; ; )
+          {
+            if (i == t)
+              {
+                for (flow = INT_MAX; i != s; i = pre[i])
+                  flow = min(flow, path[i]->weight);
+                for (total += flow, i = t; i != s; i = pre[i])
+                  path[i]->weight -= flow, path[i]->anti->weight += flow;
+              }
+            for (flag = false, p = di[i]; p != NULL; p = p->next)
+              if (p->weight && dist[i] + 1 == dist[p->data])
+                {
+                  pre[p->data] = i, path[p->data] = di[i] = p;
+                  i = p->data, flag = true;
+                  break;
+                }
+            if (! flag)
+              {
+                dist[i] = -1;
+                if (i == s) break;
+                i = pre[i];
+              }
+          }
+      }
+    return total;
+  }
+ 
+int main()
+  {
+    int n, m, c1, c2, i, k, ans, total;
+ 
+    freopen("telecow.in", "r", stdin);
+    freopen("telecow.out", "w", stdout);
+ 
+    scanf("%d%d%d%d", &n, &m, &c1, &c2);
+    for (i = 1; i <= 2*n; i ++) ge[i] = NULL;
+    Ins_Edge(c1, c1+n, INT_MAX), Ins_Edge(c2, c2+n, INT_MAX);
+    for (i = 1; i <= n; i ++)
+      if (i != c1 && i != c2) Ins_Edge(i, i+n, 1);
+    for (i = 1; i <= m; i ++)
+      {
+        scanf("%d%d", &a[i], &b[i]);
+        Ins_Edge(a[i]+n, b[i], INT_MAX), Ins_Edge(b[i]+n, a[i], INT_MAX);
+      }
+ 
+    ans = Max_Flow(c1, c2+n);
+    printf("%d\n", ans);
+    memset(check, false, sizeof(check));
+    for (total = 0, k = 1; k <= n; k ++)  // 枚举删除每个点，即对应流网络中的边
+      if (k != c1 && k != c2)
+        {
+          for (i = 1; i <= 2*n; i ++) ge[i] = NULL;
+          top = 0, Ins_Edge(c1, c1+n, INT_MAX), Ins_Edge(c2, c2+n, INT_MAX);
+          for (i = 1; i <= n; i ++)
+            if (i != c1 && i != c2 && i != k && ! check[i]) Ins_Edge(i, i+n, 1);
+          for (i = 1; i <= m; i ++)
+            Ins_Edge(a[i]+n, b[i], INT_MAX), Ins_Edge(b[i]+n, a[i], INT_MAX);
+          if (Max_Flow(c1, c2+n) + total + 1 == ans)
+            choose[++ total] = k, check[k] = true;
+        }
+    for (i = 1; i <= ans; i ++)
+      if (i < ans) printf("%d ", choose[i]); else printf("%d\n", choose[i]);
+ 
+    return 0;
+  }

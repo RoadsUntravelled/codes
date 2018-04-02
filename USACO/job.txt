@@ -1,0 +1,120 @@
+/*
+*Written By Satily
+*/
+ 
+#include <iostream>
+#include <fstream>
+using namespace std;
+ 
+ifstream fin("job.in");
+ofstream fout("job.out");
+ 
+const long maxn=1000;
+const long maxm=30;
+ 
+long i,j; 
+long n=0,m1=0,m2=0;
+long mina,minia,minb,minib; 
+long a[maxm],b[maxm],wa[maxm],wb[maxm],fa[maxn],fb[maxn];
+ 
+int main(void)
+{
+    fin >>n >>m1 >>m2;
+    for (i=0;i<m1;i++)
+        fin >>a[i];
+    for (i=0;i<m2;i++)
+        fin >>b[i]; 
+ 
+    for (i=0;i<n;i++)
+    {
+        mina=wa[0]+a[0]; 
+        minia=0; 
+        minb=wb[0]+b[0]; 
+        minib=0; 
+ 
+        for (j=1;j<m1;j++)
+            if (mina>wa[j]+a[j])
+            {
+		mina=wa[j]+a[j]; 
+		minia=j;
+	    } 
+	for (j=1;j<m2;j++)
+	    if (minb>wb[j]+b[j])
+	    {
+		minb=wb[j]+b[j];
+		minib=j;
+	    }
+ 
+	wa[minia]=mina;
+	fa[i]=mina; 
+	wb[minib]=minb; 
+	fb[i]=minb;
+    }
+    fout <<mina <<' ';
+ 
+    mina=fa[0]+fb[n-1]; 
+    for (i=1;i<n;i++)
+	if (mina<fa[i]+fb[n-i-1])
+	    mina=fa[i]+fb[n-i-1];
+    fout <<mina <<endl;
+ 
+    fin.close();
+    fout.close();
+ 
+    return 0; 
+}/*
+	ID:echooat1
+	LANG:C++
+	TASK:job
+	*/
+#include <fstream>
+#include <climits>
+#define min(a,b) ((a)<(b)?(a):(b))
+#define max(a,b) ((a)>(b)?(a):(b))
+using namespace std;
+int comp(const void* a,const void*b){
+	return *(long*)a-*(long*)b;
+}
+ifstream fin("job.in");
+ofstream fout("job.out");
+int main(int argc,char** argv){
+	long a1[31]={0},b1[31]={0},a[31]={0},b[31]={0},n=0,l1=0,l2=0;
+	long vis[1003]={0},vis_b[1005]={0};
+	fin >>n>>l1>>l2;
+	for(long i=1;i<=l1+l2;i++)
+		if(i<=l1)fin >>a1[i]; else fin >>b1[i-l1];
+	for(long i=1;i<=n;i++){
+		long mi=LONG_MAX,k=0;
+		for(long j=1;j<=l1;j++)
+			if(a[j]+a1[j]<mi){
+				mi=a[j]+a1[j];
+				k=j;
+			}
+		a[k]=mi;
+		vis[i]=mi;
+	}
+	long ans_a=0;
+	for(long i=1;i<=l1;i++)
+		ans_a=max(a[i],ans_a);
+	fout <<ans_a<<' ';
+	for(long i=1;i<=n;i++){
+		long mi=LONG_MAX,k=0;
+		for(long j=1;j<=l2;j++)
+			if(b[j]+b1[j]<mi){
+				mi=b[j]+b1[j];
+				k=j;
+			}
+		b[k]=mi;
+		vis_b[i]=mi;
+	}
+	qsort(vis,n+1,sizeof vis[0],comp);
+	qsort(vis_b,n+1,sizeof vis_b[0],comp);
+	for(long i=1;i<=n;i++)
+		vis_b[i]+=vis[n-i+1];
+	long ans_b=0;
+	for(long i=1;i<=n;i++)
+		ans_b=max(ans_b,vis_b[i]);
+	fout <<ans_b<<endl;
+	fin.close();fout.close();
+	return 0;
+}

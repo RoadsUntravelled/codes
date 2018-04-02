@@ -1,0 +1,521 @@
+//再来一个枚举..2010.12.25.USACO的机子变强了？
+/*
+Executing...
+   Test 1: TEST OK [0.000 secs, 4228 KB]
+   Test 2: TEST OK [0.011 secs, 4228 KB]
+   Test 3: TEST OK [0.011 secs, 4228 KB]
+   Test 4: TEST OK [0.032 secs, 4228 KB]
+   Test 5: TEST OK [0.108 secs, 4228 KB]
+   Test 6: TEST OK [0.205 secs, 4228 KB]
+   Test 7: TEST OK [0.162 secs, 4360 KB]
+*/
+/*
+ID: white_s1
+LANG: C++
+PROB: contact
+*/
+#include<fstream>
+using namespace std;
+const long up[12]={1,2,4,8,16,32,64,128,256,512,1024,2048};
+int A,B,n;
+long tot=0;
+string Data = "";
+struct Ans
+{
+        long f;
+        string c;
+        Ans(){f=0;c="";}
+}f[13][5000];
+struct ForSort
+{
+        long f,len,val;
+        ForSort(){f=0;}
+}g[60000],tmp;
+long change(string tmp,int l)
+{
+        long ans=0;
+        for(int i=l-1;i>=0;i--)
+                ans+=(tmp[i]-'0')*up[l-i-1];
+        return ans;
+}
+void Cal()
+{
+        string tmp="";
+        long len=Data.size(),val=0;
+        for(int i=0;i<len;i++)
+        {
+                tmp="";
+                for(int j=i;j<i+A-1;j++)tmp+=Data[j];
+                for(int j=i+A-1;(j<i+B)&&(j<len);j++)
+                {
+                        tmp+=Data[j];
+                        val=change(tmp,tmp.size());
+                        f[j-i+1][val].f++;
+                        if(f[j-i+1][val].f==1)f[j-i+1][val].c=tmp;
+                }
+        }
+}
+void PreSort()
+{
+ 
+        for(int i=A;i<=B;i++)
+                for(int j=0;j<5000;j++)
+                {
+                        if(f[i][j].f==0)continue;
+                        g[++tot].f=f[i][j].f;
+                        g[tot].len=i;
+                        g[tot].val=j;
+                }
+}
+void Sort(long p1,long p2)
+{
+        if(p1>=p2)return;
+        long x = p1,i=p1,j=p2;
+        while(i<j)
+        {
+                while(g[i].f>g[x].f
+                      ||(g[i].f==g[x].f&&(f[g[i].len][g[i].val].c.size()<f[g[x].len][g[x].val].c.size()))
+                      ||(g[i].f==g[x].f&&(f[g[i].len][g[i].val].c.size()==f[g[x].len][g[x].val].c.size())&&g[i].val<g[x].val)
+                      )i++;
+                while(g[j].f<g[x].f
+                      ||(g[j].f==g[x].f&&(f[g[j].len][g[j].val].c.size()>f[g[x].len][g[x].val].c.size()))
+                      ||(g[j].f==g[x].f&&(f[g[j].len][g[j].val].c.size()==f[g[x].len][g[x].val].c.size())&&g[j].val>g[x].val)
+                      )j--;
+                if(i<=j)
+                {
+                        tmp = g[i];
+                        g[i] = g[j];
+                        g[j] = tmp;
+                        i++;j--;
+                }
+        }
+        Sort(p1,j);Sort(i,p2);
+}
+void In()
+{
+        ifstream cin("contact.in");
+        cin>>A>>B>>n;
+        string tmp = "";
+        while(getline(cin,tmp))
+        {
+                Data+=tmp;
+        }
+}
+void Out()
+{
+        ofstream cout("contact.out");
+        int LineCnt=0,freqCnt=0,i=1,prefreq = g[1].f,newline=0;
+        cout<<prefreq<<endl;
+        while(freqCnt<n&&g[i].f>0)
+        {
+                if(g[i].f==prefreq)
+                {
+                        if(LineCnt!=0)cout<<' ';
+                        cout<<f[g[i].len][g[i].val].c;
+                        i++;
+                        LineCnt++;
+                        newline=0;
+                }
+                if(LineCnt==6)
+                {
+                        cout<<endl;
+                        newline=1;
+                        LineCnt=0;
+                }
+                if(g[i].f!=prefreq)
+                {
+                        if(freqCnt==n-1||g[i].f==0)break;
+                        if(LineCnt!=0){cout<<endl;newline=1;}
+                        cout<<g[i].f<<endl;
+                        newline=1;
+                        LineCnt=0;
+                        prefreq = g[i].f;
+                        freqCnt++;
+                }
+        }
+        if(newline==0)cout<<endl;
+}
+int main()
+{
+        In();
+        Cal();
+        PreSort();
+        Sort(1,tot);
+        Out();
+}/*
+ID:ybojan2
+LANG:C++
+TASK:contact
+*/
+ 
+#include <iostream>
+#include <fstream>
+ 
+using namespace std;
+ 
+struct data{
+       int d,l,x;
+}res[100001];
+ 
+void swap(data &x,data &y)
+{
+     data tmp=x;
+     x=y;
+     y=tmp;
+}
+ 
+int main()
+{
+    ifstream fin("contact.in");
+    ofstream fout("contact.out");
+ 
+    int a,b,n,app[13][4096],dat[200001],len,od;
+ 
+    fin>>a>>b>>n;
+    od=n;
+    n*=100;
+    memset(app,0,sizeof(app));
+    for (int i=1;i<=n;i++)
+    {
+        res[i].d=0;
+        res[i].l=100;
+        res[i].x=4095;
+    }
+    for (len=1;!fin.eof();len++)
+    {
+        char c;
+        fin>>c;
+        dat[len]=c-'0';
+    }
+    len-=2;
+ 
+    for (int i=a;i<=b;i++)
+    {
+        if (i>len) break;
+        int now=0;
+        for (int j=1;j<=i;j++)
+            now=now*2+dat[j];
+        app[i][now]++;
+        for (int j=i+1;j<=len;j++)
+        {
+            now=now*2+dat[j];
+            now%=(1<<i);
+            app[i][now]++;
+        }
+        for (int j=0;j<=(1<<i)-1;j++)
+            if (app[i][j]>res[n].d){
+                                res[n].d=app[i][j];
+                                res[n].l=i;
+                                res[n].x=j;
+                                for (int k=n;(k>1)&&(res[k].d>res[k-1].d);k--) swap(res[k],res[k-1]);
+                                }
+    }
+ 
+ 
+ 
+    for (int i=1;i<=n;i++)
+        for (int j=i+1;j<=n;j++)
+            if ((res[i].d==res[j].d)){
+                                      if (res[i].l>res[j].l) swap(res[i],res[j]);
+                                      else if (res[i].l==res[j].l)
+                                      {
+                                           if (res[i].x>res[j].x) swap(res[i],res[j]);
+                                      }
+            else break;
+            }
+    int count=0,st=0;
+    for (int i=1;i<=n;i++)
+    {
+        if (res[i].d!=res[i-1].d) {
+                                  count++;
+                                  if ((count>od)||(res[i].d==0)) break;
+                                  if (i!=1) fout<<endl;
+                                  fout<<res[i].d<<endl;
+                                  st=0;
+                                  }
+        else 
+        {
+             if (st%6!=0)  fout<<" ";
+             else if (st!=0) fout<<endl;
+        }
+        st++;
+        for (int j=res[i].l-1;j>=0;j--)
+        {
+            fout<<res[i].x/(1<<j);
+            res[i].x%=(1<<j);
+        }        
+    }
+    fout<<endl;
+    return 0;
+}// C++之stl版。枚举就好了。Ｏ（12 * 200,000） ~
+/*
+ID: f_clocy1
+PROG: contact
+LANG: C++
+*/
+#include <set>
+#include <map>
+#include <queue>
+#include <cmath>
+#include <stack>
+#include <vector>
+#include <string>
+#include <cstdio>
+#include <cstdlib>
+#include <sstream>
+#include <cstring>
+#include <iostream>
+#include <algorithm>
+#define CLEAR(a,val) memset(a,val,sizeof (a))
+#define FOR(i,a,b)   for(int i=(a);i<(b);i++)
+#define FORE(i,a,b)  for(int i=(a);i<=(b);i++)
+#define FORC(c,it)   for(typeof((c).begin()) i=(c).begin();i!=(c).end();i++)
+#define ALL(a)       (a).begin(),(a).end()
+typedef long long LL;
+using namespace std;
+map<string,int> mp;
+vector<pair<int,string> > vt;
+bool cmp(const pair<int,string> &a,const pair<int,string> &b){
+	if (a.first > b.first) return true;
+	if (a.first < b.first) return false;
+	int an=a.second.size();
+	int bn=b.second.size();
+	if (an < bn) return true;
+	if (an > bn) return false;
+	return a.second < b.second;
+}
+int A,B,N;
+int main()
+{
+	freopen("contact.in","r",stdin);
+	freopen("contact.out","w",stdout);	
+	string str="";
+	string line;
+	scanf("%d %d %d%*c",&A,&B,&N);
+	while(getline(cin,line)){
+		str+=line;
+	}
+	mp.clear();
+	vt.clear();
+	FORE(len,A,B){
+		for(int i=0;i+len<=str.size();i++){
+			mp[str.substr(i,len)]++;
+		}
+	}
+	map<string,int> ::iterator it=mp.begin();
+	while(it!=mp.end()){
+		vt.push_back(make_pair(it->second,it->first));
+		++it;
+	}
+	sort(ALL(vt),cmp);
+	int Pt=0;
+	int Old=-1;
+	int counter=0;
+	int re=0;
+	while(Pt<vt.size()){
+		if (vt[Pt].first != Old){
+			if (re==N) break;
+			if (re!=0) printf("\n");
+			++re;
+			counter=0;
+			printf("%d\n%s",vt[Pt].first,vt[Pt].second.c_str());
+			Old=vt[Pt++].first;
+		}
+		else{
+			counter++;
+			if (counter%6==0){
+				printf("\n%s",vt[Pt].second.c_str());
+			}else printf(" %s",vt[Pt].second.c_str());
+			++Pt;
+		}		
+	}
+	printf("\n");
+	return 0;
+}比较的时候用一个数t存贮 nbit的数字。
+每次后移的时候，t<<=1 t+=str[1],得到新数字
+当然还要用001000 这种做一个 与 运算屏蔽掉前面的无关位
+/*
+ID:dingyag1
+LANG:C++
+TASK:contact
+*/
+ 
+#include <stdio.h>
+#include <iostream>
+#include <math.h>
+#include <algorithm>
+#include <set>
+#include <map>
+using namespace std;
+ 
+class R
+{
+public:
+	int n;
+	int nbit;
+	unsigned str;
+};
+ 
+bool operator == (const R& a,const R& b)
+{
+	return false;
+}
+bool operator < (const R& a,const R& b)
+{
+	if (a.n < b.n)
+	{
+		return true;
+	}
+	else if(a.n==b.n)
+	{
+		if (a.nbit <b.nbit)
+		{
+			return true;
+		}
+		else if ( a.nbit==b.nbit)
+		{
+			unsigned int t=1;
+			t<<=a.nbit-1;
+			while(t>0)
+			{
+				if (t&a.str < t&b.str)
+				{
+					return true;
+				}
+				if (t&a.str > t&b.str)
+				{
+					return false;
+				}
+				t>>=1;
+			}
+		}
+		return false;
+ 
+	}
+	return false;
+}
+ 
+void show(multiset<R>::iterator p)
+{
+	unsigned t=1;
+	t<<= (p->nbit-1);
+	while (t)
+	{
+		cout<< ((t&(p->str))>0);
+		t>>=1;
+	}
+}
+bool str[200000];
+bool out[50][12];
+unsigned int num[4096];
+int A,B,N;
+multiset<R> result;
+map< int,multiset<R> > fresult;
+int main()
+{
+	freopen("contact.in","r",stdin);
+	freopen("contact.out","w",stdout);	
+	int i,j,len=0;
+	char c;
+	R r;
+	cin>>A>>B>>N;
+	while(cin>>c)
+	{
+		str[len++]=c=='1';
+	}
+	if (B>len)
+	{
+		B=len;
+	}
+	for (i=A;i<=B;++i)
+	{
+		unsigned int t=pow(2,i)+0.01;
+		for (j=0;j<t;++j)
+		{
+			num[j]=0;
+		}
+		//begin i bit search
+		// init t;
+		t=0;
+		for (j=0;j<i;++j)
+		{
+			t<<=1;
+			t+=str[j];
+		}
+		num[t]++;
+		for (j=i;j<len;++j)
+		{
+			t<<=1;
+			int t2=1,len5=32-i;
+			t2<<=i;
+			while(len5--)
+			{
+				t&=(t2^0xFFFFFFFF);
+				t2<<=1;
+			}
+			t+=str[j];
+			num[t]++;
+		}	
+		//sort(num,num+int(pow(2,i)+0.01));
+		for (j=0;j<int(pow(2,i)+0.01);++j)
+		{
+			r.str=j;
+			r.nbit=i;
+			r.n=num[j];
+ 
+			if (r.n==0)
+			{
+				continue;
+			}
+			if (fresult.size()<N)
+			{
+				fresult[r.n].insert(r);
+			}
+			else
+			{	
+				if (r.n> ((fresult.begin())->first))
+				{
+					fresult[r.n].insert(r);
+					if(fresult.size()>N) fresult.erase(fresult.begin());
+				}
+				else
+				if (r.n==((fresult.begin())->first))
+				{
+					fresult[r.n].insert(r);
+				}		
+			}
+		}
+ 
+		//end i bit search
+	}	
+	map<int, multiset<R> >::reverse_iterator it=fresult.rbegin();
+	while (it!=fresult.rend())
+	{
+		if (it->first<1)
+		{
+			break;
+		}
+		cout<<it->first<<endl;
+		multiset<R>::iterator it2=it->second.begin();
+		int cont=0;
+		while(it2!=it->second.end())
+		{
+			show(it2);
+			cont++;
+			if (cont%6==0)
+			{
+				cout<<endl;
+				++it2;
+			}
+			else
+			 if ((++it2)!=(it->second.end())) cout<<" ";
+			cont%=6;
+		}
+		if (cont)
+		{
+			cout<<endl;
+		}
+		++it;
+	}	
+	return 0;
+}

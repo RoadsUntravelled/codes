@@ -1,0 +1,431 @@
+做法三 边点互化 
+膜拜过sinya神牛后写的C++版 
+应该是最短的了 不过还可以再简洁一些
+#include <fstream>
+using namespace std;
+ifstream fin("fence6.in");
+ofstream fout("fence6.out");
+const int INF=1<<25;
+static int n,a[200][200],b[200][200],l[200],le[200][200],rig[200][200];
+static int s,ans;
+int main()
+{	
+        //init 读入并边点互化
+	fin>>n;
+	for(int i=1;i<=n;i++)
+		for(int j=1;j<=n;j++)a[i][j]=INF;
+	for(int i=1;i<=n;i++)
+	{
+		fin>>s;fin>>l[s];
+		fin>>le[s][0]>>rig[s][0];
+		for(int j=1;j<=le[s][0];j++)fin>>le[s][j];
+		for(int j=1;j<=rig[s][0];j++)fin>>rig[s][j];
+	}
+	for(int i=1;i<=n;i++)
+	{
+		for(int j=1;j<=le[i][0];j++)a[i][le[i][j]]=l[i]+l[le[i][j]];
+		for(int j=1;j<=rig[i][0];j++)a[i][rig[i][j]]=l[i]+l[rig[i][j]];
+	}	
+	for(int i=1;i<=n;i++)
+		for(int j=1;j<=n;j++)b[i][j]=a[i][j];
+	//work Floyd求最小环
+	ans=1<<30;
+	for(int k=1;k<=n;k++)
+	{
+		for(int i=1;i<=le[k][0];i++)
+		{
+			int ii=le[k][i];
+			if(ii<k)
+			{
+				for(int j=1;j<=rig[k][0];j++)
+				{
+					int jj=rig[k][j];
+					if(jj<k)
+						ans=min(ans,a[ii][jj]+b[k][ii]+b[k][jj]);
+				}
+			}
+		}
+		for(int i=1;i<=n;i++)
+			for(int j=1;j<=n;j++)
+				a[i][j]=min(a[i][j],a[i][k]+a[k][j]);
+	}
+	fout<<ans/2<<endl;
+	return 0;
+}#include <stdio.h>
+#define MAX 30000
+ 
+int n;
+int len[101];
+int map[2][101][8];
+ 
+void pre(){
+	int i,j,k;
+	scanf("%d",&n);
+	for(i=0;i<n;i++){
+		scanf("%d",&j);
+		scanf("%d",&len[j]);
+		scanf("%d%d",&map[0][j][0],&map[1][j][0]);
+		for(k=1;k<=map[0][j][0];k++)scanf("%d",&map[0][j][k]);
+		for(k=1;k<=map[1][j][0];k++)scanf("%d",&map[1][j][k]);
+	}
+}
+ 
+int dis[101];
+int isi[101];
+int bef[101];
+ 
+int dijkstra(int z){
+	int i,j,k;
+	for(i=1;i<=n;i++){dis[i]=MAX;isi[i]=0;}
+	for(i=1;i<=map[0][z][0];i++){bef[map[0][z][i]]=z;dis[map[0][z][i]]=len[z];}
+	while(1){
+		j=0;k=MAX;
+		for(i=1;i<=n;i++)
+			if(dis[i]<k && isi[i]==0){
+				j=i;
+				k=dis[i];
+			}
+		if(j==0)break;
+		if(j==z)return dis[z];
+		isi[j]=1;
+		for(i=1;i<=map[0][j][0];i++)
+			if(map[0][j][i]==bef[j])break;
+		if(i==map[0][j][0]+1)k=0;
+		else k=1;
+		for(i=1;i<=map[k][j][0];i++){
+			if(dis[map[k][j][i]]>dis[j]+len[j]){
+				dis[map[k][j][i]]=dis[j]+len[j];
+				bef[map[k][j][i]]=j;
+			}
+		}
+	}
+	return MAX;
+}
+ 
+main(){
+	freopen("fence6.in","r",stdin);
+	freopen("fence6.out","w",stdout);
+	int i,j=MAX,k;
+	pre();
+	for(i=1;i<=n;i++){
+		k=dijkstra(i);
+		if(k<j)j=k;
+	}
+	printf("%d\n",j);
+	return 0;
+}/*
+TASK:fence6
+LANG:C++
+*/
+ 
+#include<iostream>
+#include<fstream>
+using namespace std;
+ 
+int n;
+int len[101];
+bool linked[101][101];
+bool bad[101][101][101];
+int map[101][101];
+int l[101][101];
+int list[101];
+int res=99999999;
+ 
+int main()
+{
+ifstream cin("fence6.in");
+ofstream cout("fence6.out");
+ 
+memset(linked,0,sizeof(linked));
+memset(bad,0,sizeof(bad));
+memset(map,0xe,sizeof(map));
+memset(l,0xe,sizeof(l));
+ 
+cin>>n;
+for(int i=1;i<=n;i++)
+ {
+ int t1,t2,t3,t4;
+ cin>>t1>>t2>>t3>>t4;
+ len[t1]=t2;
+ list[0]=0;
+ for(int j=1;j<=t3;j++)
+  {
+  cin>>list[++list[0]];
+  linked[t1][list[list[0]]]=1;
+  }
+ for(int j=1;j<=list[0];j++)
+  for(int k=1;k<=list[0];k++)
+   bad[t1][list[j]][list[k]]=1;
+   list[0]=0;
+ for(int j=1;j<=t4;j++)
+  {
+  cin>>list[++list[0]];
+  linked[t1][list[list[0]]]=1;
+  }
+ for(int j=1;j<=list[0];j++)
+  for(int k=1;k<=list[0];k++)
+   bad[t1][list[j]][list[k]]=1;
+}
+for(int i=1;i<=n;i++)
+ for(int j=1;j<=n;j++)
+ if(linked[i][j])
+ {
+ l[i][j]=len[i]+len[j];
+ map[i][j]=len[i]+len[j];
+ }
+ for(int k=1;k<=n;k++)
+ {
+ for(int i=1;i<=n;i++)
+ for(int j=1;j<=n;j++)
+ {
+ if(!bad[k][i][j])
+ res=min(res,l[i][j]+map[j][k]+map[k][i]);
+ }
+ for(int i=1;i<=n;i++)
+ for(int j=1;j<=n;j++)
+ if(l[i][j] > l[j][k]+l[k][i])
+ l[i][j] = l[j][k]+l[k][i];
+ }
+cout<<res/2<<endl;
+ 
+return 0;
+}/*搜索，判断方向*/ 
+/*
+ID:AYZK
+PROG: fence6
+LANG: C++
+*/
+#include<iostream>
+#include<fstream>
+using namespace std;
+int f[101][2][9];//线段的两端分别表示i连到j的不同的方向，0或1 
+int len[101];
+bool link[101][101];//表示[i][j]之间的连接是从i的1方向还是0方向 
+bool Find[101];
+int n,Min=10000000,start;
+ 
+void search(int x,int in,int leng){
+     if (leng>=Min) return;
+     for (int i=1;i<=f[x][1-in][0];i++){
+         int now=f[x][1-in][i];
+         int out=link[now][x];
+         if (start==now && out==0){
+                        if (leng<Min)Min=leng;
+                        return;
+                        };
+         if (!Find[now]){
+            Find[now]=true;
+            search(now,out,leng+len[now]);
+            Find[now]=false;
+            };
+         };
+     return;
+     }
+ 
+int main(){
+    ifstream cin("fence6.in");
+    ofstream cout("fence6.out");
+    cin>>n;
+    for (int i=1;i<=n;i++){
+        int x;cin>>x;
+        cin>>len[x]>>f[x][0][0]>>f[x][1][0];
+        for (int j=1;j<=f[x][0][0];j++)cin>>f[x][0][j];
+        for (int j=1;j<=f[x][1][0];j++){
+            cin>>f[x][1][j];
+            link[x][f[x][1][j]]=true;
+            };
+        };
+ 
+    for (int i=1;i<=n;i++){
+        memset(Find,0,sizeof(Find));
+        start=i;
+        search(i,0,len[i]);
+        };
+    cout<<Min<<endl;
+}/*
+	ID:echooat1
+	LANG:C++
+	TASK:fence6
+	*/
+#include <fstream>
+#include <cstring>
+#include <climits>
+using namespace std;
+ifstream fin("fence6.in");
+ofstream fout("fence6.out");
+long a[303][303]={0},n=0,m=0,l[303]={0},ans=LONG_MAX,y=0;
+bool hash[303]={false},kk[303]={0};
+void dfs(long goal,long u,long t){
+	if(goal==u){
+		if(y<ans)ans=y;
+			return;
+	}
+	if(y>=ans)return;
+	for(long i=1;i<=n;i++)
+		if(!hash[i]&&!kk[i]&&a[u][i]==3-t){
+			kk[i]=true;
+			y+=l[i];
+			dfs(goal,i,a[i][u]);
+			y-=l[i];
+			kk[i]=false;
+		}
+}
+int main(int argc,char** argv){
+	fin >>n;
+	for(long i=1;i<=n;i++){
+		long temp,l1,l2;
+		fin >>temp;fin >>l[temp]>>l1>>l2;
+		for(long j=1;j<=l1;j++){
+			long p=0;fin >>p;
+			a[temp][p]=1;
+		}
+		for(long j=1;j<=l2;j++){
+			long p=0;fin >>p;
+			a[temp][p]=2;
+		}
+	}
+	for(long i=1;i<=n;i++){
+		y=0;
+		memset(kk,0,sizeof kk);
+		for(long j=1;j<=n;j++)
+			if(a[i][j]==1&&!hash[j]){
+				kk[j]=true;
+				y+=l[j];
+				dfs(i,j,a[j][i]);
+				kk[j]=false;
+				y-=l[j];
+			}
+		hash[i]=true;
+}
+	fout <<ans<<endl;
+	fin.close();fout.close();
+	return 0;
+}/*
+	ID:echooat1
+	LANG:C++
+	TASK:fence6
+	*/
+#include <fstream>
+#include <cstring>
+#include <climits>
+using namespace std;
+ifstream fin("fence6.in");
+ofstream fout("fence6.out");
+long a[303][303]={0},n=0,m=0,l[303]={0},ans=LONG_MAX,y=0;
+bool hash[303]={false},kk[303]={0};
+void dfs(long goal,long u,long t){
+	if(goal==u){
+		if(y<ans)ans=y;
+			return;
+	}
+	if(y>=ans)return;
+	for(long i=1;i<=n;i++)
+		if(!hash[i]&&!kk[i]&&a[u][i]==3-t){
+			kk[i]=true;
+			y+=l[i];
+			dfs(goal,i,a[i][u]);
+			y-=l[i];
+			kk[i]=false;
+		}
+}
+int main(int argc,char** argv){
+	fin >>n;
+	for(long i=1;i<=n;i++){
+		long temp,l1,l2;
+		fin >>temp;fin >>l[temp]>>l1>>l2;
+		for(long j=1;j<=l1;j++){
+			long p=0;fin >>p;
+			a[temp][p]=1;
+		}
+		for(long j=1;j<=l2;j++){
+			long p=0;fin >>p;
+			a[temp][p]=2;
+		}
+	}
+	for(long i=1;i<=n;i++){
+		y=0;
+		memset(kk,0,sizeof kk);
+		for(long j=1;j<=n;j++)
+			if(a[i][j]==1&&!hash[j]){
+				kk[j]=true;
+				y+=l[j];
+				dfs(i,j,a[j][i]);
+				kk[j]=false;
+				y-=l[j];
+			}
+		hash[i]=true;
+}
+	fout <<ans<<endl;
+	fin.close();fout.close();
+	return 0;
+}做法七
+/*
+ID:84145022
+PROG:fence6
+LANG:C++
+*/
+#include<stdio.h>
+#include<stdlib.h>
+long a[102][102];
+long b[102][102];
+long f[102][102];
+long m[102];
+long min(long a,long b)
+{
+    return a<b?a:b;
+}
+int main()
+{
+    long i,j,k,q,x,y,n,l=0,x1,y1,c1,minc;
+    freopen("fence6.in","r",stdin);freopen("fence6.out","w",stdout);
+    scanf("%ld",&n);
+    for(i=1;i<=n;i++)
+        for(j=1;j<=n;j++)
+            a[i][j]=b[i][j]=100000000;
+    for(i=1;i<=n;i++)
+    {
+        scanf("%ld",&q);
+        scanf("%ld%ld%ld",&c1,&x,&y);
+        for(j=1;j<=x;j++)
+            scanf("%ld",&m[j]);
+        m[x+1]=q;
+        if(f[m[1]][m[2]]==0)
+        {
+            l++;
+            for(j=1;j<=x+1;j++)
+                for(k=1;k<=x+1;k++)
+                    if(j!=k)
+                        f[m[j]][m[k]]=l;
+        }
+        x1=f[m[1]][m[2]];
+ 
+        for(j=1;j<=y;j++)
+            scanf("%ld",&m[j]);
+        m[y+1]=q;
+        if(f[m[1]][m[2]]==0)
+        {
+            l++;
+            for(j=1;j<=y+1;j++)
+                for(k=1;k<=y+1;k++)
+                    if(j!=k)
+                        f[m[j]][m[k]]=l;
+        }
+        y1=f[m[1]][m[2]];
+        a[x1][y1]=c1;
+        a[y1][x1]=c1;
+        b[x1][y1]=c1;
+        b[y1][x1]=c1;
+    }
+    minc=100000000;
+    for(k=1;k<=n;k++)
+    {
+        for(i=1;i<k;i++)
+            for(j=i+1;j<k;j++)
+                minc=min(minc,a[i][j]+b[k][i]+b[k][j]);
+        for(i=1;i<=n;i++)
+            for(j=1;j<=n;j++)
+                a[i][j]=min(a[i][j],a[i][k]+a[k][j]);
+    }
+    printf("%ld\n",minc);
+    return 0;
+}

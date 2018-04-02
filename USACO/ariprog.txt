@@ -1,0 +1,593 @@
+目前速度最快的方法（最后对结果用的是冒泡排序……）：
+USER: Bojan Yang [ybojan2]
+TASK: ariprog
+LANG: C++
+ 
+Compiling...
+Compile: OK
+ 
+Executing...
+   Test 1: TEST OK [0.000 secs, 3168 KB]
+   Test 2: TEST OK [0.000 secs, 3168 KB]
+   Test 3: TEST OK [0.011 secs, 3160 KB]
+   Test 4: TEST OK [0.000 secs, 3168 KB]
+   Test 5: TEST OK [0.022 secs, 3168 KB]
+   Test 6: TEST OK [0.022 secs, 3160 KB]
+   Test 7: TEST OK [0.205 secs, 3168 KB]
+   Test 8: TEST OK [0.421 secs, 3164 KB]
+   Test 9: TEST OK [0.367 secs, 3164 KB]
+ 
+All tests OK./*
+ID:ybojan2
+LANG:C++
+TASK:ariprog
+*/
+ 
+#include <iostream>
+#include <fstream>
+ 
+using namespace std;
+ 
+int rl=0,a[20000],b[20000];
+ 
+void swap(int &x,int &y)
+{
+     int tmp=x;
+     x=y;
+     y=tmp;
+}
+ 
+ 
+int main()
+{
+    ifstream fin("ariprog.in");
+    ofstream fout("ariprog.out");
+ 
+    int n,m,num[30000],len=0;
+    bool dsq[125001];
+    fin>>n>>m;
+    for (int i=0;i<=125000;i++) dsq[i]=false;
+    for (int i=0;i<=m;i++)
+    {
+        for (int j=0;j<=m;j++)
+        {
+            dsq[i*i+j*j]=true;
+        }
+    }
+    m=m*m*2;
+    for (int i=0;i<=m;i++)
+        if (dsq[i])
+        {
+                   len++;
+                   num[len]=i;
+        }
+    for (int i=1;i<=len;i++)
+    {
+        for (int j=i+1;j<=len;j++)
+        {
+            if ((2-n)*num[i]+num[j]*(n-1)>m) break;
+            bool okay=true;
+            for (int k=1;k<=n-2;k++)
+            {
+                if (!dsq[num[j]+(num[j]-num[i])*k])
+                {
+                                    okay=false;
+                                    break;
+                                    }
+            }
+            if (okay) 
+            {
+                      rl++;
+                      a[rl]=num[i];
+                      b[rl]=num[j]-num[i];
+                      }
+        }
+    }
+    for (int i=1;i<=rl;i++)
+    {
+        for (int j=i+1;j<=rl;j++)
+        {
+            if ((b[i]>b[j])||((b[i]==b[j])&&(a[i]>a[j])))
+            {
+                                                         swap(a[i],a[j]);
+                                                         swap(b[i],b[j]);
+            }
+        }
+    }
+    for (int i=1;i<=rl;i++)
+        fout<<a[i]<<" "<<b[i]<<endl;
+ 
+    if (rl==0) fout<<"NONE"<<endl;
+    return 0;
+}/*
+ID: MasterRay
+LANG: C++
+TASK: ariprog
+*/
+ 
+#include <algorithm>
+#include <cstdio>
+using namespace std;
+ 
+bool flag[250*250*2+1] = {};
+int a[21047], size = 0, res_cnt = 0;
+struct node
+{
+	int a, b;
+	bool operator<(const node &rhs) const
+	{
+		return b < rhs.b || b == rhs.b && a < rhs.a;
+	}
+}res[10000];
+ 
+int main()
+{
+	int m, n, max_num;
+	freopen("ariprog.in", "r", stdin);
+	freopen("ariprog.out", "w", stdout);
+	scanf("%d%d", &n, &m);
+	max_num = m*m*2;
+	for (int i = 0; i <= m; ++i)
+		for (int j = i; j <= m; ++j)
+			flag[i*i+j*j] = true;
+	for (int i = 0; i <= max_num; ++i)
+		if (flag[i]) a[size++] = i;
+	for (int i = 0; i < size; ++i)
+		for (int j = i; ++j < size; )
+		{
+			int d = a[j]-a[i];
+			if (a[i]+(n-1)*d > max_num) break;
+			for (int k = 2; k < n; ++k)
+				if (!flag[a[i]+k*d])
+					goto L1;
+			res[res_cnt].a = a[i];
+			res[res_cnt++].b = d;
+L1:;
+		}
+	sort(res, res+res_cnt);
+	if (!res_cnt) puts("NONE");
+	else for (int i = 0; i < res_cnt; ++i) printf("%d %d\n", res[i].a, res
+ 
+[i].b);
+}
+ 
+/*
+ID: ******
+PROG: ariprog
+LANG: C++
+*/
+ 
+//搜索题，应用STL 的 unique 和 sort 将时间优化
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <stdio.h>
+using namespace std;
+ 
+ifstream fin("ariprog.in");
+//输出采用C，优化时间
+FILE *fout = fopen ("ariprog.out", "w");
+ 
+int N,M;
+//记录平方和数
+int num[160000];
+//记录某个平方和数是否出现过
+bool used[160000];
+//平方和数的个数
+int nums;
+ 
+//保存结果
+struct Answer
+{
+	//首项，公差
+	int start,d;
+}ans[50000];
+int answers;
+ 
+//比较函数，用于快排
+bool com(const int &a,const int &b)
+{
+	if (a<b) return true;
+	return false;
+}
+ 
+//比较函数，用于Unique
+bool same(const int &a,const int &b)
+{
+	if (a==b) return true;
+	return false;
+}
+ 
+//比较函数，用于答案的快排
+bool com2(const Answer &a,const Answer &b)
+{
+	if (a.d<b.d) return true;
+	if (a.d==b.d && a.start<b.start) return true;
+	return false;
+}
+ 
+//初始化
+void init()
+{
+	int i,j;
+	fin>>N>>M;
+ 
+	//产生平方和数
+	nums=0;
+	for (i=0;i<=M;++i)
+		for (j=0;j<=M;++j)
+			num[nums++]=i*i+j*j;
+	//排序
+	sort(num,num+nums,com);
+	//唯一
+	nums=unique(num,num+nums,same)-num;
+ 
+	//hash建立
+	memset(used,false,sizeof(used));
+	for (i=0;i<nums;++i) used[num[i]]=true;
+ 
+	answers=0;
+}
+ 
+//判断以start为首项,d为公差的序列能为产生长度为N的等差数列
+bool Judge(int start,int d)
+{
+	int i;
+	start=start+d;
+	for (i=3;i<=N;++i)
+	{
+		start+=d;
+		if (!used[start]) return false;
+	}
+	return true;
+}
+ 
+void deal()
+{
+	int i,j;
+	int start,d;
+	//计算最大范围
+	int range=2*M*M;
+ 
+	//枚举前两项
+	for (i=0;i<nums-1;++i)
+		for (j=i+1;j<nums;++j)
+		{
+			start=num[i];
+			d=num[j]-num[i];
+			//判断是否可能，如果当前项计算得到的最后一项已经大于range，则之后已经不可能有N长度的等差序列了，重要剪枝
+			if (start+(N-1)*d>range) break;
+			//如果可行，记录解
+			if (Judge(start,d))
+			{
+				ans[answers].d=d;
+				ans[answers].start=start;
+				answers++;
+			}
+		}
+ 
+		//排序输出
+	sort(ans,ans+answers,com2);
+	for (i=0;i<answers;++i) fprintf(fout,"%d %d\n",ans[i].start,ans[i].d);
+	if (answers==0) fprintf(fout,"NONE\n");
+}
+ 
+ 
+int main()
+{
+	init();
+	deal();
+	//system("pause");
+	return 0;
+}
+另一代码：
+剪枝很强大
+  Test 1: TEST OK [0.011 secs, 4396 KB]
+  Test 2: TEST OK [0.000 secs, 4392 KB]
+  Test 3: TEST OK [0.000 secs, 4396 KB]
+  Test 4: TEST OK [0.000 secs, 4396 KB]
+  Test 5: TEST OK [0.011 secs, 4392 KB]
+  Test 6: TEST OK [0.011 secs, 4396 KB]
+  Test 7: TEST OK [0.216 secs, 4392 KB]
+  Test 8: TEST OK [0.464 secs, 4392 KB]
+  Test 9: TEST OK [0.400 secs, 4392 KB]
+/*
+ID: GPF
+LANG: C++
+TASK: ariprog
+*/
+#include <iostream>
+#include <fstream>
+using namespace std;
+ifstream fin("ariprog.in");
+FILE *fout=fopen("ariprog.out","w");
+struct
+{
+    int l,r; //用来记录答案
+}ans[120005],temp; //temp用于排序
+bool    f;
+int     i,j,d,k,t=-1;
+int     len,q,an=-1;
+int     m[125005];
+int     maxn;
+bool    can[125005]={};
+void qsort(int x,int y)//这里是标准的快排
+{
+    if (x<y)
+    {
+        int i=x-1;
+        for (int j=x; j<y; j++)
+            if (ans[j].r<ans[y].r || ( ans[j].r==ans[y].r && ans[j].l<ans[y].l  ) ) //注意在公差相等的情况下，要判断初始值的大小情况
+            {
+                i++;
+                temp=ans[j];
+                ans[j]=ans[i];
+                ans[i]=temp;
+            }
+        i++;
+            temp=ans[y];
+            ans[y]=ans[i];
+            ans[i]=temp;
+        qsort(x,i-1);
+        qsort(i+1,y);
+    }
+}
+main()
+{
+    fin>>len>>q;
+ 
+ 
+    for (i=0; i<=q; i++)
+    for (j=0; j<=q; j++)
+        can[i*i+j*j]=true; //通过一个布尔数组记录哪些数能用双平方表达，哪些不能
+ 
+ 
+    maxn=q*q+q*q; //记录最大允许的双平方数达到多少
+ 
+ 
+    for (i=0; i<=maxn; i++)
+        if (can[i]) m[++t]=i; //创建一个新的整形数组，按照大小顺序排好，表示一切可以使用的双平方数
+ 
+ 
+    for (i=0; i<=t; i++) //此for用来枚举等差数列的首项
+    {
+        for (j=i+1; j<=t; j++) //此for用来枚举等差数列的第二项
+        {
+            d=m[j]-m[i]; //d代表公差
+            if (m[i]+(len-1)*d>maxn) break; //很有用的剪枝，由于公差将变得越来越大，如果此时的公差的最大项超出了maxn的值，随后的公差亦然。故跳出第二层for
+            f=true; //假设这个数列可行
+            for (k=2; k<len; k++) //检验该等差数列中的数能否被使用
+            {
+                if (!can[ m[i]+k*d ]) //如果不能，标记布尔f，跳出
+                {
+                    f=false; 
+                    break;
+                }
+            }
+            if (f) //如果这个数列可行，记录到ans结构数组中
+            {
+                ans[++an].l=m[i];
+                ans[an].r=d;
+            }
+        }
+    }
+ 
+ 
+    qsort(0,an); //对ans结构数组进行排序
+ 
+ 
+    //以下为输出答案
+    if (an==-1) fprintf(fout,"NONE\n");
+    else for (i=0; i<=an; i++)fprintf(fout,"%d %d\n",ans[i].l,ans[i].r);
+ 
+}USER: George Gate [georgeg1]
+TASK: ariprog
+LANG: C++
+Compiling...
+Compile: OK
+Executing...
+  Test 1: TEST OK [0.000 secs, 3208 KB]
+  Test 2: TEST OK [0.011 secs, 3204 KB]
+  Test 3: TEST OK [0.000 secs, 3204 KB]
+  Test 4: TEST OK [0.000 secs, 3204 KB]
+  Test 5: TEST OK [0.000 secs, 3208 KB]
+  Test 6: TEST OK [0.022 secs, 3204 KB]
+  Test 7: TEST OK [0.173 secs, 3208 KB]
+  Test 8: TEST OK [0.389 secs, 3208 KB]
+  Test 9: TEST OK [0.346 secs, 3208 KB]
+All tests OK.
+/*
+ID:GeorgeG1
+PROB:ariprog
+LANG:C++
+*/
+#include <fstream>
+#include <cstdlib>
+#include <algorithm>
+ 
+using namespace std;
+ 
+ifstream fin ("ariprog.in");
+ofstream fout ("ariprog.out");
+ 
+long n,m;
+static bool num[125001];
+static long list[62501],p=-1;
+static long a1[20],b1[20],parray[20],pa=-1;
+long c;
+ 
+inline bool cmp(long p1,long p2)    //快排比较函数，由于a有序，只比较b 
+{
+     return b1[p1]<b1[p2];
+}
+ 
+inline void create()
+{
+     for (long i=0;i<=m;i++)
+     {
+         long t=i*i;
+         for (long j=0;j<=m;j++)
+         {
+             num[t+j*j]=1;
+         }
+     }
+     for (long i=0;i<=c;i++)
+         if (num[i])
+            list[++p]=i;
+     return;
+}
+ 
+inline void work()
+{
+     create();
+     for (long ai=0;ai<=p;ai++)
+     {
+         long a=list[ai];
+         long lim=p-n+2;
+         for (long bi=ai+1;bi<=lim;bi++)
+         {
+             long b=list[bi]-list[ai];
+             if ((n-1)*b>c-list[ai]) break;                //重要剪枝 
+             bool isok=true;
+             for (long i=2;i<n;i++)
+             {
+                 if (!num[a+i*b])
+                 {
+                    isok=false;
+                    break;
+                 }
+             }
+             if (isok)
+             {
+                a1[++pa]=a;
+                b1[pa]=b;
+                parray[pa]=pa;
+             }
+         }
+     }
+     return;
+}
+ 
+int main()
+{
+    fin >>n >>m;
+    c=2*m*m;
+    work();
+    if (pa==-1)
+    {
+       fout <<"NONE\n";
+       return 0;
+    }
+    sort(parray,parray+pa+1,cmp);
+    for (long i=0;i<=pa;i++)
+    {
+        fout <<a1[parray[i]] <<' ' <<b1[parray[i]] <<endl;
+    }
+    return 0;
+}//其实和第一种方案的思想是差不多的 但是运行起来最大数据下要1.242s,感到有一些奇怪
+Image:Example.jpg
+/*
+ID:herohan1
+LANG:C++
+TASK:ariprog
+*/
+ 
+#include <fstream>
+#include <iostream>
+ 
+using namespace std;
+ 
+ 
+const int MAX_DIFF=3000;
+const int MAX_SEQ=200;
+ 
+class ariprog{
+	int length;
+	int limit;
+	bool biSquare[125001];
+	int num;
+ 	int MAXNUM;
+    int  progs[MAX_DIFF][MAX_SEQ];
+	int  count[MAX_DIFF];
+public:
+	ariprog(ifstream& infile){
+ 
+	    for(int i=0;i<MAX_DIFF ;i++)
+			count[i]=0;
+		infile>>length;
+		infile>>limit;
+ 		num=(limit+1)*limit/2+limit+1;
+		MAXNUM=limit*limit*2
+ 		int k=0;
+		for(int i=0;i<=MAXNUM;i++)
+			biSquare[i]=false;
+ 
+		for(int i=0;i<=limit;i++){ 
+		    biSquare[square(i,i)]=true;			
+			for(int j=i+1;j<=limit;j++){
+				biSquare[square(i,j)]=true;
+ 
+			}//for
+		}//for
+	}
+ 
+	void search(ofstream& outfile){
+ 		bool exist=false;	    
+		int diff;
+ 
+		for(int i=0;i<=MAXNUM;i++){
+			if(!biSquare[i])
+				continue;		 
+			for(int j=i+1;j<=MAXNUM;j++){
+				if(!biSquare[j])
+					continue;
+				 diff=j-i;
+				 if( (i+(length-1)*diff) > MAXNUM )
+					break;
+				else{
+					bool found=true;
+					for(int k=2;k<length;k++){
+						if(!biSquare[i+k*diff]) {
+							found=false;
+						break;}
+ 
+					} 
+					if(found){
+					   exist=true;
+                       int k=(count[diff]);
+					   progs[diff][k]=i;
+					   count[diff]++;
+ 
+					}
+				}//else
+			}//for
+		}//for
+ 
+			if(!exist)
+				outfile<<"NONE"<<endl;
+			else{
+ 
+ 			for(int i=0;i<MAX_DIFF;i++){
+					if(count[i]>0){
+						for(int j=0;j<count[i];j++)
+							outfile<<progs[i][j]<<" "<<i<<endl;
+					}
+				}
+			}
+ 
+	}
+ 
+	int square(int n,int m){
+		return n*n+m*m;
+	}
+};
+ 
+ 
+int main(){
+	ifstream infile("ariprog.in");
+	ofstream  outfile("ariprog.out");
+	ariprog a(infile);
+	a.search(outfile);
+	return 0;
+ 
+}

@@ -1,0 +1,14 @@
+Factorials阶乘
+译 by !Starliu
+ 描述你的任务是找到阶乘最后面的非零位。举个例子:
+5!=1*2*3*4*5=120所以5!的最后面的非零位是2
+7!=1*2*3*4*5*6*7=5040，所以最后面的非零位是4
+ 格式PROGRAM NAME: fact4
+INPUT FORMAT:
+(file fact4.in)
+共一行，一个整数不大于4,220的整数N
+OUTPUT FORMAT:
+(file fact4.out)
+共一行，输出N!最后面的非零位。
+  SAMPLE INPUT 7
+  SAMPLE OUTPUT 4

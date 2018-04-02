@@ -1,0 +1,203 @@
+/*
+	ID: lvxiao31
+	PROG: ride
+	LANG: C++
+*/
+#include <fstream>
+using namespace std;
+ 
+ifstream fin("ride.in");
+ofstream fout("ride.out");
+ 
+int main()
+{
+	int a[2]={1,1},i,j;
+	char s[7];
+	for (i=0;i<=1;i++)
+	{
+		fin>>s;
+		for (j=0;s[j]!='\0';j++)
+			a[i]*=s[j]-'@';
+	}
+	if ((a[0]-a[1])%47)
+		fout<<"STAY"<<endl;
+	else
+		fout<<"GO"<<endl;	
+	return 0;
+}/*
+  ID : Your ID
+  PROG : ride
+  LANG : C++
+*/
+#include <iostream>
+#include <fstream>
+#include <string.h>
+using namespace std;
+int main()
+{
+    ifstream fin ("ride.in");
+    ofstream fout ("ride.out");
+    int ta, tb, i;
+    ta = tb = 1;
+    string a, b;
+    fin >> a;
+    fin >> b;
+    for (i = 0; i < a.size(); i++)
+        ta = ta * (a[i] - 'A' + 1) % 47;
+    for (i = 0; i < b.size(); i++)
+        tb = tb * (b[i] - 'A' + 1) % 47;
+    if (ta == tb)
+       fout << "GO" << endl;
+    else    
+       fout << "STAY" << endl;
+    return 0;
+}#include<iostream>
+using namespace std;
+ 
+int calc(char *s){
+    int value=1;
+    while(*s){
+              value*=*s-64;
+              value%=47;
+              s++;
+    }
+    return value;
+} 
+ 
+int main(){
+    freopen("ride.in","r",stdin);
+    freopen("ride.out","w",stdout);
+    char sa[7],sb[7];
+    cin>>sa>>sb;
+    if(calc(sa)==calc(sb))
+       cout<<"GO"<<endl;
+    else
+       cout<<"STAY"<<endl;
+    return 0;
+}/*
+	ID:linuxco1
+	PROG: ride
+	LANG: C++
+*/
+#include<fstream>
+#include<string>
+using namespace std;
+ifstream fin("ride.in");
+ofstream fout("ride.out");
+int i,j,t1=1,t2=1;
+int main()
+{	string a,b;
+	fin>>a;
+	fin>>b;
+int	lena=a.size();
+int	lenb=b.size();
+	for(i=0;i<lena;i++)
+		a[i]-=64;
+	for(i=0;i<lenb;i++)
+		b[i]-=64;
+	for(i=0;i<lena;i++)
+		t1*=a[i];
+	for(i=0;i<lenb;i++)
+	t2*=b[i];
+	if(t1%47==t2%47)
+		fout<<"GO"<<endl;
+	else fout<<"STAY"<<endl;
+		fin.close();
+		fout.close();
+		return 0;
+}/*
+ID: fangyua5
+PROG: ride
+LANG: C++
+*/
+#include <iostream>
+#include <fstream>
+#include <string>
+using namespace std;
+ofstream fout ("ride.out");
+ifstream fin ("ride.in");
+ 
+int calc(string &s)
+{
+	int r=1;
+	for(int i=0;i<s.size();i++)
+		r=r*(s[i]-'A'+1);
+	return r%47;
+}
+int main()
+{
+    string a,b;
+	fin>>a>>b;
+	int length_a=a.size();
+	int length_b=b.size();
+	int ra=calc(a);
+	int rb=calc(b);
+	if(ra==rb)
+		fout<<"GO"<<endl;
+	else
+		fout<<"STAY"<<endl;
+    return 0;
+}/*
+  ID:sgfree2
+  TASK:ride
+  LANG:C++
+*/
+ 
+#include<iostream>
+#include<fstream>
+#include<cstdlib>
+#include<cstring>
+#include<climits>
+#include<string>
+ 
+using namespace std;
+ 
+ifstream fin("ride.in");
+ofstream fout("ride.out");
+ 
+string a,b;
+ 
+long m=1,n=1;
+ 
+int main()
+{
+	ios::sync_with_stdio(false);
+ 
+	fin>>a>>b;
+ 
+	for(int i=0;i<a.size();++i)
+	    m*=a[i]-'A'+1,m%=47;
+ 
+        for(int i=0;i<b.size();++i)
+            n*=b[i]-'A'+1,n%=47;
+ 
+        if(m==n)
+	    fout<<"GO"<<endl;
+	else
+	    fout<<"STAY"<<endl;   
+ 
+	return 0;
+}
+USER: Micheal Zhang [sgfreed2]
+TASK: ride
+LANG: C++
+ 
+Compiling...
+Compile: OK
+ 
+Executing...
+   Test 1: TEST OK [0.011 secs, 3148 KB]
+   Test 2: TEST OK [0.000 secs, 3148 KB]
+   Test 3: TEST OK [0.000 secs, 3148 KB]
+   Test 4: TEST OK [0.000 secs, 3148 KB]
+   Test 5: TEST OK [0.000 secs, 3148 KB]
+   Test 6: TEST OK [0.011 secs, 3148 KB]
+   Test 7: TEST OK [0.011 secs, 3148 KB]
+   Test 8: TEST OK [0.011 secs, 3148 KB]
+   Test 9: TEST OK [0.011 secs, 3148 KB]
+   Test 10: TEST OK [0.011 secs, 3148 KB]
+ 
+All tests OK.
+YOUR PROGRAM ('ride') WORKED FIRST TIME!  That's fantastic
+-- and a rare thing.  Please accept these special automated
+congratulations.

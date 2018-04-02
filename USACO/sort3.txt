@@ -1,0 +1,52 @@
+#include <fstream>
+using namespace std;
+int main()
+{
+    ifstream fin("sort3.in");
+    ofstream fout("sort3.out");
+    int count[4],a[4],t[1001],x,n,k=0;
+    memset(count,0,sizeof(count));
+    memset(a,0,sizeof(a));
+    fin>>n;
+    while (fin>>x) {
+          count[x]++;
+          t[++k]=x;
+          }
+    for (int i=1;i<=count[1]+count[2];i++){
+        if (t[i]==3) a[3]++;
+        else if (t[i]==2&&i<=count[1]) a[1]++;
+        else if (t[i]==1&&i>count[1]) a[2]++;
+        }
+    fout<<a[3]+(a[1]>a[2]?a[1]:a[2])<<endl;
+}/*
+	ID:echooat1
+	LANG:C++
+	TASK:sort3
+	*/
+#include <cstdio>
+#include <cstdlib>
+using namespace std;
+int main(int argc,char** argv){
+	long a[4]={0};
+	long h[1001]={0},d[4][4]={0};
+	FILE *inp,*oup;
+	inp=fopen("sort3.in","r");oup=fopen("sort3.out","w");
+	long n=10;
+	fscanf(inp,"%d",&n);
+	for(long i=1;i<=n;i++){
+		fscanf(inp,"%d",&h[i]);
+		a[h[i]]++;
+	}
+	fclose(inp);
+	long ans=0;
+	for(long i=1;i<=a[1];i++)
+		d[1][h[i]]++;
+	for(long i=a[1]+1;i<=a[1]+a[2];i++)d[2][h[i]]++;
+	for(long i=a[1]+a[2]+1;i<=a[1]+a[2]+a[3];i++)d[3][h[i]]++;
+	ans=d[1][2]+d[1][3];
+	if(d[2][1]>d[1][2])d[2][3]+=d[2][1]-d[1][2];
+	ans+=d[2][3];
+	fprintf(oup,"%d\n",ans);
+	fclose(oup);
+	return 0;
+}

@@ -1,0 +1,275 @@
+#include <fstream.h>
+#include <stdio.h>
+#include <assert.h>
+ 
+template < class type > inline type max (const type & a, const type & b)
+{
+    return ((a > b) ? a : b);
+}
+ 
+template < class type > inline type min (const type & a, const type & b)
+{
+    return ((a < b) ? a : b);
+}
+ 
+ 
+class   window
+{
+    public:
+ 
+    bool real;
+    int     y1, x1, y2, x2;             //y1 <= y2, x1 <= x2
+    int     level;
+ 
+    window (void) {
+	real = false;
+    }
+ 
+    window (int a, int b, int c, int d, int e) {
+	real = true;
+	y1 = a;
+	x1 = b;
+	y2 = c;
+	x2 = d;
+	level = e;
+    }
+}
+ 
+screen[256];
+ 
+int     top;
+int     bot;
+ 
+inline int
+area (window w)
+{
+    if (w.y1 >= w.y2 || w.x1 >= w.x2) {
+	return (0);
+    }
+    for (int i = 0; i < 256; ++i) {
+	if (screen[i].real && screen[i].level > w.level) {
+	    if (!
+		(w.y2 <= screen[i].y1 || screen[i].y2 <= w.y1
+		    || w.x2 <= screen[i].x1 || screen[i].x2 <= w.x1)) {
+		window  a (w.y1, w.x1, w.y2, screen[i].x1, w.level);
+		window  b (w.y1, screen[i].x2, w.y2, w.x2, w.level);
+		window  c (w.y1, max (w.x1, screen[i].x1), screen[i].y1,
+		            min (screen[i].x2, w.x2), w.level);
+		window  d (screen[i].y2, max (w.x1, screen[i].x1), w.y2,
+		            min (screen[i].x2, w.x2), w.level);
+		return (area (a) + area (b) + area (c) + area (d));
+	    }
+	}
+    }
+    return ((w.y2 - w.y1) * (w.x2 - w.x1));
+}
+ 
+ 
+//Create window:w (I, x, y, X, Y)
+inline void
+w (char i, int x1, int y1, int x2, int y2)
+{
+    assert (!screen[i].real);
+ 
+    screen[i].real = true;
+    screen[i].y1 = y1;
+    screen[i].x1 = x1;
+    screen[i].y2 = y2;
+    screen[i].x2 = x2;
+ 
+    screen[i].level = top++;
+}
+ 
+//Bring window to top:t (I)
+inline void
+t (char i)
+{
+    assert (screen[i].real);
+    screen[i].level = top++;
+}
+ 
+//Put window on bottom:b (I)
+inline void
+b (char i)
+{
+    assert (screen[i].real);
+    screen[i].level = bot--;
+}
+ 
+//Destroy window:d (I)
+inline void
+d (char i)
+{
+    assert (screen[i].real);
+    screen[i].real = false;
+}
+ 
+//Output percentage visible:s (I)
+inline double
+s (int i)
+{
+    assert (screen[i].real);
+    return (100.0 * double (area (screen[i])) /
+	((screen[i].y2 - screen[i].y1) * (screen[i].x2 - screen[i].x1)));
+}
+ 
+int
+main ()
+{
+    top = 1;
+    bot = 0;
+ 
+    char    buffer[1000];
+    ifstream filein ("window.in");
+    FILE *fileout = fopen("window.out", "w");
+ 
+    while (!filein.eof ()) {
+	char    command;
+	char    i;
+	int     l, m, n, o;
+	double  q;
+ 
+	char    blank;
+ 
+	filein >> command;
+	if (!filein.eof ()) {
+	    switch (command) {
+	      case 'w':
+		filein >> blank >> i >> blank >> l >> blank >> m >> blank >> n
+		    >> blank >> o >> blank;
+		assert (!(l == n && m == o));
+		w (i, min (l, n), min (m, o), max (l, n), max (m, o));
+		break;
+	      case 't':
+		filein >> blank >> i >> blank;
+		t (i);
+		break;
+	      case 'b':
+		filein >> blank >> i >> blank;
+		b (i);
+		break;
+	      case 'd':
+		filein >> blank >> i >> blank;
+		d (i);
+		break;
+	      case 's':
+		filein >> blank >> i >> blank;
+                fprintf(fileout, "%.3f\n", s(i));
+		break;
+	      default:
+		cerr << "Bad command \'" << command << "\'.\n";
+		return (0);
+		break;
+	    }
+	}
+    }
+    filein.close ();
+    fclose (fileout);
+    exit (0);
+}本来想写离散化的，又因为rect1写过了离散化+线段树染色，所以这里写了漂浮法，相当简单，速度也飞快、、
+ 
+Compiling...
+Compile: OK
+ 
+Executing...
+   Test 1: TEST OK [0.000 secs, 3016 KB]
+   Test 2: TEST OK [0.000 secs, 3016 KB]
+   Test 3: TEST OK [0.000 secs, 3016 KB]
+   Test 4: TEST OK [0.011 secs, 3016 KB]
+   Test 5: TEST OK [0.011 secs, 3016 KB]
+   Test 6: TEST OK [0.000 secs, 3016 KB]
+   Test 7: TEST OK [0.011 secs, 3016 KB]
+   Test 8: TEST OK [0.011 secs, 3016 KB]
+   Test 9: TEST OK [0.011 secs, 3016 KB]
+   Test 10: TEST OK [0.011 secs, 3016 KB]
+   Test 11: TEST OK [0.032 secs, 3016 KB]
+ 
+All tests OK.
+ 
+ 
+/*
+	ID:echooat1
+	LANG:C++
+	TASK:window
+	*/
+#include <fstream>
+#include <iomanip>
+#include <cmath>
+#include <cstring>
+#define ex(a,b) {long c;c=(a);(a)=(b);(b)=c;}
+using namespace std;
+struct re{
+	long x1,y1,x2,y2,sum;char lab;
+}g[70];
+ifstream fin("window.in");ofstream fout("window.out");
+long c[123]={0},n=0;
+long p[123]={0};
+int comp(const void*a,const void*b){
+	return *(long*)a-*(long*)b;
+}
+void init(string st){
+	p[(int)st[2]]=n;
+	g[n].lab=st[2];
+	st.erase(0,4);
+	string ss=st.substr(0,st.find(','));long temp=0;for(size_t i=0;i<ss.length();i++)temp=temp*10+ss[i]-'0';
+	g[n].x1=temp;st.erase(0,ss.length()+1);
+	ss=st.substr(0,st.find(','));temp=0;for(size_t i=0;i<ss.length();i++)temp=temp*10+ss[i]-'0';
+	g[n].y1=temp;st.erase(0,ss.length()+1);
+	ss=st.substr(0,st.find(','));temp=0;for(size_t i=0;i<ss.length();i++)temp=temp*10+ss[i]-'0';
+	g[n].x2=temp;st.erase(0,ss.length()+1);
+	ss=st.substr(0,st.find(')'));temp=0;for(size_t i=0;i<ss.length();i++)temp=temp*10+ss[i]-'0';
+	g[n].y2=temp;st.erase(0,ss.length()+1);
+	if(g[n].y1>g[n].y2)ex(g[n].y1,g[n].y2);
+	if(g[n].x1>g[n].x2)ex(g[n].x1,g[n].x2);
+	g[n].sum=(g[n].x1-g[n].x2)*(g[n].y1-g[n].y2);
+}
+long cover(long l,long r,long s,long d,long k){
+	while(k<=n&&(l>=g[k].x2||r<=g[k].x1||s>=g[k].y2||d<=g[k].y1))k++;
+	if(k>n)return (l-r)*(s-d);
+	long ss=0;
+	if(l<=g[k].x1){ss+=cover(l,g[k].x1,s,d,k+1);l=g[k].x1;}
+	if(r>=g[k].x2){ss+=cover(g[k].x2,r,s,d,k+1);r=g[k].x2;}
+	if(s<=g[k].y1){ss+=cover(l,r,s,g[k].y1,k+1);s=g[k].y1;}
+	if(d>=g[k].y2){ss+=cover(l,r,g[k].y2,d,k+1);d=g[k].y2;}
+	return ss;
+}
+double work(char ch){
+	long k=p[(int)ch];
+	long sum=cover(g[k].x1,g[k].x2,g[k].y1,g[k].y2,k+1);
+	return 100*(double(sum)/double(g[k].sum));
+}
+int main(int argc,char** argv){
+	string st;
+	fout <<fixed<<setprecision(3);
+	while(getline(fin,st)){
+		char tt=st[0];
+		if(tt=='w'){
+				n++;
+				init(st);continue;
+		}
+		if(tt=='t'){
+				long k=p[(int)st[2]];
+				p[(int)st[2]]=n;
+				re temp=g[k];
+				for(long i=k;i<n;i++){g[i]=g[i+1];p[(int)g[i].lab]--;}
+				g[n]=temp;continue;
+			}
+		if(tt=='b'){
+				long k=p[(int)st[2]];
+				p[(int)st[2]]=1;
+				re temp=g[k];
+				for(long i=k;i>1;i--){g[i]=g[i-1];p[(int)g[i].lab]++;}
+				g[1]=temp;continue;
+		}
+		if(tt=='d'){
+				long k=p[(int)st[2]];
+				p[(int)st[2]]=0;
+				for(long i=k;i<n;i++){g[i]=g[i+1];p[(int)g[i].lab]--;}
+				n--;continue;
+			}
+		if(tt=='s')
+				fout <<work(st[2])<<endl;
+		}
+	fin.close();fout.close();
+	return 0;
+}

@@ -1,0 +1,227 @@
+位运算(By Zx.MYS)
+Test 8: TEST OK [0.227 secs, 2712 KB]
+如果把前三个单独搜出来，可能还会快一些。
+/*
+ID:manyous1
+PROG:checker
+LANG:C++
+*/
+#include<stdio.h>
+#include<math.h>
+int count=0,n,step[100];
+long int max;
+void dfs(long int st1,long int st2,long int st3,long int depth){
+     long int st,ii;
+     if(depth==n){
+                    count++;
+                    if(count<=3){
+                    for(int i=0;i<depth-1;i++)
+                            printf("%d ",step[i]);
+                    printf("%d\n",step[depth-1]);}
+                    return;
+                    }
+     st=(st1|st2|st3)&max;
+     while(st!=max){
+           ii=(~st)&(st + 1)&max;
+           if(count<=2)step[depth]=(int)log2(ii)+1;
+           dfs(((st1|ii)<<1),(st2|ii),((st3|ii)>>1),depth+1);
+           st=st|ii&max;
+                   }    
+}
+int main(){
+    freopen("checker.in","r",stdin);
+    freopen("checker.out","w",stdout);
+    scanf("%d",&n);
+    max=(1<<n)-1;
+    dfs(0L,0L,0L,0);
+    printf("%d\n",count);
+    return 0;
+}用位运算的方法解决。秒杀~~~
+/*
+ID:ybojan2
+LANG:C++
+TASK:checker
+*/
+ 
+#include <iostream>
+#include <fstream>
+#include <math.h>
+ 
+using namespace std;
+ 
+int full,res=0,num[20],n,dat[4][20],now;
+ 
+void search(int a,int x,int y)
+{
+     if (a==full)
+     {
+                 res++;
+                 return;
+                 }
+     int could=(~(a|x|y))&full,k;
+     for (;could>0;)
+     {
+         k=could&(-could);
+         could-=k;
+         search(a+k,(x+k)<<1,(y+k)>>1);
+     }
+}
+ 
+void search3(int a,int x,int y,int deep)
+{
+     if (now>=3) return ;
+     if (a==full)
+     {
+                 now++;
+                 for (int i=1;i<=n;i++)
+                     dat[now][i]=num[i];
+                 return;
+     }
+     int could=(~(a|x|y))&full,k;
+     for (;could>0;)
+     {
+         if (now>=3) return;
+         k=could&(-could);
+         could-=k;
+         num[deep]=int(log(k)/log(2)+1e-6)+1;
+         search3(a+k,(x+k)<<1,(y+k)>>1,deep+1);
+     }
+}
+ 
+ 
+int main()
+{
+    ifstream fin("checker.in");
+    ofstream fout("checker.out");
+ 
+    fin>>n;
+    full=(1<<n)-1;
+    search(0,0,0);
+    search3(0,0,0,1);
+    for (int i=1;i<=3;i++)
+    {
+        for (int j=1;j<n;j++)
+            fout<<dat[i][j]<<" ";
+        fout<<dat[i][n]<<endl;
+    }        
+    fout<<res<<endl;
+    return 0;
+}考虑对称情况
+当 n = 6 时值搜索一半得到的结果只有2个，所以 n = 6 时全部搜索
+使用位运算提速
+ 
+/*
+ID: MasterRay
+LANG: C++
+TASK: checker
+*/
+ 
+#include <math.h>
+#include <stdio.h>
+ 
+int a[13], full, n, res = 0;
+ 
+void DFS(int k, int column, int lcorner, int rcorner)
+{
+	if (k == n)
+	{
+		if (++res <= 3)
+		{
+			printf("%d", a[0]+1);
+			for (int j = 1; j < n; ++j)
+				printf(" %d", a[j]+1);
+			putchar('\n');
+		}
+		return;
+	}
+	for (int p = full & ~(column | lcorner | rcorner); p; )
+	{
+		int i = p & -p;
+		p -= i;
+		if (res < 3) a[k] = log(double(i+0.5))/log(2.);
+		DFS(k+1, column+i, (lcorner+i)/2, (rcorner+i)*2);
+	}
+}
+ 
+int main()
+{
+	freopen("checker.in", "r", stdin);
+	freopen("checker.out", "w", stdout);
+	scanf("%d", &n);
+	full = (1 << n ) - 1;
+	if (n == 6)
+		DFS(0, 0, 0, 0);
+	else if (n & 1)
+	{
+		for (int i = 0; i < n/2; ++i)
+			a[0] = i, DFS(1, 1 << i, i ? 1 << i-1 : 0, 1 << i+1);
+		int t = res;
+		a[0] = n/2; DFS(1, 1 << n/2, 1 << n/2-1, 1 << n/2+1);
+		res += t;
+	}
+	else
+	{
+		for (int i = 0; i < n/2; ++i)
+			a[0] = i, DFS(1, 1 << i, i ? 1 << i-1 : 0, 1 << i+1);
+		res *= 2;
+	}
+	printf("%d\n", res);
+}
+ 
+#include <fstream>
+using namespace std;
+ 
+ifstream fin ("checker.in");
+ofstream fout ("checker.out");
+ 
+int sum, times, deep;
+int n, a;
+int y[9];
+ 
+int line (int p)
+{
+    int sum(0);
+    while (p)
+    {
+        p = p >> 1;
+        sum ++;
+    }
+    return sum;
+}
+ 
+void Queue (int l, int r, int row)
+{
+    int pos(0), p(0);
+    if (row != a)
+    {
+        pos = a & ~(l | r | row);
+        while (pos!=0)
+        {
+            p = pos & (-pos);
+            pos -= p;
+            y[deep++] = line (p);
+            Queue ((l+p)<<1, (r+p)>>1, row + p);
+            deep --;
+        }
+    }
+    else
+    {
+        if (times < 3)
+        {
+            for (int i=0; i<n-1; ++i)
+                fout << y[i] << ' ';
+            fout << y[n-1] << endl;
+            times ++;
+        }
+        sum ++;
+    }
+}
+ 
+int main()
+{
+    fin >> n;
+    a = (1 << n) - 1;
+    Queue (0, 0, 0);
+    fout << sum << endl;
+    return 0;
+}

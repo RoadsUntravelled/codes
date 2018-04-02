@@ -1,0 +1,365 @@
+动态规划
+/*
+ID:ybojan2
+LANG:C++
+TASK:rockers
+*/
+ 
+#include <iostream>
+#include <fstream>
+ 
+using namespace std;
+ 
+int main()
+{
+    ifstream fin("rockers.in");
+    ofstream fout("rockers.out");
+ 
+    int n,t,m,dp[21][21],p[21];
+    fin>>n>>t>>m;
+    for (int i=1;i<=n;i++)
+        fin>>p[i];
+    memset(dp,0,sizeof(dp));
+    for (int i=1;i<=m;i++)
+        for (int j=1;j<=n;j++)
+        {
+            int q[21],tt=0;
+            for (int k=1;k<=20;k++) q[k]=100000000;
+            q[0]=-10000000;
+            for (int k=j;k>=1;k--)
+            {
+                if (p[k]<q[tt+1]){
+                                  tt++;
+                                  q[tt]=p[k];
+                                  }
+                int s=tt;
+                while (q[s]<q[s-1])
+                {
+                      swap(q[s],q[s-1]);
+                      s--;
+                }
+                int sum=0;
+                for (s=1;s<=tt+1;s++)
+                {
+                    sum+=q[s];
+                    if (sum>t) break;
+                }
+                dp[i][j]=max(dp[i][j],dp[i-1][k-1]+s-1);
+            }
+        }
+    fout<<dp[m][n]<<endl;
+    return 0;
+}
+位运算穷举的代码
+USER: CmYkRgB CmYkRgB [cmykrgb1]
+TASK: rockers
+LANG: C++
+Compiling...
+Compile: OK
+Executing...
+  Test 1: TEST OK [0.000 secs, 2844 KB]
+  Test 2: TEST OK [0.000 secs, 2840 KB]
+  Test 3: TEST OK [0.011 secs, 2840 KB]
+  Test 4: TEST OK [0.000 secs, 2844 KB]
+  Test 5: TEST OK [0.011 secs, 2844 KB]
+  Test 6: TEST OK [0.011 secs, 2840 KB]
+  Test 7: TEST OK [0.410 secs, 2840 KB]
+  Test 8: TEST OK [0.454 secs, 2840 KB]
+  Test 9: TEST OK [0.097 secs, 2844 KB]
+  Test 10: TEST OK [0.000 secs, 2840 KB]
+  Test 11: TEST OK [0.421 secs, 2844 KB]
+  Test 12: TEST OK [0.454 secs, 2840 KB]
+All tests OK.
+Your program ('rockers') produced all correct answers! This is your submission #4 for this problem. Congratulations! 
+/*
+ID: cmykrgb1
+PROG: rockers
+LANG: C++
+*/
+#include <iostream>
+#include <fstream>
+#define MAX 21
+using namespace std;
+ifstream fi("rockers.in");
+ofstream fo("rockers.out");
+long N,T,M,maxr=0;
+long len[MAX];
+ 
+void init()
+{
+	long i;
+	fi >> N >> T >> M;
+	for (i=1;i<=N;i++)
+		fi >> len[i];
+}
+ 
+void comser()
+{
+	unsigned long limit,i;
+	long j,k,rec,st;
+	bool A;
+	long use[MAX];
+	limit=(1 << N)-1;
+	for (i=0;i<=limit;i++)
+	{
+		memset(use,0,sizeof(use));
+		rec=0;st=1;
+		for (j=1;j<=N;j++)
+		{
+			A=(i & (1 << (j-1))) >> (j-1);
+			if (A) for (k=st;k<=M;k++)
+					if (use[k]+len[j]<=T)
+					{
+						use[k]+=len[j];
+						rec++;
+						st=k;
+						break;
+					}
+		}
+		if (rec>maxr) maxr=rec;
+	}
+}
+ 
+void print()
+{
+	fo << maxr << endl;
+	fi.close();
+	fo.close();
+}
+ 
+int main()
+{
+	init();
+	comser();
+	print();
+	return 0;
+}
+/*
+  ID:nettle99
+  PROG:rockers
+  LANG:C++
+  */
+ 
+  #include <cstdio>
+  #define MAXN 21
+ 
+  FILE *fin = fopen("rockers.in", "r");
+  FILE *fout = fopen("rockers.out", "w");
+ 
+  int max[MAXN], g[MAXN][MAXN], t[MAXN];
+  int main()
+  {
+  int N, T, M;
+    fscanf(fin, "%d%d%d", &N, &T, &M);
+    for (int i = 1; i <= N; i++)
+      fscanf(fin, "%d", &t[i]);
+    for (int i = 1; i <= N; i++)
+      for (int j = M; j >= 1; j--)
+        {
+          g[j][0] = max[j - 1];
+	  for (int v = T; v >= t[i]; v--)
+	    {
+              if (g[j][v] <= g[j][v - t[i]] + 1)
+    	        g[j][v] = g[j][v - t[i]] + 1;
+              if (g[j][v] > max[j]) max[j] = g[j][v];
+	    }
+        }
+    fprintf(fout, "%d\n", max[M]);
+    return 0;
+  }
+ 
+  /*Time
+  Test 1: TEST OK [0.000 secs, 2932 KB]
+  Test 2: TEST OK [0.000 secs, 2932 KB]
+  Test 3: TEST OK [0.000 secs, 2932 KB]
+  Test 4: TEST OK [0.011 secs, 2932 KB]
+  Test 5: TEST OK [0.011 secs, 2932 KB]
+  Test 6: TEST OK [0.000 secs, 2932 KB]
+  Test 7: TEST OK [0.022 secs, 2932 KB]
+  Test 8: TEST OK [0.022 secs, 2932 KB]
+  Test 9: TEST OK [0.000 secs, 2932 KB]
+  Test 10: TEST OK [0.000 secs, 2932 KB]
+  Test 11: TEST OK [0.011 secs, 2932 KB]
+  Test 12: TEST OK [0.000 secs, 2932 KB]
+  */组合搜索
+/*
+ID: yinzhen1
+LANG: C++
+TASK: rockers
+*/
+ 
+#include <iostream>
+using namespace std;
+int n, t, m;
+int len[21];
+int maxnum;
+int maxans;
+ 
+//当前的碟，当前碟已装载的容量，当前碟已装载的数目，当前碟应该要装的数目，所有碟装载的总数,下一个位置 
+void dfs(int curm, int curt, int curnum, int chnum, int allnum, int next)
+{
+	if(curnum == chnum)//下一个开始选择数目 
+	{
+		if(allnum > maxans)
+			maxans = allnum;
+		if(allnum+n-next <= maxans)//唯一一个剪枝 
+			return ;
+		if(curm == m)
+			return ;
+		for(int i = maxnum; i >= 1; --i)
+			dfs(curm+1, 0, 0, i, allnum+i, next);
+	}
+	else
+	{
+		for(int i = next+1; i < n; ++i)
+		{
+			if(curt+len[i] <= t)
+				dfs(curm, curt+len[i], curnum+1, chnum, allnum, i);
+		}
+	}
+}
+ 
+ 
+int main()
+{
+	freopen("rockers.in", "r", stdin);
+	freopen("rockers.out", "w", stdout);
+	scanf("%d%d%d", &n, &t, &m);
+	int i, j = 1<<29;
+	for(i = 0; i < n; ++i)
+	{
+		scanf("%d", &len[i]);
+		if(len[i] < j)
+			j = len[i];
+	}
+	maxnum = t/j;
+	maxans = 0;
+	dfs(0, 0, 0, 0, 0, -1);
+	printf("%d\n", maxans);
+	return 0;
+}哥的搜索，最慢的0.05
+思想：对于每首歌只有刻CD，或者不刻CD，只记录当前状态，对于刻CD的情况，
+1，如果当前CD的容量能装下就放在当前的CD里，并更新当前CD的容量vol。
+2，如果不能放下，就放在下一张CD里，更新CD容量vol。（有点像贪心）
+/*
+ID:tbbd4261
+PROG:rockers
+LANG:C++
+*/
+ 
+#include<fstream>
+#include<iostream>
+using namespace std;
+ifstream fin("rockers.in");
+ofstream fout("rockers.out");
+int len[25];
+int maxans=0;
+int N,T,M;     
+        //当前磁盘，当前磁盘已用容量，已放歌数量，第n_song的情况 
+void dfs(int num_of_disk, int vol,int num_of_song, int n_song )
+{
+ 
+     if(num_of_disk>M)return ;
+     if(n_song>N)return ;     
+ 
+    // fout<<num_of_disk<<' '<<vol<<' '<<num_of_song<<' '<<n_song<<endl;
+     dfs(num_of_disk, vol, num_of_song, n_song+1);  //第n_song首歌不刻进盘里 
+ 
+     if(T-vol-len[n_song]>=0)  //n_song 刻盘里 
+     {
+         if(num_of_song+1>maxans)maxans=num_of_song+1;
+         dfs(num_of_disk, vol+len[n_song], num_of_song+1,n_song+1);
+     }
+     else if(T-len[n_song]>=0)
+     {
+          if(num_of_song+1>maxans&&num_of_disk!=M)maxans=num_of_song+1;
+          dfs(num_of_disk+1,len[n_song],num_of_song+1,n_song+1);
+     }
+}
+ 
+int main()
+{
+ 
+    fin>>N>>T>>M;
+    for(int i=1; i<=N; i++)
+            fin>>len[i];
+ 
+    dfs(1,0,0,1);
+ 
+    fout<<maxans<<endl;
+ 
+    return 0;
+}//高速算法：动归+记忆化搜索
+time:
+   Test 1: TEST OK [0.000 secs, 3048 KB]
+   Test 2: TEST OK [0.022 secs, 3048 KB]
+   Test 3: TEST OK [0.000 secs, 3048 KB]
+   Test 4: TEST OK [0.000 secs, 3048 KB]
+   Test 5: TEST OK [0.011 secs, 3048 KB]
+   Test 6: TEST OK [0.000 secs, 3048 KB]
+   Test 7: TEST OK [0.000 secs, 3048 KB]
+   Test 8: TEST OK [0.000 secs, 3048 KB]
+   Test 9: TEST OK [0.000 secs, 3048 KB]
+   Test 10: TEST OK [0.000 secs, 3048 KB]
+   Test 11: TEST OK [0.022 secs, 3048 KB]
+   Test 12: TEST OK [0.000 secs, 3048 KB]
+/*
+  ID:wangml71
+  PROG:rockers
+  LANG:C++
+*/
+#include<cmath>
+#include<cstdio>
+#include<string>
+#include<fstream>
+#include<iostream>
+ 
+using namespace std;
+ 
+ifstream fin("rockers.in");
+ofstream fout("rockers.out");
+ 
+int n,m,t,a[21],f[21][21][21],ans;
+ 
+void dp(int i,int j,int k)
+{
+     if(i>n)
+       return;
+     else
+     {
+         if(f[i][j][k]==0)
+         {
+           int m1,max_f=0;
+           if(a[i]+k<=t)
+           {
+               dp(i+1,j,k+a[i]);
+               max_f=f[i+1][j][k+a[i]]+1;
+           }
+           else
+           {
+             if(a[i]<=t&&j+1<=m)
+             {
+               dp(i+1,j+1,a[i]);
+               max_f=f[i+1][j+1][a[i]]+1;
+             }
+           }
+           dp(i+1,j,k);
+           m1=f[i+1][j][k];
+           if(m1>max_f)
+             max_f=m1;
+           f[i][j][k]=max_f;
+         }
+     }
+}
+int main()
+{
+    fin>>n>>t>>m;
+    for(int i=1;i<=n;i++)
+       fin>>a[i];
+    //f[1][1][a[1]]=1;
+    dp(1,1,0);
+    fout<<f[1][1][0]<<endl;
+    fin.close();
+    fout.close();
+    return 0;
+}

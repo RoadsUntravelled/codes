@@ -1,0 +1,712 @@
+USACO参程
+/*
+Executing...
+   Test 1: TEST OK [0.011 secs, 3148 KB]
+   Test 2: TEST OK [0.000 secs, 3148 KB]
+   Test 3: TEST OK [0.011 secs, 3148 KB]
+   Test 4: TEST OK [0.022 secs, 3148 KB]
+   Test 5: TEST OK [0.011 secs, 3148 KB]
+   Test 6: TEST OK [0.011 secs, 3148 KB]
+   Test 7: TEST OK [0.032 secs, 3148 KB]
+   Test 8: TEST OK [0.065 secs, 3148 KB]
+   Test 9: TEST OK [0.097 secs, 3148 KB]
+*/
+/*
+ID: richard41
+PROB: pprime
+LANG: C++
+*/
+#include <fstream>
+#include <cmath>
+using namespace std;
+ 
+#define rd1 for(unsigned long d1=1;d1<=9;d1+=2)
+#define rd2 for(unsigned long d2=0;d2<=9;++d2)
+#define rd3 for(unsigned long d3=0;d3<=9;++d3)
+#define rd4 for(unsigned long d4=0;d4<=9;++d4)
+#define ul unsigned long                            
+ 
+//定义宏，用来减少代码量
+ 
+ifstream cin("pprime.in");
+ofstream cout("pprime.out");
+ 
+unsigned long l,r;
+ 
+inline bool isprime(ul k)
+{
+    for (ul i=3; i<=sqrt((long double)k)+1 ; ++i)
+        if (k % i ==0) return 0;
+    return 1;
+}                                                  //判断质数，需要调用数学库中的  sqrt 
+int main()
+{
+    ios::sync_with_stdio(false);                   //加速数据读写，基本达到  cin\cout 速度
+    cin>>l>>r;
+    if (l<10)
+    rd1
+    {
+        if (d1<l) continue ;
+        if (d1>r) break;
+        if (isprime(d1))cout<<d1<<endl;
+    }
+    if (r<=10) return 0;
+    rd1
+    {
+        ul  k=10*d1+d1;
+        if (k<l) continue ;
+        if (k>r) break;
+        if (isprime(k)) cout<<k<<endl;
+    }
+    if (r<=100) return 0;
+    rd1 rd2
+    {
+        ul k=100*d1+10*d2+d1;
+        if (k<l) continue ;
+        if (k>r) break;
+        if (isprime(k)) cout<<k<<endl;
+    }
+    if (r<=1000) return 0;
+    rd1 rd2
+    {
+        ul k=1000*d1+100*d2+10*d2+d1;
+        if (k<l) continue ;
+        if (k>r) break;
+        if (isprime(k)) cout<<k<<endl;
+    }
+    if (r<=10000) return 0;
+    rd1 rd2 rd3
+    {
+        ul k=10000*d1+1000*d2+100*d3+10*d2+d1;
+        if (k<l) continue ;
+        if (k>r) break;
+        if (isprime(k)) cout<<k<<endl;
+    }
+    if (r<=100000) return 0;
+    rd1 rd2 rd3
+    {
+        ul k=100000*d1+10000*d2+1000*d3+100*d3+10*d2+d1;
+        if (k<l) continue ;
+        if (k>r) break;
+        if (isprime(k)) cout<<k<<endl;
+    }
+    if (r<=1000000) return 0;
+    rd1 rd2 rd3 rd4
+    {
+        ul k=1000000*d1+100000*d2+10000*d3+1000*d4+100*d3+10*d2+d1;
+        if (k<l) continue ;
+        if (k>r) break;
+        if (isprime(k)) cout<<k<<endl;
+    }
+    if (r<=10000000)
+    rd1 rd2 rd3 rd4
+    {
+        ul k=10000000*d1+1000000*d2+100000*d3+10000*d4+1000*d4+100*d3+10*d2+d1;
+        if (k<l) continue ;
+        if (k>r) break;
+        if (isprime(k)) cout<<k<<endl;
+    }
+        return 0;
+}#include <iostream.h>
+  #include <fstream.h>
+  #include <stdlib.h>
+ 
+  int primelist[100000];
+  int nprimes;
+ 
+  int isPrime(int num);
+  int reverse2(int i, int j);
+ 
+  int compare(const void *p, const void *q) { return *(int *)p-*(int *)q; }
+ 
+  void main (void) {
+      ifstream infile("pprime.in");
+      ofstream outfile("pprime.out"); 
+      int i, j, begin, end, num;
+      infile>>begin>>end;
+      if (begin <= 11 && 11 <=end)
+          primelist[nprimes++] = 11;
+      for (j = 0; j <= 999; j++)
+          for (i = 0; i <= 9; i++)  {
+  	      num = reverse2(j,i);
+  	      if (num >= begin && num <=end && isPrime(num)) 
+      	        primelist[nprimes++] = num;
+          }
+      qsort(primelist, nprimes, sizeof(int), compare);
+      for (i = 0; i < nprimes; i++)
+  	outfile << primelist[i] << "\n";
+    }
+ 
+  int
+  reverse2(int num, int middle) {
+      int i, save=num, digit, combino = 1;
+      for (i = 0; num; num /= 10) {
+  	digit = num % 10;
+  	i = 10 * i + digit;
+  	  combino *= 10;
+      }
+      return i+10*combino*save+combino*middle;
+  }
+ 
+  int isPrime(int num) {
+      int i;
+      if (num <= 3) return 1;
+      if (num%2 == 0 || num%3 ==0) return 0;
+      for (i = 5; i*i <= num; i++)
+  	if (num %i ==0)
+  	      return 0;
+        return 1;
+  }/*
+  ID:nettle99
+  PROG:pprime
+  LANG:C++
+  */
+ 
+  #include <fstream>
+  #include <cmath>
+  using namespace std;
+  ifstream fin("pprime.in");
+  ofstream fout("pprime.out");
+ 
+  int now[800]={0};
+  void qsort(int left,int right)
+  {
+  int l=left,r=right,box,mid=now[(l+r)/2];
+    while (l<r)
+      {
+         while ( now[l] < mid) l++;
+         while ( now[r] > mid) r--;
+  	  if (l<=r)
+  	      {
+  	        box=now[l];now[l]=now[r];now[r]=box;l++;r--;
+  	  	}
+  	  }
+    if (l<right) qsort(l,right);
+    if (r>left) qsort(left,r);
+    return ;
+  } 
+ 
+  bool prime(int a)
+  {
+    for (int i=2;i<=sqrt(a);i++)
+      if (a%i==0) return false;
+    return true;
+  }
+ 
+  int wei(int i,int k)
+  {
+ 
+     int t=0,i_=1;
+     while (i != 0)
+       { 
+         i/=10;
+         t++;
+       }
+    for (i=0;i<t/2;i++)
+      i_*=10;
+    if (k == 1) i_=i_*10-1;
+    return i_;
+  }
+ 
+  int hw(int i,int k)
+  {
+  int t=0;
+    if (k == 1)
+      {
+        t=i;
+        i/=10;
+        while (i)
+          {
+            t=t*10+i%10;
+            i/=10;
+          }
+      }
+    else
+      {
+        t=i;
+        while (i)
+          {
+            t=t*10+i%10;
+            i/=10;
+          }
+      }
+    return t;
+  }
+  int main()
+  {
+  int a_,b_;
+    fin>>a_>>b_;
+  int t,i,m=0,l;
+    i=wei(a_,0);
+    l=wei(b_,1);
+    while (i <= l)
+      {
+        for (int k=1;k<=2;k++)
+          {
+            t=hw(i,k);
+            if (a_ <=t && t <= b_)
+              if (prime(t)) {now[m]=t;m++;}
+          }
+        i++;
+      }
+    qsort(0,m-1);
+    for (i=0;i<m;i++)
+      fout<<now[i]<<endl;
+    fin.close();
+    fout.close();
+    return 0;
+  }/*
+ID: MasterRay
+LANG: C++
+TASK: pprime
+*/
+ 
+#include <algorithm>
+#include <cstdio>
+#include <cstdlib>
+using namespace std;
+ 
+int prime[] = {3,5,7,11,13,17,19,23,29};
+ 
+int GetBit(int n)
+{
+	int res = 1;
+	while (n /= 10) ++res;
+	return res;
+}
+ 
+bool Miller_Rabin(int n)
+{
+	int k, p, q, t;
+	long long a;
+	for (q = 0, p = n-1; p % 2 == 0; p /= 2, ++q);
+	for (k = 1, t = p; t /= 2; k *= 2);
+	for (int times = 3; times; --times)
+	{
+		int i = rand() % (n-2) + 2;
+		for (a = i % n, t = k; t /= 2; )
+		{
+			a = a * a % n;
+			if (t & p) a = a * i % n;
+		}
+		if (a == 1) continue;
+		for (i = q; i; --i)
+		{
+			long long b = a * a % n;
+			if (b == 1)
+			{
+				if (a == n-1) goto L1;
+				return false;
+			}
+			a = b;
+		}
+		if (a != 1) return false;
+L1:;
+	}
+	return true;
+}
+ 
+int main()
+{
+	int bgn, end;
+	freopen("pprime.in", "r", stdin);
+	freopen("pprime.out", "w", stdout);
+	scanf("%d%d", &bgn, &end);
+	if (bgn <= 5 && 5 <= end) puts("5");
+	if (bgn <= 7 && 7 <= end) puts("7");
+	if (bgn <= 11 && 11 <= end) puts("11");
+	for (int bit = 2, k = 10; bit <= 5; ++bit, k *= 10)
+		for (int front = 1; front <= 9; front += 2)
+		{
+			if (front * k * k > end) goto L3;
+			for (int rear = 0; rear < k; ++rear)
+			{
+				int t = front * k + rear, n = t, i = bit - 1;
+				do n = n * 10 + (t /= 10) % 10;
+				while (--i);
+				if (n < bgn || n > end) continue;
+				for (int i = 0; i < sizeof(prime) / sizeof(prime[0]); ++i)
+					if (n % prime[i] == 0) goto L2;
+				if (!Miller_Rabin(n)) goto L2;
+				printf("%d\n", n);
+L2:;
+			}
+		}
+L3:;
+}#include <fstream>//一种类BFS方法,by adventop
+#include<cmath>
+using namespace std;
+ofstream fout ("pprime.out",ios::out);
+ifstream fin ("pprime.in",ios::in);
+long a,b,head=0,tail=10,tw[10]={0,1,2,3,4,5,6,7,8,9},gz=0,dl[100000]={0,0,1,2,3,4,5,6,7,8,9},dl2[100000]={0,1,1,1,1,1,1,1,1,1,1};
+bool prime(long c)
+{
+	double l=sqrt(c);
+	for(int i=2;i<=l;i++)
+		if(c%i==0) return false;
+	return true;
+}
+int cheng(int a1,int b1)
+{
+	for(int i=1;i<=b1-1;i++)
+		a1*=10;
+	return a1;
+}
+int main()
+{
+	fin>>a>>b;
+	if((5>=a)&&(5<=b)) fout<<5<<endl;
+	if((7>=a)&&(7<=b)) fout<<7<<endl;
+	if((11>=a)&&(11<=b)) fout<<11<<endl;
+	int temp=tail,tt=1;
+	while(gz<=b)
+	{
+		head=tt;
+		for(int i=0;i<10;i++)
+		{
+			for(int j=head;j<=tail;j++)
+			{
+				temp++;
+				gz=cheng(10,dl2[j]+1)*tw[i]+dl[j]*10+tw[i];
+				if (gz>b) return 0;
+				else
+				{
+					dl2[temp]=dl2[j]+2;
+					dl[temp]=gz;
+					if(prime(gz)&&(gz>=a)) fout<<gz<<endl;
+				}
+			}
+		}
+		tt=tail+1;
+		tail=temp;
+	}
+	return 0;
+}/*
+ID:jackdav2
+PROB:pprime
+LANG:C++
+*/
+#include <stdio.h>//计数重叠法 By JackDavid127
+int num[20];
+int begin,end;
+bool isprime(int x){
+	if(x%2==0) return 0;
+	for (int i=3;i*i<=x;i+=2) if(x%i==0) return 0;
+	return 1;
+}
+int Modify(int x){
+	int t=x;x/=10;
+	while (x>0){
+		t=t*10+x%10;
+		x/=10;
+	}
+	return t;
+}
+int main(){
+	freopen("pprime.in","r",stdin);
+	freopen("pprime.out","w",stdout);
+	int i,j,k;
+	scanf("%d%d",&begin,&end);
+	if(begin<=5&&5<=end) printf("5\n");
+	if(begin<=7&&7<=end) printf("7\n");
+	if(begin<=11&&11<=end) printf("11\n");
+	i=10;
+	while (Modify(i)<begin) i++;
+	while (Modify(i)<=end){
+		k=i;j=1;
+		while (k>9) {k/=10;j*=10;}
+		if(k%2==0) {i+=j;continue;}
+		j=Modify(i);
+		if(isprime(j)) printf("%d\n",j);
+		i++;
+	}
+	return 0;
+}/*
+ID: blackco3
+TASK: pprime
+LANG: C++
+*/
+#include <fstream>
+#include <memory.h>
+#include <math.h>
+using namespace std;
+ 
+#define _max_ 10000000
+int bis_prime[(_max_+31)>>5];
+ 
+void bit_sifter(int max_num ) {
+	for(register int i=2; i<=sqrt(float(max_num)); i++){
+		if( !( ((bis_prime[i>>5]) >> (i & 0x1f)) &1 ) )
+			continue ;
+		for( register int cur=i<<1; cur<max_num; cur+=i )
+			bis_prime[cur>>5] &= ~(1<<(cur&0x1f)) ;
+	}
+}
+ 
+int main()
+{	
+	ifstream fin("pprime.in");
+	int low, up ;
+	fin >> low >> up;
+	up = up>_max_ ? _max_ : up ;
+	ofstream fout("pprime.out");
+	memset( bis_prime, 0xff, sizeof(int)*((up+31)>>5) ); 
+	bit_sifter(up);
+	register int *p_prime=bis_prime+(low>>5);
+	register int bit = low&0x1f, i;
+	int digit[8], rank, tmp, found ;
+	for( int cur=low; cur<=up; cur++){
+		if( (*p_prime >> bit)&1 ){
+			rank=0 , tmp=cur;
+			while( tmp ) 
+				digit[rank++] = tmp%10, tmp /= 10 ;
+			for( found=1, i=0; i<(rank>>1); i++)
+				if( digit[i]!=digit[rank-1-i] ){
+					found=0;
+					break ;
+				}
+			if( found )
+				fout << cur << endl;
+		}
+		if( ++bit==32 )
+			bit=0, p_prime++ ;
+	}
+	return 0;
+}/*
+ID:herohan1
+LANG:C++
+TASK:pprime
+*/
+ 
+#include <fstream>
+#include <iostream>
+#include <math.h>
+ 
+using namespace std;
+ 
+bool* pp=new bool[9999999];
+class pprime{
+	int low;
+	int high;
+	int digits_l;
+	int digits_h;
+public:
+ 
+	pprime(ifstream& infile){
+		infile>>low;
+		infile>>high;
+		digits_l=digits(low);
+		digits_h=digits(high);
+		for(int i=0;i<9999999;i++)
+			pp[i]=false;
+	}
+ 
+	int digits(int num){
+		int a=0;
+		while(num){
+			num/=10;
+			a++;
+		}
+		return a;
+	}
+ 
+	bool prime(int num){
+		if(num%2==0)
+			return false;
+		else{
+		   for(int i=3;i<=sqrt(num);i+=2)
+			   if(num%i==0)
+				   return false;
+ 
+			return true;
+		}
+	}
+ 
+	int toInt(int* a,int digits,int low){
+		int num=0;
+		int d=1;
+		for(int i=low;i<=(digits-1)/2;i++,d*=10)
+			num+=(a[i]*d);
+		int s=digits_h-(digits-(digits+1)/2);
+		for(int j=s;j<=digits_h-1;j++,d*=10)
+			num+=(a[j]*d);
+ 
+		return num;
+	}
+ 
+ 
+ 
+	void cal(ofstream& outfile){
+ 		int* p=new int[digits_h];
+ 		   produce(0,digits_h,p,outfile);
+		   for(int i=1;i<9999999;i++)
+			   if(pp[i])
+				   outfile<<i<<endl;
+	}
+ 
+ 
+		void produce(int digit,int digits,int* p,ofstream& outfile){   
+			for(int i=0;i<=9;i++){
+				if(digit==0 && (i%2==0 )  )
+					continue;		 
+		            p[digit]=p[digits-digit-1]=i;
+					 int currDigits=digit*2+1;
+					 //case 1
+ 					if(currDigits>=digits_l && currDigits<digits_h){
+ 
+						int pali=toInt(p,currDigits,0);
+						if(currDigits%2==0 && pali!=11)
+							;
+						else{
+						    if(prime( pali) && pali>=low && pali<=high)
+						   //outfile<<pali<<endl;
+						   pp[pali]=true;}
+ 					}
+                    //case 2
+					currDigits=(digit+1)*2;
+					if(currDigits>=digits_l && currDigits<digits_h){
+						int pali=toInt(p,currDigits,0);
+						if(currDigits%2==0 && pali!=11)
+							;
+						else{if(prime( pali) && pali>=low && pali<=high)
+							//outfile<<pali<<endl;
+							pp[pali]=true;}
+					}
+                    //case 3
+	                if((digit==(digits-1)/2)){
+						int pali=toInt(p,digits,0);
+						if(digits_h%2==0 && pali!=11)
+								;
+						else{	if( pali>=low && pali<=high && prime( pali) )
+							//outfile<<pali<<endl;
+							pp[pali]=true;}
+						}
+					else{				    
+						produce(digit+1,digits,p,outfile);}
+ 
+			}//for
+		}
+ 
+ 
+};
+ 
+int main(){
+	ifstream infile("pprime.in");
+	ofstream outfile("pprime.out");
+ 
+	pprime pp(infile);
+	pp.cal(outfile);
+	return 0;
+}/*
+  ID:p.tiany1
+  LANG:C++
+  PROG:pprime
+*/
+#  include<iostream>
+#  include<cmath>
+using namespace std;
+const int  d[10]={1,10,100,1000,10000,100000,1000000,1000000,100000000,1000000000};
+int  list[10008],l,r,list2[10008],opp[10008];
+void  out()
+{
+      fclose(stdin);
+      fclose(stdout);
+      exit(0);
+}
+void  init()
+{
+      freopen("pprime.in","r",stdin);
+      freopen("pprime.out","w",stdout);
+      int i,j,p;
+      scanf("%d%d",&l,&r);
+      p=0;
+      for  (i=2;i<=10000;i++)      
+        if  (list[i]==0)
+        {
+ 
+            list2[++p]=i;
+            j=2;
+            while  (i*j<=10000)
+            {
+                 list[i*j]=1;           
+                 j++;  
+            }     
+        }
+}
+void  deal()
+{
+      int i,j,a[10],s;
+      for  (i=1;i<=10000;i++)
+      {
+           a[0]=0;
+           j=i;
+           while  (j>0)  
+           {
+                  a[++a[0]]=j%10;
+                  j=j/10;       
+           }     
+           s=0;
+           for  (j=1;j<=a[0];j++)
+                s=s*10+a[j];
+           opp[i]=s;   
+      }      
+}
+bool  check(int s)
+{
+      int i,s1;
+      if  (s<l)  return false; 
+      if  (s>r)  out(); 
+      if  (s<=10000)
+          if  (list[s]==0)  return true;
+          else  return false;
+      s1=sqrt((double) s);
+      for  (i=1;;i++)
+      {
+           if  (list2[i]>s1)  break;
+           if  (s%list2[i]==0)  return false;     
+      }
+      return true;
+}
+void  jishu(int i)
+{
+      int j,d1,d2,d3,s;
+      i=(i-1)/2;
+      for  (d2=d[i-1];d2<=d[i]-1;d2++)
+        for  (d1=0;d1<=9;d1++)
+        {
+             s=opp[d2]+d1*d[i]+d2*d[i+1];
+             if  (check(s))  printf("%d\n",s);   
+        }
+}
+void  oushu(int i)
+{
+       int j,d1,d2,d3,s;
+       i=(i-2)/2;
+       for  (d2=d[i-1];d2<=d[i]-1;d2++)
+         for  (d1=0;d1<=9;d1++)
+         {
+              s=opp[d2]+d1*(d[i]*11)+d2*d[i+2]; 
+              if  (check(s))  printf("%d\n",s);                        
+         }
+}
+void  work()
+{
+      int i;
+      for  (i=1;i<=9;i++)
+        if  (i&1)  jishu(i);
+        else  oushu(i);
+}
+int  main()
+{
+     init();
+     deal();
+     work();
+}
+/*输出一个区间内的回文素数：
+  基本思想：先枚举回文数再判断是否为素数
+  ：先打了一个一万内的素数表，和一个一万内的回文数表
+    再枚举位数，继而看其是奇数位还是偶数位，
+    再来枚举 这个范围内的回文数
+  (突然发现一个优化：偶数回文数必定被11整除，所以偶数回文数只有一个：11)
+*/    
+<source>

@@ -1,0 +1,169 @@
+/*
+ID: niepeng1
+PROG: bigbrn
+LANG: C++
+*/
+#include <iostream>
+using namespace std;
+int a[1000][1000];
+inline int minn(int x,int y,int z)
+{
+ if(x>y)
+  x=y;
+ return x<z?x:z;
+}
+ 
+int main()
+{
+ freopen("bigbrn.in","r",stdin);
+ freopen("bigbrn.out","w",stdout);
+ memset(a,1,sizeof(a));
+ int n,num,x,y,j,i,ans;
+ scanf("%d%d",&n,&num);
+ for(i=0;i<num;i++)
+ {
+  scanf("%d %d",&x,&y);
+  a[x-1][y-1]=0;
+ }
+ ans=0;
+ for(i=0;i<n;i++)
+  for(j=0;j<n;j++)
+  {
+   if(a[i][j])
+   {
+    if(!(i&&j)) a[i][j]=1;
+    else a[i][j]=minn(a[i-1][j],a[i][j-1],a[i-1][j-1])+1;
+    if(ans<a[i][j])
+     ans=a[i][j];
+   }
+ 
+  }
+ printf("%d\n",ans);
+ return 0;
+}
+ 
+ 
+ 
+本文来自CSDN博客，转载请标明出处：http://blog.csdn.net/china1000/archive/2010/04/24/5523087.aspx
+/*
+TASK:bigbrn
+LANG:C++
+*/
+#include<cstring>
+#include<cstdio>
+#include<iostream>
+#include<algorithm>
+ 
+#define maxn 801
+#define INF 0x7fffffff
+ 
+using namespace std;
+ 
+int n,m;
+int H[maxn][maxn],L[maxn][maxn],R[maxn][maxn],l[maxn][maxn],r[maxn][maxn];
+int matrix[maxn][maxn];
+ 
+void init(){
+    freopen("bigbrn.in","r",stdin);
+    freopen("bigbrn.out","w",stdout);
+    scanf("%d",&n);
+    for (int i = 1 ; i <= n ; i++)
+        for (int j = 1 ; j <= n ; j++)
+            matrix[i][j] = 1;
+    int k ;
+    scanf("%d",&k);
+    for (int i = 1 ; i <= k ; i++)
+        {
+            int x,y;
+            scanf("%d%d",&x,&y);
+            matrix[x][y] = 0;
+        }
+}
+int main(){
+    init();
+    memset(l,0,sizeof(l));
+    memset(r,0,sizeof(r));
+    for (int i = 1;i <= n;i++)
+        {
+            for (int j = 1 ; j <= n ; j++)
+                if (matrix[i][j]!=0)
+                    l[i][j] = l[i][j-1]+1;
+            for (int j = n ; j >= 1 ; j--)
+                if (matrix[i][j]!=0)
+                    r[i][j] = r[i][j+1]+1;
+        }
+    memset(H,0,sizeof(H));
+    memset(L,63,sizeof(L));
+    memset(R,63,sizeof(R));
+    int Answer = -INF;
+    for (int i=1;i<=n;i++)
+        for (int j=1;j<=n;j++)
+            if (matrix[i][j]!=0)
+            {
+                H[i][j] = H[i-1][j] + 1;
+                L[i][j] = min ( l[i][j] , L[i-1][j] );
+                R[i][j] = min ( r[i][j] , R[i-1][j] );
+                Answer = max ( Answer , min(L[i][j] + R[i][j] - 1 , H[i][j] ));
+            }
+    printf("%d\n",Answer);
+    return 0;
+}
+极大子矩阵算法. 只不过超过内存限制.很弱的DP，不过方程复杂一点，代码很短。
+ 
+ 
+/*
+	ID:echooat1
+	LANG:C++
+	TASK:bigbrn
+	*/
+#include <fstream>
+#define V 1002
+#define max(a,b) ((a)>(b)?(a):(b))
+#define min(a,b) ((a)<(b)?(a):(b))
+using namespace std;
+ifstream fin("bigbrn.in");ofstream fout("bigbrn.out");
+long n=0,m=0,f[V][V]={0},ans=0;bool hash[V][V]={0};
+int main(int argc,char** argv){
+	fin >>n>>m;
+	while(m--){
+		long l1,l2;
+		fin >>l1>>l2;
+		hash[l1][l2]=true;
+	}
+	long ans=0;
+	for(long i=1;i<=n;i++)
+		for(long j=1;j<=n;j++)
+			if(!hash[i][j]){
+				long k=min(f[i-1][j],f[i][j-1]);
+				f[i][j]=hash[i-k][j-k]?k:k+1;
+				ans=max(f[i][j],ans);
+			}
+	if(ans>0)
+	fout <<ans<<endl;else fout<<0<<endl;
+	return 0;
+}
+ 
+ 
+速度还可以，如果开滚动数组的话，内存还可优化
+ 
+Compiling...
+Compile: OK
+ 
+Executing...
+   Test 1: TEST OK [0.000 secs, 7912 KB]
+   Test 2: TEST OK [0.000 secs, 7912 KB]
+   Test 3: TEST OK [0.011 secs, 7912 KB]
+   Test 4: TEST OK [0.011 secs, 7912 KB]
+   Test 5: TEST OK [0.000 secs, 7912 KB]
+   Test 6: TEST OK [0.011 secs, 7912 KB]
+   Test 7: TEST OK [0.000 secs, 7912 KB]
+   Test 8: TEST OK [0.011 secs, 7912 KB]
+   Test 9: TEST OK [0.011 secs, 7912 KB]
+   Test 10: TEST OK [0.032 secs, 7912 KB]
+   Test 11: TEST OK [0.043 secs, 7912 KB]
+   Test 12: TEST OK [0.043 secs, 7912 KB]
+   Test 13: TEST OK [0.043 secs, 7912 KB]
+   Test 14: TEST OK [0.043 secs, 7912 KB]
+   Test 15: TEST OK [0.043 secs, 7912 KB]
+ 
+All tests OK.

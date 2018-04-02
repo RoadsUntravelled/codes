@@ -1,0 +1,852 @@
+/*
+ID:ybojan2
+LANG:C++
+TASK:msquare
+*/
+ 
+#include <iostream>
+#include <fstream>
+ 
+using namespace std;
+ 
+void swap(int &x,int &y)
+{
+     int tmp=x;
+     x=y;
+     y=tmp;
+}
+ 
+struct data{
+       int last,deep,opr,x;
+}q[100000];
+ 
+bool use[100000];
+ 
+int od(int x)
+{
+    int num[9];
+    for (int i=8;i>=1;i--)
+    {
+        num[i]=x%10;
+        x/=10;
+    } 
+    int jie[8],tt=0;
+    jie[0]=1;
+    for (int i=1;i<=7;i++)
+        jie[i]=jie[i-1]*i;
+    for (int i=1;i<=7;i++)
+    {
+        int count=0;
+        for (int j=i+1;j<=8;j++)
+            if (num[j]<num[i]) count++;
+        tt+=jie[8-i]*count;
+    }
+    return tt;
+}
+ 
+int main()
+{
+    ifstream fin("msquare.in");
+    ofstream fout("msquare.out");
+ 
+    int now[8],l=1,r=1,goal=0,k[3][8]={{4,5,6,7,0,1,2,3},{3,0,1,2,7,4,5,6},{0,5,1,3,4,6,2,7}};
+ 
+    for (int i=0;i<=3;i++)
+        fin>>now[i];
+    for (int i=7;i>=4;i--)
+        fin>>now[i];
+    for (int i=0;i<=7;i++)
+        goal=goal*10+now[i];
+    q[1].deep=0;
+    q[1].opr=-1;
+    q[1].x=12348765;
+    use[od(12348765)]=true;
+    q[1].last=0;
+    if (q[1].x==goal){
+                      fout<<0<<endl;
+                      fout<<endl;
+                      return 0;
+                      }
+    for (;;)
+    {
+        int tmp[8],x=q[l].x;
+        for (int i=7;i>=0;i--)
+        {
+            tmp[i]=x%10;
+            x/=10;
+        }
+        for (int i=0;i<3;i++)
+        {
+            int nn[8];
+            for (int j=0;j<8;j++) nn[j]=tmp[k[i][j]];
+            x=0;
+            for (int j=0;j<8;j++) x=x*10+nn[j];
+            if (!use[od(x)]){
+                         r++;
+                         q[r].deep=q[l].deep+1;
+                         q[r].x=x;
+                         q[r].last=l;
+                         q[r].opr=i;
+                         use[od(x)]=true;
+                         if (x==goal) break;
+                         }
+        }
+        l++;
+        if (x==goal) break;
+        if (l>r) break;
+    }
+    fout<<q[r].deep<<endl;
+    int len=0,res[1000];
+    while (q[r].opr>=0)
+    {
+          len++;
+          res[len]=q[r].opr;
+          r=q[r].last;
+    }
+    for (int i=len;i>=1;i--)
+        fout<<(char)('A'+res[i]);
+    fout<<endl;
+    return 0;
+}/*
+ID: cmykrgb1
+PROG: msquare
+LANG: C++
+*/
+#include <iostream>
+#include <fstream>
+#define MAX 40320
+using namespace std;
+ 
+class state
+{
+public:
+	state()
+	{
+		comefrom=0;cur=0;cont=0;
+	}
+	state *comefrom;
+	unsigned long cur;
+	short cont;
+};
+state O;
+state S[MAX];
+ 
+class queue
+{
+private:
+	long first,last;
+	long list[MAX];
+public:
+	long size;
+ 
+	queue()
+	{
+		reset();
+	}
+ 
+	void reset()
+	{
+		first=0;
+		size=0;
+		last=-1;
+	}
+ 
+	void ins(state *comefrom,unsigned long cur,long cont)
+	{
+		size++;
+		last++;
+		list[last]=last;
+		S[last].comefrom=comefrom;
+		S[last].cur=cur;
+		S[last].cont=cont;
+	}
+ 
+	long del()
+	{
+		size--;
+		return list[first++];
+	}
+};
+ 
+ifstream fi("msquare.in");
+ofstream fo("msquare.out");
+bool hash[MAX];
+char B[4]={0,'A','B','C'};
+ 
+long fac[8]={1,1,2,6,24,120,720,5040};
+unsigned long Finish;
+ 
+unsigned long cantor(unsigned long S)
+{
+	long x=0,i,p,k,j;
+	bool hash[8]={false};
+	for (i=8;i>=2;i--)
+	{
+		k=S>> 3*(i-1);
+		S-=k<<3*(i-1);
+		hash[k]=true;
+		p=k;
+		for (j=0;j<=k-1;j++)
+			if (hash[j])
+				p--;
+		x+=fac[i-1]*p;
+	}
+	return x;
+}
+ 
+void init()
+{
+	long i,t;
+	for (i=0;i<8;i++)
+	{
+		fi>>t;
+		t--;
+		O.cur*=8;
+		O.cur+=t;
+	}
+	Finish=cantor(O.cur);
+	hash[0]=true;
+}
+ 
+unsigned long turn(unsigned long S,int f)
+{
+	long i;
+	unsigned long P=0;
+	switch (f)
+	{
+	case 1:
+		for (i=1;i<=8;i++)
+			P+=(S & (7<< ( (i-1)*3) ) )>> (i-1)*3 << ((8-i)*3);
+		return P;
+		break;
+	case 2:
+		P+=(S & 07000)>>3*3;
+		P+=(S & 00777)<<3;
+		P+=(S & 070000)<<3*3;
+		P+=(S & 077700000)>>3;
+		return P;
+		break;
+	case 3:
+		P= (S & 070077007);
+		P+=(S & 070)<<5*3;
+		P+=(S & 0700)>>1*3;
+		P+=(S & 0700000)>>3*3;
+		P+=(S & 07000000)>>1*3;
+		return P;
+		break;
+	}
+}
+ 
+void print(long ed,long f)
+{
+	string O;
+	state *P=&S[ed];
+	char OUT[MAX];
+	long cnt=0,i;
+	while (P->cont)
+	{
+		cnt++;
+		OUT[cnt]=B[P->cont];
+		P=P->comefrom;
+	}
+ 
+	fo << cnt+1<<endl;
+	for (i=cnt;i>=1;i--)
+		fo << OUT[i];
+	fo << B[f] << endl;
+ 
+	fi.close();
+	fo.close();
+	exit(0);
+}
+ 
+void bfs()
+{
+	long i=0,j;
+	queue Q;
+	Q.ins(&O,001234567,0);
+	while (Q.size)
+	{
+		unsigned long p,ct;
+		i=Q.del();
+		for (j=1;j<=3;j++)
+		{
+			p=turn(S[i].cur,j);
+			ct=cantor(p);
+			if (!hash[ct])
+			{
+				hash[ct]=true;
+				if (ct==Finish)
+					print(i,j);
+				Q.ins(&S[i],p,j);
+			}
+		}
+	}
+}
+ 
+int main()
+{
+	init();
+	bfs();
+	fo << '0' <<'\n'<<'\n';
+	fi.close();
+	fo.close();
+	return 0;
+}作者CmYkRgB123
+
+使用ADT来简化思路。
+/*
+ID:billwsy2
+PROG:msquare
+LANG:C++
+*/
+#include <iostream>
+#include <fstream>
+#include <string>
+using namespace std;
+ 
+ifstream fin( "msquare.in" );
+ofstream fout( "msquare.out" );
+ 
+struct SType {
+    int data;
+    int operator[]( int Ind ) {
+        return (( data & ( 7 << ( 3 * ( Ind -1 ) ) ) ) >> ( 3 * ( Ind -1 ) ) );
+    }
+};
+ 
+bool operator== ( SType A , SType B )
+{
+    return ( A.data == B.data );
+}
+ 
+void chg( SType &X , int Ind , int num )
+{
+    num %= 8;
+    num <<= ( 3 * ( Ind -1 ) ) ;
+    X.data &= ~( 7 << ( 3 * ( Ind -1 ) ) );
+    X.data |= num;
+}
+ 
+SType swap( SType X , int A , int B )
+{
+    int t = X[ A ];
+    chg( X , A , X[ B ] );
+    chg( X , B , t );
+    return X;
+}
+ 
+SType change( SType X , char way )
+{
+    switch ( way ) {
+        case 'A' :
+            for ( int i = 1 ; i <= 4 ; ++ i ) {
+                X = swap( X , i , i + 4 );
+            }
+            return X;
+            break;
+        case 'B' :
+            for ( int i = 4 ; i >= 2 ; -- i ) {
+                X = swap( X , i , i - 1 );
+                X = swap( X , i + 4 , i - 1 + 4 );
+            }
+            return X;
+            break;
+        case 'C' :
+            X = swap( X , 2 , 3 );
+            X = swap( X , 2 , 7 );
+            X = swap( X , 2 , 6 );
+            return X;
+            break;
+    }
+    return X;
+}
+ 
+int hash( SType A )
+{
+    return ( A.data >> 3 );
+}
+ 
+SType Ori;
+SType Tar;
+ 
+struct QType
+{
+    SType X;
+    char way;
+    int from;
+};
+ 
+const int MAX_NUM = 40321;
+const int MAX_HNUM = 1 << 21;
+ 
+QType Queue[ MAX_NUM ];
+bool htable[ MAX_HNUM ];
+ 
+QType qNow , qNew;
+int BFS()
+{
+    int head = 0 , tail = 1;
+    Queue[ 0 ].X = Ori;
+    if ( Ori == Tar ) {
+        return 0;
+    }
+    while ( head != tail ) {
+        qNow = Queue[ head ];
+        for ( char i = 'A' ; i <= 'C' ; ++ i ) {
+            qNew.X = change( qNow.X , i );
+            qNew.way = i;
+            qNew.from = head;
+            if ( !htable[ hash( qNew.X ) ] ) {
+                htable[ hash( qNew.X ) ] = true;
+                Queue[ tail ++ ] = qNew;
+            }
+            if ( qNew.X == Tar ) {
+                return ( tail - 1 );
+            }
+        }
+        ++head;
+    }
+    return 0;
+}
+ 
+string str;
+int main()
+{
+    chg( Ori , 1 , 1 ); chg( Ori , 2 , 2 );
+    chg( Ori , 3 , 3 ); chg( Ori , 4 , 4 );
+    chg( Ori , 5 , 8 ); chg( Ori , 6 , 7 );
+    chg( Ori , 7 , 6 ); chg( Ori , 8 , 5 );
+    for ( int i = 1 ; i <= 4 ; ++ i ) {
+        int t;
+        fin >> t;
+        chg( Tar , i , t );
+    }
+    for ( int i = 8 ; i >= 5 ; -- i ) {
+        int t;
+        fin >> t;
+        chg( Tar , i , t );
+    }
+    int i = BFS();
+    while ( i ) {
+        str = Queue[ i ].way + str;
+        i = Queue[ i ].from;
+    }
+    fout << str.length() << endl;
+    if ( str.length() == 0 ) {
+        fout << endl;
+    }
+    for ( i = 0 ; i < str.length() ; i +=60 ){
+        fout << str.substr( i , 60 ) << endl;
+    }
+    if ( i % 60 != 0 ) {
+        fout << endl;
+    }
+    fin.close();
+    fout.close();
+}
+
+/*
+  ID:nettle99
+  PROG:msquare
+  LANG:C++
+  */
+ 
+  #include <iostream>
+  #include <cstdio>
+  using namespace std;
+ 
+  FILE *fin = fopen("msquare.in", "r");
+  FILE *fout = fopen("msquare.out", "w");
+  struct node
+  {  
+    int data, fa;
+    short c;
+  };
+ 
+  int aim;
+  void init()
+  {
+    int k;
+    fscanf(fin, "%d", &aim);
+    aim -= 1;
+    for (int i = 1; i < 8; i++)
+      {
+        fscanf(fin, "%d", &k);
+        aim = (aim << 3) + k - 1;
+      }
+    if (aim == 342391) {fprintf(fout, "0\n"); exit(0);}
+    return ;
+  }
+ 
+  void Change(int &x, int A, int B)
+  {
+    int a, b;
+    a = (x >> (A * 3)) & 7;
+    b = (x >> (B * 3)) & 7;
+    x = x & (0x00FFFFFF - (7 << (A * 3)) - (7 << (B * 3)));
+    x += (a << (B * 3)) + (b << (A * 3));
+    return ;
+  }
+ 
+  int Move(int n, int c)
+  {
+  int x = n, k;
+    switch (c)
+      {
+        case 1 : Change(x, 0, 7);
+                 Change(x, 1, 6);
+                 Change(x, 2, 5);
+                 Change(x, 3, 4);
+                 break;
+        case 2 : x = ((x & 0x00007000) << 9) + ((x & 0x00FF8000) >> 3) + ((x & 0x00000E00) >> 9) + ((x & 0x000001FF) << 3);
+                 break;
+        case 3 : k = x & 0x00000038;
+                 x = x & 0x00FFFFC7;
+                 Change(x, 1, 2);
+                 Change(x, 5, 2);
+                 Change(x, 6, 5);
+                 x += k << 15;
+                 break;
+      }
+    return x;
+  }
+ 
+  bool hash[8];
+  short fac[8] = {1, 1, 2, 6, 24, 120, 720, 5040};
+  int cantor(int x)
+  {
+    int no = 0;
+    short k, n;
+    memset(hash, 0, sizeof(hash));
+    for (int i = 7; i >= 1; i--)
+      {
+        k = x >> (i * 3);
+        x -= k << (i * 3);
+        hash[k] = true;
+        n = 0;
+        for (int j = 0; j < k; j++)
+          if (hash[j]) n++;
+        no += fac[i] * (k - n);
+      }
+    return no;
+  }
+ 
+  int N;
+  bool vis[40320];
+  node queue[40320];
+ 
+  void prin(int n)
+  {
+    if (queue[n].fa)
+      {
+        N++;
+        prin(queue[n].fa);
+        fprintf(fout, "%c", queue[n].c + 'A' - 1);
+      }
+    else fprintf(fout, "%d\n", N);
+    return ;
+  } 
+ 
+  void BFS()
+  {
+    int l = 0, r = 1, s, v, n;
+    aim = cantor(aim);
+    memset(queue, 0, sizeof(queue));
+    queue[r].data = 342391;
+    vis[0] = true;
+    while (l < r)
+      {
+        l++;
+        s = queue[l].data;
+        for (int i = 1; i <= 3; i++)
+          {
+            v = Move(s, i);
+            n = cantor(v);
+            if (vis[n]) continue;
+            vis[n] = true;
+            r++;
+            queue[r].data = v;
+            queue[r].fa = l;
+            queue[r].c = i;
+            if (n == aim)
+              {
+                prin(r);
+                fprintf(fout, "\n");
+                return ;
+              }
+          }
+      }
+  }
+ 
+  int main()
+  {
+    init();
+    BFS();
+    return EXIT_SUCCESS;
+  }
+<\source>
+ 
+--~~~~
+ 
+----
+ 
+== 
+全排列编码判重，以及程序写得比较丑 ==
+ 
+<source lang="c++">
+/*
+ID: your_ID
+TASK: msquare
+LANG: C++
+*/
+ 
+#include<fstream>
+#include<sstream>
+#include<string>
+using namespace std;
+ 
+#define OPERATE_A 0
+#define OPERATE_B 1
+#define OPERATE_C 2
+ 
+struct Plate
+{
+	long data[9];
+	long& operator[] (long p) {return data[p];};
+}stk[50000];
+ 
+ifstream fin("msquare.in");
+ofstream fout("msquare.out");
+ostringstream sout;
+string ans;
+ 
+long pre[50000];
+long dist[50000];
+long method[50000];
+bool b[50000] = {0};
+ 
+long get_num(Plate& p)
+{
+	static const long mul[8] = {1, 1, 2, 6, 24, 120, 720, 5040};
+	long i, j;
+	long cr = 0;
+	for (i = 1; i < 8; ++i)
+	{
+		long ct = 0;
+		for (j = i+1; j <= 8; ++j) if (p[i] > p[j]) ++ct;
+		cr += ct * mul[8-i];
+	}
+	return cr+1;
+}
+ 
+void operate(Plate& dest, Plate& src, long op)
+{
+	switch(op)
+	{
+		case OPERATE_A:
+			dest[1] = src[8]; dest[2] = src[7]; dest[3] = src[6]; dest[4] = src[5];
+			dest[8] = src[1]; dest[7] = src[2]; dest[6] = src[3]; dest[5] = src[4];
+			break;
+		case OPERATE_B:
+			dest[1] = src[4]; dest[2] = src[1]; dest[3] = src[2]; dest[4] = src[3];
+			dest[8] = src[5]; dest[7] = src[8]; dest[6] = src[7]; dest[5] = src[6];
+			break;
+		case OPERATE_C:
+			dest[1] = src[1]; dest[2] = src[7]; dest[3] = src[2]; dest[4] = src[4];
+			dest[8] = src[8]; dest[7] = src[6]; dest[6] = src[3]; dest[5] = src[5];
+			break;
+	}
+}
+ 
+void output(long oi)
+{
+	if (pre[oi] != oi) output(pre[oi]);
+	if (method[oi] >= 0) sout << (char)('A' + method[oi]);
+}
+ 
+int main()
+{
+	long i, j;
+	Plate dest;
+	for (i = 1; i <= 8; ++i) fin >> dest[i];
+	long did = get_num(dest);
+	if (did == 1) {fout << "0\n" << endl; return 0;}
+	for (i = 1; i <= 8; ++i) stk[1][i] = i;
+	pre[1] = 1; method[1] = -1;
+	b[get_num(stk[1])] = true; dist[get_num(stk[1])] = 0;
+	i = 1; j = 2;
+	while (i < j)
+	{
+		long dk;
+		long iid = get_num(stk[i]);
+		if (iid == did)
+		{
+			output(i);
+			break;
+		}
+		for (dk = 0; dk < 3; ++dk)
+		{
+			operate(stk[j], stk[i], dk);
+			long jid = get_num(stk[j]);
+			if (!b[jid])
+			{
+				b[jid] = true;
+				dist[jid] = dist[iid] + 1;
+				pre[j] = i;
+				method[j] = dk;
+				++j;
+			}
+		}
+		++i;
+	}
+	fout << dist[did] << "\n";
+	ans = sout.str();
+	long times = ans.length() / 60;
+	long remain = ans.length() % 60;
+	for (i = 0; i < times; ++i) fout << ans.substr(i*60, 60) << "\n";
+	if (remain) fout << ans.substr(times*60, remain) << "\n";
+	return 0;
+}
+ 
+<\source>
+ 
+----
+ 
+<source lang="c++">
+/*
+PROB:msquare
+LANG:C++
+ID:hannett1
+*/
+ 
+#include<iostream>
+#include<fstream>
+#include<cstdlib>
+#include<cstring>
+#include<cmath>
+#include<cstdio>
+#include<algorithm>
+using namespace std;
+ 
+ifstream fin ("msquare.in" );
+ofstream fout("msquare.out");
+ 
+#define HASH_NUM 170537
+ 
+bool H[HASH_NUM+5];
+struct Queue_Node {
+	int dat[9];
+	int step,pre;
+	char ope;
+} q[HASH_NUM+15];
+ 
+inline int hash_(int a,int b,int c,int d,int e,int f,int g,int h) {
+	return ( a*10000000 + b*1000000 + c*100000 + d*10000 + e*1000 + f*100 + g*10 + h )
+			%HASH_NUM;
+}
+ 
+int main() {
+	int s1,s2,s3,s4,s5,s6,s7,s8,final,f;
+	memset(H,0,sizeof(H));
+	fin >>s1 >>s2 >>s3 >>s4 >>s8 >>s7 >>s6 >>s5;
+	H[ hash_(1,2,3,4,8,7,6,5) ] = true;
+	final = hash_( s1,s2,s3,s4,s5,s6,s7,s8 );
+	int front=1,rear=1;
+	q[1].dat[1]=1; q[1].dat[2]=2; q[1].dat[3]=3; q[1].dat[4]=4;
+	q[1].dat[5]=8; q[1].dat[6]=7; q[1].dat[7]=6; q[1].dat[8]=5;
+	q[1].step=0;
+	q[1].pre = -1;
+	int tmp[9];
+	if( hash_(1,2,3,4,8,7,6,5) == final ) {
+		fout <<0 <<endl <<endl;
+		return 0;
+	}
+	while(front<=rear) {
+		/**A**/
+		memcpy( tmp , q[front].dat , sizeof(tmp) );
+		swap( tmp[1] , tmp[5] ) ;
+		swap( tmp[2] , tmp[6] ) ;
+		swap( tmp[3] , tmp[7] ) ;
+		swap( tmp[4] , tmp[8] ) ;
+		f=hash_( tmp[1],tmp[2],tmp[3],tmp[4],tmp[5],tmp[6],tmp[7],tmp[8] );
+		if( ! H[f] ) {
+			rear++;
+			memcpy( q[rear].dat , tmp , sizeof(tmp) );
+			q[rear].pre = front;
+			q[rear].ope = 'A';
+			q[rear].step = q[front].step +1 ;
+			H[f]=true;
+			if( f == final )
+				break;
+		}
+		/**B**/
+		memcpy( tmp , q[front].dat , sizeof(tmp) );
+		swap( tmp[4] , tmp[3] );
+		swap( tmp[3] , tmp[2] );
+		swap( tmp[2] , tmp[1] );
+		swap( tmp[8] , tmp[7] );
+		swap( tmp[7] , tmp[6] );
+		swap( tmp[6] , tmp[5] );
+		f=hash_( tmp[1],tmp[2],tmp[3],tmp[4],tmp[5],tmp[6],tmp[7],tmp[8] );
+		if( ! H[f] ) {
+			rear++;
+			memcpy( q[rear].dat , tmp , sizeof(tmp) );
+			q[rear].pre = front;
+			q[rear].ope = 'B';
+			q[rear].step = q[front].step +1 ;
+			H[f]=true;
+			if( f == final )
+				break;
+		}
+		/**C**/
+		memcpy( tmp , q[front].dat , sizeof(tmp) );
+		swap( tmp[2] , tmp[6] ) ;
+		swap( tmp[3] , tmp[7] ) ;
+		swap( tmp[3] , tmp[6] ) ;
+		f=hash_( tmp[1],tmp[2],tmp[3],tmp[4],tmp[5],tmp[6],tmp[7],tmp[8] );
+		if( ! H[f] ) {
+			rear++;
+			memcpy( q[rear].dat , tmp , sizeof(tmp) );
+			q[rear].pre = front;
+			q[rear].ope = 'C';
+			q[rear].step = q[front].step +1 ;
+			H[f]=true;
+			if( f == final )
+				break;
+		}
+		/*****/
+		front++;
+	}
+	fout <<q[rear].step <<endl;
+	void prints(int,int);
+	prints(rear,q[rear].step);
+	if( q[rear].step % 60 )
+		fout <<endl;
+}
+ 
+void prints(int a,int k) {
+	if(k) {
+		prints( q[a].pre , k-1 );
+		fout <<q[a].ope;
+		if( ! (k%60) )
+			fout <<endl;
+	}
+}
+ 
+<\source>
+ 
+Compiling...
+Compile: OK
+ 
+Executing...
+   Test 1: TEST OK [0.000 secs, 11176 KB]
+   Test 2: TEST OK [0.000 secs, 11176 KB]
+   Test 3: TEST OK [0.000 secs, 11176 KB]
+   Test 4: TEST OK [0.011 secs, 11176 KB]
+   Test 5: TEST OK [0.011 secs, 11176 KB]
+   Test 6: TEST OK [0.011 secs, 11176 KB]
+   Test 7: TEST OK [0.011 secs, 11176 KB]
+   Test 8: TEST OK [0.022 secs, 11176 KB]
+ 
+All tests OK.

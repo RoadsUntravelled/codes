@@ -1,0 +1,530 @@
+</source>
+应该是最简单的算法了，理解非常容易,缺点是……速度
+/*
+ID:noip_jl2
+LANG:C++
+PROG:milk2
+*/
+#include<stdio.h>
+ 
+int N;
+int WorkTime[1000001]={0};
+int Work1,Work2;
+int i,j;
+int maxWork,max,maxFree=0;
+int min=1000001;
+int ans1,ans2;
+ 
+int main(){
+    freopen("milk2.in","r",stdin);
+    freopen("milk2.out","w",stdout);
+    scanf("%d",&N);
+    max=0;min=1000001;
+    for(i=1;i<=N;i++) {
+        scanf("%d %d",&Work1,&Work2);
+        for(j=Work1+1;j<=Work2;j++){
+        WorkTime[j]=1;
+        if(Work1<min)min=Work1;
+        if(Work2>max)max=Work2;
+        }
+    }
+    for(i=min;i<=max+1;i++){
+       if(WorkTime[i]==1){
+                ans1++;
+       }else{
+        if(ans1>maxWork) maxWork=ans1;
+        ans1=0;
+    }
+}
+    for(i=min+1;i<=max;i++){
+       if(WorkTime[i]==0) ans2++;
+       else{
+            if(ans2>maxFree) maxFree=ans2;
+            ans2=0;
+       }
+    }
+    printf("%d %d\n",maxWork,maxFree);
+}/*
+ID: masterr3
+LANG: C++
+TASK: milk2
+*/
+ 
+#include <algorithm>/*要注意这个库是不允许使用的*/
+#include <cstdio>
+using namespace std;
+ 
+struct node
+{
+	int bgn, end;
+	bool operator<(const node &rhs) const
+	{
+		return bgn < rhs.bgn;
+	}
+}a[5000];
+ 
+int main()
+{
+	freopen("milk2.in", "r", stdin);
+	freopen("milk2.out", "w", stdout);
+	int bgn, end, n, res1 = 0, res2 = 0;
+	scanf("%d", &n);
+	for (int i = 0; i < n; ++i)
+		scanf("%d%d", &a[i].bgn, &a[i].end);
+	sort(a, a+n);
+	int left = a[0].bgn, right = a[0].end;
+	for (int i = 1; ; ++i)
+	{
+		for (; i < n && a[i].bgn <= right; ++i)
+			if (a[i].end > right)
+				right = a[i].end;
+		if (right-left > res1) res1 = right-left;
+		if (i == n) break;
+		if (a[i].bgn-right > res2) res2 = a[i].bgn-right;
+		left = a[i].bgn; right = a[i].end;
+	}
+	printf("%d %d\n", res1, res2);
+}/*
+ID : Your ID
+LANG : C++
+PROB : milk2
+*/
+#include<fstream>
+  using namespace std;
+struct p
+  {long b,e;}; //begin , end
+bool USF(p x , p y) //USer_Function
+  {return x.b > y.b;} //从大到小
+int main(void)
+  {
+    int n,i;
+    ifstream fin("milk2.in");
+    ofstream fout("milk2.out");
+    fin>>n;
+    p* pir = new p[n+1]; //预留一个位使用方便
+    i = n;
+    do {fin>>pir[i].b>>pir[i].e;} while(--i); //--i比i--效率要高，while(--i)比while(++i<n)效率要高
+    sort(pir+1,pir+n+1,USF); //从大到小排列 
+    i = n;
+    long ans2=0,ans1=0,tmpb,tmpl,tmpe; //tmp_begin , tmp_length , tmp_end
+    while(i)      //开始统计
+    {
+            tmpb=pir[i].b;
+            tmpe=pir[i].e;
+            while(tmpe >= pir[i].b) {
+                       if(tmpe<pir[i].e) tmpe=pir[i].e;
+                       if(!(--i)) {pir[0].b = 0 ; break;} //已统计完，防止pir[0].b未定义
+                       }
+            if((tmpl=tmpe-tmpb)>ans1) ans1=tmpl;
+            if((tmpl=pir[i].b - tmpe)>ans2) ans2=tmpl;
+            }    //当i=0时结束统计
+    fout<<c2<<' '<<c1<<endl;
+    return 0;
+    }
+ 
+ 
+ 
+-----------------------------------------------------/*
+    ID : Your ID
+    PROG : milk2
+    LANG : C++
+*/
+#include <iostream>
+#include <fstream>
+using namespace std;
+int a[5001], b[5001], n;
+int qsort(int l, int r, int a[5001])
+{
+    int i(l), j(r), k(a[(l + r) / 2]);
+    do
+    {
+      while (i <= j && a[i] < k) i++;
+      while (i <= j && a[j] > k) j--;
+      if (i <= j)
+      {
+         a[0] = a[i]; a[i] = a[j]; a[j] = a[0];
+         i++; j--;
+      }
+    } while (i <= j);
+    if (l < j) qsort(l, j, a);
+    if (i < r) qsort(i, r, a);
+}
+int main(void)
+{
+    ifstream fin ("milk2.in");
+    ofstream fout ("milk2.out");
+    fin >> n;
+    for (int i = 1; i <= n; i++)
+      fin >> a[i] >> b[i];
+    qsort(1,n,a);
+    qsort(1,n,b);
+    int l(a[1]), r(b[1]), point(1), ans1(0), ans2(0);
+    do
+    {
+        while (point < n && a[point + 1] <= r) { point++; r = b[point];}
+        if (r - l > ans1) ans1 = r - l;
+        point++; 
+        if (point <= n) {l = a[point]; if (l - r > ans2) ans2 = l - r; r = b[point];}
+    } while (point <= n);
+    fout << ans1 << " " << ans2 << endl;
+    return 0;
+}
+-----------------------------------------------------/*
+ID:09y-z2
+PROG:milk2
+LANG:C++
+*/
+ 
+#include <iostream>
+using namespace std;
+ 
+int exch(long int &a, long int &b){
+     int temp;
+     temp=a;
+     a=b;
+     b=temp;
+     return 0;
+}
+ 
+void quicksort(long int a[], long int b[], int l, int r){
+     int i=l-1,j=r,p=l-1,q=r;
+     long int v=a[r];
+     int k;
+     if(r<=l) return;
+     for(;;){
+        while(a[++i]<v);
+        while(v<a[--j]) if(j==l) break;
+        if(i>=j) break;
+        exch(a[i],a[j]);
+        exch(b[i],b[j]);
+        if(a[i] == v){
+          p++;
+          exch(a[p],a[i]);
+          exch(b[p],b[i]);
+        }
+        if(v==a[j]){
+          q--;
+          exch(a[j],a[q]);
+          exch(b[j],b[q]);
+        }
+      }
+      exch(a[i],a[r]);
+      exch(b[i],b[r]);
+      j=i-1; i=i + 1;
+      for(k=l; k < p; k++, j--){
+         exch(a[k], a[j]);
+         exch(b[k], b[j]);
+      }
+      for(k=r-1;k>q;k--,i++){
+         exch(a[i],a[k]);
+         exch(b[i],b[k]);
+      }
+      quicksort(a, b, l, j);
+      quicksort(a, b, i, r);
+}
+ 
+int main(){
+     int n;
+     long int start[5001]={-1}, end[5001]={-1};
+     int i,j;
+     freopen("milk2.in","r",stdin);
+     freopen("milk2.out","w",stdout);
+     cin>>n;
+     for(i=0;i<n;i++)
+         cin>>start[i]>>end[i];
+     quicksort(start,end,0,n-1);
+     long int ctime=0,itime = 0;
+     i=0;
+     int s=0, e=0;
+     while(i<n){
+          s=start[i];
+          if(i!=0)
+           itime=itime>(s-e)?itime:(s-e);
+           e=end[i];
+          while((e>=start[i+1])&&(i+1<n)){
+               i++;
+               if(end[i]>e)e=end[i];//把有重叠的时间段加入集合
+              }//end of while
+          ctime=ctime>(e-s)?ctime:(e-s);
+          i++;
+          }// end of while
+     cout<<ctime<<" " <<itime<<endl;
+     return 0;
+}
+ 
+ 
+————————————————————————————用hash做的，刚刚转学C++，代码比较丑，不过排版用的是Emacs。
+ 
+/*
+ID:31440461
+PROG:milk2
+LANG:C++
+*/
+#include<iostream>
+#include<fstream>
+using namespace std;
+const int maxtable=1000000+100;
+ 
+int main()
+{ 
+  int b[maxtable],e[maxtable];
+  int n,sum=0,freetime=0,milktime=0,mark=0;
+  ifstream fin("milk2.in");
+  ofstream fout("milk2.out");
+  memset(b,0,sizeof(b));
+  memset(e,0,sizeof(e));
+  fin>>n;
+  for (int i=1;i<=n;i++)
+    {
+      int be,en;
+      fin>>be>>en;
+      b[be]++;
+      e[en]++;
+    }
+ 
+  bool free=1;
+  for (int i=0;i<maxtable;i++)
+    {
+      if (b[i]) sum+=b[i];
+      if (e[i]) sum-=e[i];
+      if (sum && free)
+	    {
+              if(i-mark>freetime && mark) freetime=i-mark;	     
+              mark=i;
+	      free=0;
+ 
+	    }
+      if (!sum && !free)
+	    {
+	      if(i-mark>milktime) milktime=i-mark;
+	      mark=i;
+	      free=1;
+	    }
+    }
+  fout<<milktime<<' '<<freetime<<endl;
+  return 0;
+}
+---------------------------------------------------也是刚转的c++，原理大概跟上一个类似，但是存到一个数组里，通过+1，-1来区别开始和结束
+ 
+/*
+ID:dddwzl32
+LANG:C++
+TASK:milk2
+*/
+#include<fstream>
+using namespace std;
+main()
+{
+  ifstream fin("milk2.in");
+  ofstream fout("milk2.out");
+ 
+  long i,j,k,l,m,n,p,state,last,maxw,maxe;
+static  long num[1000001]={0};
+  fin >> n;
+ 
+  for (i=0;i<n;i++)
+  {
+    fin >> p;
+    num[p]++;
+    fin >> p;
+    num[p]--;
+  }
+  state=0;
+  maxw=0;
+  maxe=0;
+  last=1000000;
+  for (i=0;i<1000001;i++)
+  {
+    if (num[i]!=0)//关键时刻
+    {
+      if (state==0)//作为工作的开始
+      {
+        state+=num[i];
+        if ((i-last)>maxe) {maxe=i-last;}
+        last=i;
+ 
+      }
+      else//此时已经有工作了
+      {
+        if ((state+num[i])>0)//还继续有着工作
+        {
+          state+=num[i];
+          continue;
+        }
+        else//工作停止了
+        {
+          state+=num[i];
+          if ((i-last)>maxw) maxw=i-last;
+          last=i;
+        }
+      }
+    }
+  } 
+  fout << maxw << " " << maxe << endl; 
+  return 0;
+}/*
+ID:Qepdcwqxl
+LANG:C++
+TASK:milk2
+*/
+#include<fstream>
+#include<iostream>
+using namespace std;
+ 
+ifstream fin("milk2.in");
+ofstream fout("milk2.out");
+ 
+int partition(double A[],int begin,int end);
+void Qsort(double A[],int begin,int end);	//快速排序
+ 
+struct worktime{
+	double begin;	//工人开始一次工作的时间
+	double end;	//工人结束一次工作的时间
+};
+ 
+int main()
+{
+	int number;
+	int i;
+	int countA = 0;	//用于记录至少有一个人工作的时间段数目
+	int countN = 0;	//用于记录没有一个人工作的时间段数目
+	int countW = 0;	//用于记录开始计算时间的起点
+ 
+	double *atleast = new double[sizeof(double)];	//用于记录至少有一个人工作的时间段
+	double *noone = new double[sizeof(double)];	//用于记录没有一个人工作的时间段
+	worktime *worker = new worktime[sizeof(double)];
+ 
+	fin>>number;
+ 
+	for(i = 0;i < number;i++)
+		fin>>worker[i].begin>>worker[i].end;
+ 
+	for(i = 0;i < number;i++)
+	{
+		if(i+1 < number)
+		{
+			if(worker[i].end - worker[i+1].begin < 0)
+			{
+				atleast[countA] = worker[i].end - worker[countW].begin;
+				noone[countN] = worker[i+1].begin - worker[i].end;
+				countA++;
+				countW += i+1;
+				countN++;
+			}
+		}
+	}
+ 
+	if(countA == 1)
+		fout<<atleast[0]<<" "<<noone[0]<<endl;
+	else
+	{
+		Qsort(atleast,0,countA);
+		Qsort(noone,0,countN);
+		fout<<atleast[0]<<" "<<noone[0]<<endl;
+	}
+ 
+	delete[] worker;
+	delete[] atleast;
+	delete[] noone;
+	return 0;
+}
+ 
+int partition(double A[],int begin,int end)
+{
+	int r = end;
+	int i = begin - 1,j = begin;
+	double temp;
+ 
+	while(j < end)
+	{
+		if (A[j] < A[r])
+		{
+			i++;
+			if(i != j)
+			{
+				temp = A[i];
+				A[i] = A[j];
+				A[j] = temp;
+			}
+		}
+		j++;
+	}
+ 
+	if (i+1 != r)
+	{
+		temp = A[i+1];
+		A[i+1] = A[r];
+		A[r] = temp;
+	}
+ 
+	return i+1;
+}
+void Qsort(double A[],int begin,int end)
+{
+	if (begin < end)
+	{
+		int q = partition(A,begin,end);
+		Qsort(A,begin,q-1);
+		Qsort(A,q+1,end);
+	}
+}/*
+   ID:sgfreed1
+   TASK:milk2
+   LANG:C++
+*/
+ 
+#include<iostream>
+#include<fstream>
+#include<cstdlib>
+#include<cstring>
+#include<climits>
+#include<algorithm> 
+ 
+using namespace std;
+ 
+ifstream fin("milk2.in"); 
+ofstream fout("milk2.out"); 
+ 
+const int maxn=5001; 
+ 
+long n,lef,rig,r1,r2; 
+ 
+struct node
+{
+	long a,b; 
+} far[maxn];
+ 
+int cmp(const void *a,const void *b) 
+{
+	return (*(node*)a).a-(*(node*)b).a;
+}
+ 
+int main()
+{
+	ios::sync_with_stdio(false);
+ 
+	fin>>n;
+ 
+	for(int i=1;i<=n;++i)
+	   fin>>far[i].a>>far[i].b; 
+ 
+	qsort(far+1,n,sizeof(far[1]),cmp); 
+ 
+	lef=far[1].a,rig=far[1].b,r1=rig-lef; 
+ 
+	for(int i=2;i<=n;++i) 
+	{
+		if(far[i].a>rig)
+		{
+			r2=max(r2,far[i].a-rig);
+			r1= max(r1,rig-lef); 
+			lef=far[i].a,rig=far[i].b; 
+		}
+		else
+		    rig=max(rig,far[i].b); 
+	}
+ 
+	fout<<r1<<' '<<r2<<endl; 
+ 
+	return 0; 
+}

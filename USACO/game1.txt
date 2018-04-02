@@ -1,0 +1,222 @@
+/*
+ID:ybojan2
+LANG:C++
+TASK:game1
+*/
+ 
+#include <iostream>
+#include <fstream>
+ 
+using namespace std;
+ 
+int main()
+{
+    ifstream fin("game1.in");
+    ofstream fout("game1.out");
+ 
+    int n,num[101],dp[101][101],sum[101][101];
+    fin>>n;
+    for (int i=1;i<=n;i++)
+        fin>>num[i];
+    for (int i=1;i<=n;i++)
+    {
+        sum[i][i]=num[i];
+        for (int j=i+1;j<=n;j++)
+            sum[i][j]=sum[i][j-1]+num[j];
+    }
+    memset(dp,0,sizeof(dp));
+    for (int i=1;i<=n;i++)
+        dp[i][i]=num[i];
+    for (int l=1;l<n;l++)
+        for (int i=1;i<=n-l;i++)
+            dp[i][i+l]=sum[i][i+l]-min(dp[i][i+l-1],dp[i+1][i+l]);
+    fout<<dp[1][n]<<" "<<sum[1][n]-dp[1][n]<<endl;
+    return 0;
+}
+状态转移方程
+F[i][j]=max{num[i]+S[i+1][j]-F[i+1][j],num[j]+S[i][j-1]-F[i][j-1]}
+--CmYkRgB123 22:44 2008年4月17日 (CST)
+/*
+ID: cmykrgb1
+PROG: game1
+LANG: C++
+*/
+#include <iostream>
+#include <fstream>
+#define MAXN 201
+using namespace std;
+ifstream fi("game1.in");
+ofstream fo("game1.out");
+long n,ori,ans,ans2;
+long F[MAXN][MAXN],num[MAXN];
+ 
+inline long max(long a,long b)
+{
+	return a>b?a:b;
+}
+ 
+long get_S(long a,long b)
+{
+	long p=0;
+	for (long i=a;i<=b;i++)
+		p+=num[i];
+	return p;
+}
+ 
+long get_F(long i,long j)
+{
+	if (F[i+1][j]==ori)
+		F[i+1][j]=get_F(i+1,j);
+	if (F[i][j-1]==ori)
+		F[i][j-1]=get_F(i,j-1);
+	return max(num[i]+get_S(i+1,j)-F[i+1][j],num[j]+get_S(i,j-1)-F[i][j-1]);
+}
+ 
+void init()
+{
+	long i;
+	fi >> n;
+	memset(F,0xF,sizeof(F));
+	ori=F[0][0];
+	for (i=1;i<=n;i++)
+	{
+		fi >> num[i];
+		F[i][i]=num[i];
+	}
+}
+ 
+void print()
+{
+	fo << ans << ' ' << ans2 << endl;
+	fi.close();
+	fo.close();
+}
+ 
+int main()
+{
+	init();
+	ans=get_F(1,n);
+	ans2=get_S(1,n)-ans;
+	print();
+	return 0;
+}/*超短30行版*/
+#include <stdio.h>
+ 
+int n,add[101],lin[101],win[101][101];
+ 
+void pre(){
+	int i;
+	scanf("%d",&n);
+	for(i=1;i<=n;i++){
+		scanf("%d",&lin[i]);
+		add[i]=add[i-1]+lin[i];
+	}
+}
+ 
+int max(int a,int b){
+	return a>b?a:b;
+}
+ 
+int ask(int a,int b){
+	if(a==b)win[a][b]=lin[a];
+	else if(win[a][b]==0)win[a][b]=max(lin[a]+add[b]-add[a]-ask(a+1,b),lin[b]+add[b-1]-add[a-1]-ask(a,b-1));
+	return win[a][b];
+}
+ 
+main(){
+	freopen("game1.in","r",stdin);
+	freopen("game1.out","w",stdout);
+	pre();
+	printf("%d %d\n",ask(1,n),add[n]-ask(1,n));
+	return 0;
+}简化了的转移方程（其实本质一样～）
+/*
+ID:lqp18_31
+LANG:C++
+PROG:game1
+*/
+#include<stdio.h>
+#define min(x,y) ((x)>(y)?(y):(x))
+FILE *fin=fopen("game1.in" ,"r");
+FILE *fout=fopen("game1.out","w");
+int a[103],N,s[103][103],f[103][103];
+ 
+void init()
+{
+    fscanf(fin,"%d",&N);
+    for(int i=1;i<=N;i++)
+      fscanf(fin,"%d",a+i);
+    for(int i=0;i<N;i++)
+      for(int j=1;j+i<=N;j++)
+        s[j][i+j]=s[j][i+j-1]+a[i+j];
+}
+ 
+int main()
+{
+    init();
+    for(int i=0;i<N;i++)
+      for(int j=1;j+i<=N;j++)
+        f[j][j+i]=s[j][j+i]-min(f[j+1][j+i],f[j][j+i-1]);
+    fprintf(fout,"%d %d\n",f[1][N],s[1][N]-f[1][N]);
+    return 0;
+}/*
+ID:nettle99
+PROG:game1
+LANG:C++
+*/
+ 
+#include <cstdio>
+#define MAXN 101
+#define max(x, y) ((x) > (y) ? (x) : (y))
+ 
+FILE *fin = fopen("game1.in", "r");
+FILE *fout = fopen("game1.out", "w");
+ 
+int f[MAXN], g[MAXN], a[MAXN], N;
+ 
+void Init()
+{
+  fscanf(fin, "%d", &N);
+  for (int i = 1; i <= N; i++)
+    {
+      fscanf(fin, "%d", &a[i]);
+      f[i] = g[i] = a[i];
+    }
+  return ;
+}
+ 
+void Doit()
+{
+  for (int i = 1; i <= N - 1; i++)
+    for (int j = 1; j + i <= N; j++)
+      {
+        f[j] = max(a[j] + g[j + 1] - f[j + 1], a[j + i] + g[j] - f[j]);
+        g[j] = g[j] + a[j + i];
+      }
+  fprintf(fout, "%d %d\n", f[1], g[1] - f[1]);
+  return ;
+}
+ 
+int main()
+{
+  Init();
+  Doit();
+  return 0;
+}  Test 1: TEST OK [0.011 secs, 2848 KB]
+  Test 2: TEST OK [0.000 secs, 2844 KB]
+  Test 3: TEST OK [0.011 secs, 2848 KB]
+  Test 4: TEST OK [0.000 secs, 2848 KB]
+  Test 5: TEST OK [0.000 secs, 2844 KB]
+  Test 6: TEST OK [0.000 secs, 2844 KB]
+  Test 7: TEST OK [0.022 secs, 2848 KB]
+  Test 8: TEST OK [0.000 secs, 2844 KB]
+  Test 9: TEST OK [0.022 secs, 2844 KB]
+  Test 10: TEST OK [0.011 secs, 2848 KB]
+  Test 11: TEST OK [0.011 secs, 2844 KB]
+  Test 12: TEST OK [0.000 secs, 2844 KB]
+  Test 13: TEST OK [0.000 secs, 2848 KB]
+  Test 14: TEST OK [0.011 secs, 2844 KB]
+  Test 15: TEST OK [0.000 secs, 2848 KB]
+  Test 16: TEST OK [0.000 secs, 2844 KB]
+可以用一位数组实现像这一类DP的空间的节约
+--Nettle99 19:13 2009年2月1日 (CST)

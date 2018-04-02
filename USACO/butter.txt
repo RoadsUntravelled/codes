@@ -1,0 +1,486 @@
+/*
+ID:cmykrgb2
+LANG:C++
+TASK:butter
+*/
+/* 
+ * Problem: USACO Training 3.2.6
+ * Author: Guo Jiabao
+ * Time: 2009.4.6 10:20
+ * State: Solved
+ * Memo: Dijkstra + 堆
+*/
+#include <iostream>
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
+#include <cstring>
+const int MAXC=501,MAXN=801,MAXM=1451*2,INF=0x7FFFFFFF;
+using namespace std;
+struct edge
+{
+	edge *next;
+	int t,v;
+}ES[MAXM];
+struct HeapElement
+{
+	int key,value;
+};
+struct MinHeap
+{
+	HeapElement H[MAXN];
+	int size;
+	int Position[MAXN];
+	void init(){H[size=0].value=-INF;}
+	void ins(int key,int value)
+	{
+		int i,f;
+		HeapElement p={key,value};
+		for (i=++size;p.value<H[f=i>>1].value;i=f)
+		{
+			H[i]=H[f];
+			Position[H[i].key]=i;
+		}
+		H[i]=p;
+		Position[H[i].key]=i;
+	}
+	void decrease(int key,int value)
+	{
+		int i,f;
+		HeapElement p={key,value};
+		for (i=Position[key];p.value<H[f=i>>1].value;i=f)
+		{
+			H[i]=H[f];
+			Position[H[i].key]=i;
+		}
+		H[i]=p;
+		Position[H[i].key]=i;
+	}
+	void delmin()
+	{
+		int i,c;
+		HeapElement p=H[size--];
+		for (i=1;(c=i<<1)<=size;i=c)
+		{
+			if (c+1<=size && H[c+1].value<H[c].value)
+				c++;
+			if (H[c].value<p.value)
+			{
+				H[i]=H[c];
+				Position[H[i].key]=i;
+			}
+			else
+				break;
+		}
+		H[i]=p;
+		Position[H[i].key]=i;
+	}
+}H;
+int N,M,C,EC=-1,Ans=INF;
+int Cow[MAXC],sp[MAXN];
+edge *V[MAXN];
+inline void addedge(int a,int b,int c)
+{
+	ES[++EC].next=V[a];
+	ES[EC].t=b;ES[EC].v=c;
+	V[a]=&ES[EC];
+}
+void init()
+{
+	int i,a,b,c;
+	freopen("butter.in","r",stdin);
+	freopen("butter.out","w",stdout);
+	scanf("%d%d%d",&C,&N,&M);
+	for (i=1;i<=C;i++)
+		scanf("%d",&Cow[i]);
+	for (i=1;i<=M;i++)
+	{
+		scanf("%d%d%d",&a,&b,&c);
+		addedge(a,b,c);
+		addedge(b,a,c);
+	}
+}
+void Dijkstra(int S)
+{
+	int i,j;
+	sp[S]=0;
+	H.decrease(S,0);
+	for (i=S;;)
+	{
+		H.delmin();
+		for (edge *k=V[i];k;k=k->next)
+		{
+			if (sp[i]+k->v < sp[j=k->t])
+			{
+				sp[j]=sp[i]+k->v;
+				H.decrease(j,sp[j]);
+			}
+		}
+		if (H.size)
+			i=H.H[1].key;
+		else
+			break;
+	}
+}
+void solve()
+{
+	int i,j,Total;
+	for (i=1;i<=N;i++)
+	{
+		H.init();
+		for (j=1;j<=N;j++)
+		{
+			H.ins(j,INF);
+			sp[j]=INF;
+		}
+		Total=0;
+		Dijkstra(i);
+		for (j=1;j<=C;j++)
+			Total+=sp[Cow[j]];
+		if (Total<Ans)
+			Ans=Total;
+	}
+}
+int main()
+{
+	init();
+	solve();
+	printf("%d\n",Ans);
+	return 0;
+}
+//spfa
+#include <iostream>
+#include <string.h>
+using namespace std;
+int eq[801],a[801][801],dis[801];
+int farm[501];
+int n,p,c;
+short v[801];
+int l[801][101];
+int ans;
+void spfa(int s)
+{
+	int h=0,r=1;
+	eq[r]=s;
+	v[s]=true;
+	int now,st,u;
+	do
+	{
+		h++;
+		st=eq[(h-1)%p+1];
+		for(int i=1;i<=l[st][0];i++)
+		{
+			u=l[st][i];
+			if(dis[st]+a[st][u]<dis[u])
+			{
+				dis[u]=dis[st]+a[st][u];
+				if(!v[u])
+				{
+					r++;
+					eq[(r-1)%p +1]=u;
+					v[u]=true;
+				}
+			}
+		}
+		v[st]=false;
+	}while(h<r);
+	now=0;
+	for(int i=1;i<=n;i++)
+		now+=dis[farm[i]];
+	if(ans>now)
+		ans=now;
+}
+main()
+{
+	freopen("butter.in","r",stdin);
+	freopen("butter.out","w",stdout);
+	ans=0x7FFFFFFF;
+	cin>>n>>p>>c;
+	for(int i=1;i<=n;i++)
+		cin>>farm[i];
+	int x,y,z;
+	for(int i=1;i<=c;i++)
+	{
+		cin>>x>>y>>z;
+		l[x][0]++;
+		l[x][l[x][0]]=y;
+		a[x][y]=z;
+		l[y][0]++;
+		l[y][l[y][0]]=x;
+		a[y][x]=z;
+	}
+	for(int i=1;i<=p;i++)
+	{
+		memset(dis,0x7F,sizeof(dis));
+		memset(v,0,sizeof(v));
+		dis[i]=0;
+		spfa(i);
+	}
+	cout<<ans<<endl;
+	return 0;
+}用SPFA确实很快，最慢的0.1+s
+/*
+ID:tbbd4261
+PROG:butter
+LANG:C++
+*/
+ 
+#include<fstream>
+#include<cstring>
+#include<queue>
+using namespace std;
+const int MAX=805;
+const int INF=0x0fffffff;
+ifstream fin("butter.in");
+ofstream fout("butter.out");
+struct node{
+       int end,len;
+};
+int cnt[MAX]={0},location[505]={0},n,p,c;
+node adj[MAX][MAX];
+bool in[MAX]={0};
+int d[MAX];
+int SPFA(int i)
+{
+    memset(in,0,sizeof in);
+    for(int k=1; k<=p; k++)d[k]=INF;
+    queue<int> Q;
+    Q.push(i); 
+    in[i]=true;
+    d[i]=0;
+    while(!Q.empty())
+    {
+          int x=Q.front(); Q.pop();
+          in[x]=false;
+          for(int j=0; j<cnt[x]; j++)
+                  if(d[x]+adj[x][j].len < d[ adj[x][j].end ])
+                  {
+                   d[adj[x][j].end]=d[x]+adj[x][j].len;   
+                   if(!in[adj[x][j].end])
+                                        { 
+                                        Q.push(adj[x][j].end);
+                                        in[adj[x][j].end ]=true; 
+                                        }                      
+                  }
+    }
+ 
+    int ans=0;
+ 
+    for(int j=1; j<=n; j++)
+    {
+            if(d[location[j]]==INF)return -1; 
+            else  ans+=d[location[j]]; 
+    }
+    return ans;
+}
+ 
+void print()
+{
+     int i,j;
+     for(i=1; i<=p ; i++)
+     for(j=0; j<cnt[i]; j++)
+     {
+              fout<<i<<' '<<adj[i][j].end<<' '<<adj[i][j].len<<endl;
+     }
+}
+ 
+int main()
+{
+    memset(cnt,0,sizeof cnt);
+    fin>>n>>p>>c;
+    for(int i=1; i<=n; i++)
+            fin>>location[i];
+ 
+    for(int i=1,s,t,value; i<=c; i++)
+    {
+            fin>>s>>t>>value;
+            adj[s][cnt[s]].end=t; adj[s][cnt[s]].len=value; cnt[s]++;
+            adj[t][cnt[t]].end=s; adj[t][cnt[t]].len=value; cnt[t]++;
+    }
+ 
+    int tt,min=INF;
+ 
+    for(int i=1; i<=p; i++)
+    {
+            tt=SPFA(i); 
+            if(tt<min&&tt!=-1) min=tt;
+    }
+    fout<<min<<endl;
+    //system("pause");
+    return 0;
+}SPFA+前向星。。
+ 
+/*
+	ID:echooat1
+	LANG:C++
+	TASK:butter
+	*/
+#include <fstream>
+#include <climits>
+#define ma 199405222
+using namespace std;
+struct re{
+	long x,y,z;
+};
+int comp(const void* i,const void* j){
+	return ((re*)i)->x-((re*)j)->x;
+}
+void spfa(long);
+long dis[801][801]={0},f[801]={0},p=0;
+re a[5000];
+long n,m,sum[801]={0};
+long tan(long o,long u){
+	for(long i=f[o];i<f[o+1];i++)
+		if(a[i].y==u)return a[i].z;
+	return ma;
+	}
+int main(int argc,char** argv){
+	ifstream fin("butter.in");
+	ofstream fout("butter.out");
+	fin >>p>>n>>m;
+	for(long i=1;i<=p;i++){
+		long k=0;
+		fin >>k;
+		sum[k]++;
+	}
+	for(long i=1;i<=m;i++){
+		fin >>a[i].x>>a[i].y>>a[i].z;
+		a[i+m].y=a[i].x;a[i+m].x=a[i].y;a[i+m].z=a[i].z;
+	}
+	m<<=1;
+	qsort(a,m+1,sizeof(a[0]),comp);
+	for(long i=1;i<=m;i++)
+		if(f[a[i].x]==0)
+			f[a[i].x]=i;
+	f[n+1]=m+1;
+	for(long i=n;i>=n;i--)
+		if(f[i]==0)
+			f[i]=f[i+1];
+	for(long i=1;i<=n;i++)
+		spfa(i);
+	long ans=LONG_MAX;
+	for(long i=1;i<=n;i++){
+		for(long j=1;j<=n;j++)
+			dis[i][0]+=(sum[j]*dis[i][j]);
+		if(dis[i][0]<ans)ans=dis[i][0];
+		}
+	fout <<ans<<endl;
+	return 0;
+}
+void spfa(long u){
+	for(long i=1;i<=n;i++)
+		dis[u][i]=ma;
+	dis[u][u]=0;
+	long d[2000]={0},head=1,tail=1;
+	bool hash[801]={false};
+	d[1]=u;hash[u]=true;
+	while(head<=tail){
+		long now=d[head++];
+		for(long i=f[now];i<f[now+1];i++)
+			if(dis[u][now]+tan(now,a[i].y)<dis[u][a[i].y]){
+				dis[u][a[i].y]=dis[u][now]+tan(now,a[i].y);
+				if(!hash[a[i].y]){
+					d[++tail]=a[i].y;
+					hash[a[i].y]=true;
+				}
+			}
+		hash[now]=false;
+		}
+	}妾身（jiangan2）的静态链表
+/*
+Executing...
+   Test 1: TEST OK [0.000 secs, 2932 KB]
+   Test 2: TEST OK [0.011 secs, 2932 KB]
+   Test 3: TEST OK [0.000 secs, 2932 KB]
+   Test 4: TEST OK [0.000 secs, 2932 KB]
+   Test 5: TEST OK [0.011 secs, 2932 KB]
+   Test 6: TEST OK [0.011 secs, 2932 KB]
+   Test 7: TEST OK [0.032 secs, 2932 KB]
+   Test 8: TEST OK [0.076 secs, 2932 KB]
+   Test 9: TEST OK [0.119 secs, 2932 KB]
+   Test 10: TEST OK [0.130 secs, 2932 KB]
+ 
+All tests OK.
+*/
+/*
+ID:jiangan2
+TASK:butter
+LANG:C++
+*/
+#include<fstream>
+#include<cstring>
+#include<stdio.h>
+using namespace std;
+ 
+struct node{
+       int lth,des,link;
+};
+ 
+const int MAXV=801;
+const int MAXE=2901;
+int n,p,c,i;
+int cow[MAXV],lc[MAXV],q[1024],inq[MAXV];
+int dis[MAXV];
+node heap[MAXE];
+ 
+void init(){
+	int t,u,ll,tmp,htop=0;
+	scanf("%d%d%d",&n,&p,&c);
+	i=1;
+	while (i<=n){
+        scanf("%d",&t);
+        cow[t]++;
+        i++;
+    };
+    for (i=1;i<=c;i++){
+        scanf("%d%d%d",&t,&u,&ll);
+        tmp=lc[t];htop++;lc[t]=htop;
+        heap[htop].link=tmp;heap[htop].des=u;heap[htop].lth=ll;
+        tmp=lc[u];htop++;lc[u]=htop;
+        heap[htop].link=tmp;heap[htop].des=t;heap[htop].lth=ll;
+    };
+};
+ 
+int spfa(int d){
+    int tail=0,head=-1,cup,sum=0;
+    q[0]=d;dis[d]=0;inq[d]=1;
+    while (head!=tail) {
+          head=(head+1)&1023;
+          cup=lc[q[head]];
+          while (cup) {
+                if (dis[q[head]]+heap[cup].lth<dis[heap[cup].des]){
+                    dis[heap[cup].des]=dis[q[head]]+heap[cup].lth;
+                    if (!inq[heap[cup].des]) {
+                        tail=(tail+1)&1023;
+                        q[tail]=heap[cup].des;
+                        inq[heap[cup].des]=1;
+                    };
+                };
+                cup=heap[cup].link;
+          };
+          inq[q[head]]=0;
+    };
+    for (i=1;i<=p;i++) sum+=cow[i]*dis[i];
+    return sum;
+};
+ 
+void pmain(){
+     int t,sl=1<<30;
+     for (int i=1;i<=p;i++) {
+         memset(dis,126,sizeof(dis));
+         t=spfa(i);
+         if (t<sl) sl=t;
+     };
+     printf("%d\n",sl);
+};
+ 
+int main(){
+    freopen("butter.in","r",stdin);
+	freopen("butter.out","w",stdout);
+	memset(cow,0,sizeof(cow));
+	memset(lc,0,sizeof(lc));
+	memset(inq,0,sizeof(inq));
+	init();
+	pmain();
+    return 0;
+}

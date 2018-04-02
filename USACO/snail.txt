@@ -1,0 +1,347 @@
+/*
+PROB: snail
+LANG: C++
+ID: tjbwyk1
+*/
+ 
+#include <fstream>
+using namespace std;
+ 
+ifstream cin("snail.in");
+ofstream cout("snail.out");
+ 
+const int maxn=122;
+const int gx[4]={-1,0,1,0},
+          gy[4]={0,1,0,-1};
+short int map[maxn][maxn];
+int ans,n,b;
+ 
+void init()
+{
+     cin>>n>>b;
+     memset(map,0,sizeof(map));
+     for (int i=1; i<=n; i++) map[0][i]=map[i][0]=map[n+1][i]=map[i][n+1]=-1;
+     for (int i=0; i<b; i++)
+     {
+         char ch;
+         int k;
+         cin>>ch>>k;
+         map[ch-64][k]=-1;
+     }
+}
+ 
+void print()
+{
+     for (int j=1; j<=n; j++)
+     {
+         for (int i=1; i<=n; i++)
+         switch (map[i][j])
+         {
+                case -1: cout<<"#";
+                break;
+                case 0: cout<<".";
+                break;
+                case 1: cout<<"@";
+         }
+         cout<<endl;
+     }
+}
+ 
+inline void dfs(int x, int y, int d, int sum)
+{
+     int xx=x, yy=y;     
+     while (map[x+gx[d]][y+gy[d]]==0)
+     {
+           sum++;
+           x+=gx[d];
+           y+=gy[d];
+           map[x][y]=1;
+     }
+//     print();
+     if (sum>ans) ans=sum;
+//     cout<<"("<<x<<","<<y<<")"<<endl<<sum<<endl;
+     if (map[x+gx[d]][y+gy[d]]!=1)
+       for (int dd=0; dd<4; dd++)
+         if (map[x+gx[dd]][y+gy[dd]]==0)
+           dfs(x,y,dd,sum);
+     while ((x!=xx)||(y!=yy))
+     {
+           sum--;
+           map[x][y]=0;
+           x-=gx[d];
+           y-=gy[d];
+     }
+}
+ 
+void doit()
+{
+     ans=1;
+     map[1][1]=1;
+     for (int d=0; d<4; d++)
+       if (map[1+gx[d]][1+gy[d]]==0)
+         dfs(1,1,d,1);
+}
+ 
+void outit()
+{
+     cout<<ans<<endl;
+}
+ 
+int main()
+{
+    init();
+    doit();
+    outit();
+    cin.close();
+    cout.close();
+    return 0;
+}
+/*
+TASK:snail
+LANG:C++
+*/
+ 
+#include<iostream>
+#include<fstream>
+#include<string>
+using namespace std;
+ 
+bool map[122][122];
+int dx[]={0,-1,0,1,0};
+int dy[]={0,0,1,0,-1};
+int n;
+struct MAPS
+{
+bool v[122][122];
+}Zero;
+ 
+int DFS(int X,int Y,MAPS Z)
+{
+int r=0,t,x,y;
+for(int c=1;c<=4;c++)
+if(map[X+dx[c]][Y+dy[c]]==0 && Z.v[X+dx[c]][Y+dy[c]]==0)
+{
+t=0,x=X,y=Y;
+MAPS T=Z;
+while(map[x+dx[c]][y+dy[c]]==0 && Z.v[x+dx[c]][y+dy[c]]==0)
+{
+x+=dx[c];
+y+=dy[c];
+t++;
+T.v[x][y]=1;
+}
+if(Z.v[x+dx[c]][y+dy[c]]==0)
+r=max(r,t+DFS(x,y,T));
+else
+r=max(r,t);
+}
+return r;
+}
+ 
+int main()
+{
+ifstream cin("snail.in");
+ofstream cout("snail.out");
+memset(map,0,sizeof(map));
+Zero.v[1][1]=1;
+int s;
+cin>>n>>s;
+for(int i=0;i<=n+1;i++)
+map[0][i]=1,map[n+1][i]=1,map[i][0]=1,map[i][n+1]=1;
+for(int i=1;i<=s;i++)
+{
+string t;
+cin>>t;
+int w=0;
+for(int i=1;i<t.length();i++)
+w*=10,w+=t[i]-'0';
+map[w][t[0]-'A'+1]=1;
+}
+cout<<DFS(1,1,Zero)+1<<endl;
+return 0;
+}/*
+  ID:jiazhip1
+  PROG:snail
+  LANG:C++
+*/
+ 
+#include <iostream>
+#include <cstring>
+ 
+using namespace std;
+ 
+const int u[4][2] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+ 
+bool map[121][121], v[122][122];
+int n, ans;
+ 
+bool check(int x, int y)
+  {
+    return (1 <= x && x <= n && 1 <= y && y <= n && ! map[x][y] && ! v[x][y]);
+  }
+ 
+void Search(int x, int y, int step)
+  {
+    int k, t1, t2, d;
+    for (k = 0; k < 4; k ++)
+      {
+        for (t1 = x, t2 = y, d = 0; check(t1+u[k][0], t2+u[k][1]); d ++)
+          t1 += u[k][0], t2 += u[k][1], v[t1][t2] = true;
+        if (d && ! v[t1+u[k][0]][t2+u[k][1]])
+          Search(t1, t2, step+d);
+        else
+          ans = max(ans, step+d);
+        for ( ; t1 != x || t2 != y; t1 -= u[k][0], t2 -= u[k][1])
+          v[t1][t2] = false;
+      }
+  }
+ 
+int main()
+  {
+    int b, x, y;
+    char ch;
+ 
+    freopen("snail.in", "r", stdin);
+    freopen("snail.out", "w", stdout);
+ 
+    memset(map, false, sizeof(map));
+    for (scanf("%d%d", &n, &b), getchar(); b; getchar(), b --)
+      {
+        ch = getchar(), y = int(ch)-64;
+        scanf("%d", &x), map[x][y] = true;
+      }
+ 
+    ans = 0;
+    memset(v, false, sizeof(v)), v[1][1] = true;
+    Search(1, 1, 1);
+ 
+    printf("%d\n", ans);
+ 
+    return 0;
+  }/*
+ID:nettle99
+PROG:snail
+LANG:C++
+*/
+ 
+#include <cstdio>
+#define MAXL 129
+#define abs(x) (x > 0 ? x : -(x))
+const int dr[4][2] = {{-1, 0}, {0, -1}, {0, 1}, {1, 0}};
+ 
+FILE *fin = fopen("snail.in", "r");
+FILE *fout = fopen("snail.out", "w");
+ 
+bool map[MAXL][MAXL], vis[MAXL][MAXL];
+int N, B, ANS;
+char str[6];
+ 
+void DFS(int NowX, int NowY, int Dr, int cnt)
+{
+    //fprintf(fout, "%d %d\n", NowX, NowY);
+    if (map[NowX][NowY] || vis[NowX][NowY]) return ;
+    if (cnt > ANS) ANS = cnt;
+    vis[NowX][NowY] = true;
+int x = NowX + dr[Dr][0], y = NowY + dr[Dr][1];
+    if (map[x][y])
+        for (int i = 0; i <= 3; i++)
+            DFS(NowX + dr[i][0], y = NowY + dr[i][1], i, cnt + 1);
+    else
+        DFS(NowX + dr[Dr][0], y = NowY + dr[Dr][1], Dr, cnt + 1);
+    vis[NowX][NowY] = false;
+    return ;
+}
+ 
+void Wall()
+{
+    for (int i = 0; i <= N + 1; i++)
+        map[0][i] = map[N + 1][i] = true;
+    for (int i = 0; i <= N + 1; i++)
+        map[i][0] = map[i][N + 1] = true;
+    return ;
+}
+ 
+int getnum()
+{
+int sum = 0;
+    for (int i = 1; str[i]; i++)
+        sum = sum * 10 + (str[i] - '0');
+    return sum;
+}
+ 
+int main()
+{
+    fscanf(fin, "%d %d", &N, &B);
+    Wall();
+    while (B--)
+    {
+        fscanf(fin, "%s", str);
+        map[getnum()][str[0] - 'A' + 1] = true;
+    }
+    DFS(1, 1, 2, 1);
+    DFS(1, 1, 3, 1);
+    fprintf(fout, "%d\n", ANS);
+    return 0;
+}/*
+	ID:echooat1
+	LANG:C++
+	TASK:snail
+	*/
+#include <fstream>
+#include <cstring>
+#define v 125
+#define max(a,b) ((a)>(b)?(a):(b))
+#define min(a,b) ((a)<(b)?(a):(b))
+using namespace std;
+ifstream fin("snail.in");ofstream fout("snail.out");
+int fim[5][2]={{0,0},{-1,0},{0,1},{1,0},{0,-1}};long ans=0,ji=0;
+long n=0,m=0;bool stop[v][v]={false},hash[v][v]={0};
+void go(void){
+	fout <<ans<<endl;
+	fin.close();fout.close();exit(0);
+}
+void dfs(long x,long y,long k,long sum){
+	long temp=0,l1=x,l2=y;
+	while(!stop[x+fim[k][0]][y+fim[k][1]]&&!hash[x+fim[k][0]][y+fim[k][1]]){
+		temp++;
+		x+=fim[k][0];y+=fim[k][1];
+		hash[x][y]=true;
+	}
+	long u=k-1;if(u<=0)u=4;
+	if(hash[x+fim[k][0]][y+fim[k][1]]||(
+		(hash[x+fim[k%4+1][0]][y+fim[k%4+1][1]]||stop[x+fim[k%4+1][0]][y+fim[k%4+1][1]])&&
+			(hash[x+fim[u][0]][y+fim[u][1]]||stop[x+fim[u][0]][y+fim[u][1]]))){
+		if(sum+temp>ans)
+			ans=sum+temp;
+		for(int i=min(x,l1);i<=max(x,l1);i++)
+		for(int j=min(y,l2);j<=max(y,l2);j++)
+			hash[i][j]=false;
+		hash[l1][l2]=true;
+		return;
+	}
+	dfs(x,y,k%4+1,sum+temp);
+	dfs(x,y,u,sum+temp);
+	for(int i=min(x,l1);i<=max(x,l1);i++)
+		for(int j=min(y,l2);j<=max(y,l2);j++)
+			hash[i][j]=false;
+	hash[l1][l2]=true;
+}
+int main(int argc,char** argv){
+	fin >>n>>m;fin.get();
+	while(m--){
+		char ch;ch=fin.get();
+		string st;
+		getline(fin,st);long temp=0;
+		for(size_t i=0;i<st.length();i++)temp=temp*10+st[i]-'0';
+		stop[temp][ch-'A'+1]=true;
+	}
+	for(long i=1;i<=n;i++)
+		stop[0][i]=stop[i][0]=stop[n+1][i]=stop[i][n+1]=true;
+	hash[1][1]=true;
+	dfs(1,1,2,1);
+	dfs(1,1,3,1);
+	hash[1][1]=false;
+	fout <<ans<<endl;
+	fin.close();fout.close();
+	return 0;
+}

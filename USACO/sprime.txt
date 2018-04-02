@@ -1,0 +1,283 @@
+/*
+ID:wuyangj1
+TASK:sprime
+LANG:C++
+*/
+#include<iostream>
+#include<cmath>
+using namespace std;
+int n;
+bool check(int d)
+{
+     int i;
+     for (i=2;i<=(int)sqrt(d);i++) 
+        if (d%i==0) return true;
+     return false;
+}
+void dfs(int s,int k)
+{
+     int i;
+     if (check(s)) return;
+     if (k==n) printf("%d\n",s);
+        else for (i=1;i<=9;i+=2) dfs(s*10+i,k+1);
+}
+int main()
+{
+    int i,a[5];
+    freopen("sprime.in","r",stdin);
+    freopen("sprime.out","w",stdout);
+    scanf("%d",&n);
+    a[1]=2;a[2]=3;a[3]=5;a[4]=7;
+    for (i=1;i<=4;i++) dfs(a[i],1);
+    return 0;
+}//这是题目吗？/*
+ID:ybojan2
+LANG:C++
+TASK:sprime
+*/
+ 
+#include <iostream>
+#include <fstream>
+#include <stdint.h>
+#include <math.h>
+ 
+using namespace std;
+ 
+int num[10],n,len=0,res[1000000],maxn=0;
+ 
+bool isprime(int x)
+{
+     if (x==1) return false;
+     if (x==2) return true;
+     for (int i=2;i<=sqrt(x);i++)
+     {
+         if (x%i==0) return false;
+     }
+     return true;
+}
+ 
+void get(int deep,int now)
+{
+     if (deep>maxn) maxn=deep;
+     if (deep>n)
+     {
+                if (isprime(now)) {
+                                  len++;
+                                  res[len]=now;
+                                  }
+                return;
+     }
+     for (int i=1;i<=9;i+=2)
+     {
+         if (i==5) continue;
+         if (!isprime(now*10+i)) continue;
+         num[deep]=i;
+         get(deep+1,now*10+i);
+     }
+}
+ 
+int main()
+{
+    ifstream fin("sprime.in");
+    ofstream fout("sprime.out");
+    fin>>n;
+    num[1]=2;
+    get(2,2);
+    num[1]=3;
+    get(2,3);
+    num[1]=5;
+    get(2,5);
+    num[1]=7;
+    get(2,7);
+    for (int i=1;i<=len;i++)
+        fout<<res[i]<<endl;
+    return 0;
+}/*
+ID:GeorgeG1
+PROB:sprime
+LANG:C++
+*/
+#include <fstream>
+#include <cstdlib>
+#include <cmath>
+ 
+using namespace std;
+ 
+ifstream fin ("sprime.in");
+ofstream fout ("sprime.out");
+ 
+bool isPrime(long num)
+{
+     if (num==1 || num==0)
+        return false;
+     long max=long(sqrt(double(num)));
+     for (long i=2;i<=max;i++)
+     {
+         if (num%i==0)
+            return false;
+     }
+     return true;
+}
+ 
+void DFS(long num,long times)            //DFS枚举数字 
+{
+     if (times==0)
+     {
+        fout <<num <<endl;
+        return;
+     }
+     times--;
+     for (long i=0;i<=9;i++)
+     {
+         if (isPrime(num*10+i))
+            DFS(num*10+i,times);
+     }
+     return;
+}
+ 
+int main()
+{
+    long len;
+    fin >>len;
+    DFS(0,len);
+    return 0;
+}/*
+ID: kytu8003
+LANG: C++
+TASK: sprime
+*/
+ 
+#include<iostream>
+#include<cmath>
+#include<deque>
+#include<fstream>
+using namespace std;
+int const Max = 10005;
+int const up = 100000000;
+int a[Max];
+int prime[Max],prime_len=0;
+deque<int> k;
+deque<int> ans;
+ 
+ 
+bool Is_prime(int num){
+    int half=int(sqrt(num));
+    for(int i=0;prime[i]<=half;i++){
+        if(!(num%prime[i]))return 0;
+        }
+    return 1;    
+    }
+ 
+void bfs(){
+    int num,y;
+    while(k.size()!=0){
+        num=k[0];
+        k.pop_front();
+        ans.push_back(num);
+        y=num*10;
+        if(y>up);
+        else{
+            y++;
+            for(int i=0;i<5;i++){
+                if(Is_prime(y))k.push_back(y);
+                y+=2;
+                }
+ 
+            }
+        }    
+}
+ 
+ 
+int main()
+{
+ 	freopen("sprime.in", "r", stdin);
+    freopen("sprime.out", "w", stdout);
+ 
+ 
+    for(int i=0;i<Max;i++)
+    a[i]=0;
+ 
+    for(int i=2;i<105;i++)
+        if(!a[i])
+            for(int j=i*i;j<Max;j+=i)
+                a[j]=1;
+    for(int i=2;i<Max;i++)
+        if(!a[i])prime[prime_len++]=i;
+ 
+    k.push_front(2); 
+    k.push_back(3);
+    k.push_back(5);
+    k.push_back(7);
+    bfs(); 
+    int N;
+    scanf("%d",&N);
+    int s=1,t=10;
+    while(--N){s*=10;t*=10;}
+    for(int i=0;i<ans.size();i++)
+        if((ans[i]>s)&&ans[i]<t)printf("%d\n",ans[i]);
+ 
+    return 0;
+ 
+}/*
+ID: hai19961
+PROG: sprime
+LANG: C++
+*/
+ 
+#include<fstream>
+#include<cmath>
+using namespace std;
+ifstream fin("sprime.in");
+ofstream fout("sprime.out");
+int n;
+int ans[10000];
+int wei=0;
+bool IF_Prime(int a)
+{
+   int Sqrt_Number=int(sqrt(a))+1;
+   int i;
+   for(i=2;i<=Sqrt_Number;i++)
+      if(a%i==0)
+         return 0;
+   return 1;
+}
+void dfs(int step,int shu)
+{
+   if(step>n)
+      return ;
+   //cout<<step<<" "<<shu<<endl;
+   if(step==n)
+   {
+      ans[wei++]=shu;
+      return ;
+   }
+   int i;
+   int a;
+   bool g;
+   for(i=0;i<=9;i++)
+   {
+      a=shu*10+i;
+      g=IF_Prime(a);
+      if(g)
+         dfs(step+1,a);
+   }
+   return ;
+}
+int main()
+{
+   fin>>n;
+   if(n==1)
+   {
+      fout<<2<<endl<<3<<endl<<5<<endl<<7<<endl;
+      return 0;
+   }
+   dfs(1,2);
+   dfs(1,3);
+   dfs(1,5);
+   dfs(1,7);
+   int i;
+   for(i=0;i<wei;i++)
+      fout<<ans[i]<<endl;
+   //system("pause");
+return 0;
+}

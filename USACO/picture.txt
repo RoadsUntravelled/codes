@@ -1,0 +1,719 @@
+/*
+ID: cmykrgb1
+PROG: picture
+LANG: C++
+*/
+ 
+//Written By CmYkRgB123
+ 
+#include <iostream>
+#include <fstream>
+#define MAX 10001
+ 
+using namespace std;
+ 
+typedef struct 
+{
+	int s,t,p;
+	bool start;
+}Line;
+ 
+ifstream fi("picture.in");
+ofstream fo("picture.out");
+ 
+int N,ans=0;
+int *level;
+Line Lx[MAX],Ly[MAX];
+ 
+inline int cmp(const void *a,const void *b)
+{
+	if (((Line*)a)->p==((Line*)b)->p)
+	{
+		if (((Line*)a)->start)
+			return -1;
+		else
+			return 1;
+	}
+	return ((Line *)a)->p < ((Line *)b)->p ? -1 : 1;
+}
+ 
+void init()
+{
+	int i,x1,x2,y1,y2;
+	fi >> N;
+	for (i=1;i<=N;i++)
+	{
+		fi >> x1 >> y2 >> x2 >> y1;
+		Lx[i*2-1].p=y1;
+		Lx[i*2-1].s=x1;
+		Lx[i*2-1].t=x2;
+		Lx[i*2-1].start=false;
+		Lx[i*2].p=y2;
+		Lx[i*2].s=x1;
+		Lx[i*2].t=x2;
+		Lx[i*2].start=true;
+		Ly[i*2-1].p=x1;
+		Ly[i*2-1].s=y2;
+		Ly[i*2-1].t=y1;
+		Ly[i*2-1].start=true;
+		Ly[i*2].p=x2;
+		Ly[i*2].s=y2;
+		Ly[i*2].t=y1;
+		Ly[i*2].start=false;
+	}
+	N*=2;
+	qsort(Lx+1,N,sizeof(Lx[0]),cmp);
+	qsort(Ly+1,N,sizeof(Ly[0]),cmp);
+	level=(int *)malloc(sizeof(int)*20002);
+	level+=10000;
+}
+ 
+void Scan(Line *L)
+{
+	int i,j;
+	for (i=-10000;i<=10000;i++)
+		level[i]=0;
+	for (i=1;i<=N;i++)
+	{
+		if (L[i].start)
+		{
+			for (j=L[i].s;j<L[i].t;j++)
+			{
+				level[j]++;
+				if (level[j]==1)
+					ans++;
+			}
+		}
+		else
+		{
+			for (j=L[i].s;j<L[i].t;j++)
+			{
+				level[j]--;
+				if (level[j]==0)
+					ans++;
+			}
+		}
+	}
+}
+ 
+void print()
+{
+	fo << ans << endl;
+	fi.close();
+	fo.close();
+}
+ 
+int main()
+{
+	init();
+	Scan(Lx);
+	Scan(Ly);
+	print();
+	return 0;
+}// 线段树，最慢的点用了0.5s，貌似这题线段树并不占优势
+/*
+PROG: picture
+LANG: C++
+*/
+ 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+ 
+struct Line {
+	int x, y1, y2;
+	bool in;
+} *_a_, *_b_;
+ 
+Line a[10000], b[10000];
+int f[88888];
+bool g[88888]; // 表示该结点的子结点权值是否全为0
+ 
+int i, n = 0, x1, y1, x2, y2;
+long ans = 0;
+ 
+inline int cmp_line(const void *a, const void *b) {
+	_a_ = (Line *)a, _b_ = (Line *)b;
+	if (_a_->x > _b_->x) return 1;
+	if (_a_->x < _b_->x) return -1;
+	return _a_->in ? -1 : 1; // 如果有重合的直线要保证in为true的先入线段树！
+}
+ 
+void insert(const long t, const int l, const int r) {
+	if (l >= y1 && r <= y2 && !g[t]) {
+		if (!f[t]++) ans += r - l;
+		return ;
+	}
+ 
+	long mid = (l + r) / 2, t1 = t << 1, t2 = t1 | 1;
+	f[t1] += f[t], f[t2] += f[t], f[t] = 0; // 子结点权值不全为0，要继续往下递归，当前结点的权值要传递到两子结点
+	if (mid >= y2) insert(t1, l, mid);
+	else if (mid <= y1) insert(t2, mid, r);
+	else insert(t1, l, mid), insert(t2, mid, r);
+	g[t] = f[t1] || f[t2] || g[t1] || g[t2];
+}
+ 
+void erase(const long t, const int l, const int r) {
+	if (l >= y1 && r <= y2 && !g[t]) {
+		if (!--f[t]) ans += r - l;
+		return ;
+	}
+ 
+	long mid = (l + r) / 2, t1 = t << 1, t2 = t1 | 1;
+	f[t1] += f[t], f[t2] += f[t], f[t] = 0;
+	if (mid >= y2) erase(t1, l, mid);
+	else if (mid <= y1) erase(t2, mid, r);
+	else erase(t1, l, mid), erase(t2, mid, r);
+	g[t] = f[t1] || f[t2] || g[t1] || g[t2];
+}
+ 
+int main() {
+	freopen("picture.in", "rt", stdin);
+	freopen("picture.out", "wt", stdout);
+	for (scanf("%d", &i); i; --i) {
+		scanf("%d%d%d%d", &x1, &y1, &x2, &y2);
+		a[n].x = x1, a[n].y1 = y1, a[n].y2 = y2, a[n].in = true;
+		b[n].x = y1, b[n].y1 = x1, b[n].y2 = x2, b[n++].in = true;
+		a[n].x = x2, a[n].y1 = y1, a[n].y2 = y2, a[n].in = false;
+		b[n].x = y2, b[n].y1 = x1, b[n].y2 = x2, b[n++].in = false;
+	}
+ 
+	qsort(a, n, sizeof(Line), cmp_line);
+	memset(f, 0, sizeof f);
+	memset(g, 0, sizeof g);
+	for (i = 0; i < n; ++i) {
+		y1 = a[i].y1, y2 = a[i].y2;
+		a[i].in ? insert(1, -10000, 10000) : erase(1, -10000, 10000);
+	}
+	qsort(b, n, sizeof(Line), cmp_line);
+	memset(f, 0, sizeof f);
+	memset(g, 0, sizeof g);
+	for (i = 0; i < n; ++i) {
+		y1 = b[i].y1, y2 = b[i].y2;
+		b[i].in ? insert(1, -10000, 10000) : erase(1, -10000, 10000);
+	}
+ 
+	printf("%d\n", ans);
+	return 0;
+}// This code is from oimaster (http://hi.baidu.com/oimaster)
+ 
+#include <algorithm>
+#include <iostream>
+#include <cstring>
+ 
+using namespace std;
+ 
+int seg[10001][4], tmp[10001], x1[5001], x2[5001], y1[5001], y2[5001], n, ans;
+int sum[1 << 19], min_value[1 << 19], delta[1 << 19];
+ 
+void Sort1(int head, int tail)
+  {
+    int i = head, j = tail;
+    int mid[4];
+    mid[0] = seg[(i+j) >> 1][0], mid[1] = seg[(i+j) >> 1][1];
+    mid[2] = seg[(i+j) >> 1][2], mid[3] = seg[(i+j) >> 1][3];
+    do
+      {
+        while (seg[i][3] < mid[3] || (seg[i][3] == mid[3] && seg[i][0] < mid[0]))
+          i ++;
+        while (seg[j][3] > mid[3] || (seg[j][3] == mid[3] && seg[j][0] > mid[0]))
+          j --;
+        if (i <= j)
+          {
+            swap(seg[i][0], seg[j][0]);
+            swap(seg[i][1], seg[j][1]);
+            swap(seg[i][2], seg[j][2]);
+            swap(seg[i][3], seg[j][3]);
+            i ++, j --;
+          }
+      }
+    while (i <= j);
+    if (head < j) Sort1(head, j);
+    if (i < tail) Sort1(i, tail);
+  }
+ 
+void Make_Tree(int i, int l, int r)
+  {
+    min_value[i] = delta[i] = 0;
+    sum[i] = tmp[r] - tmp[l];
+    if (l + 1 == r) return;
+    int mid = (l + r) >> 1;
+    Make_Tree(i*2, l, mid), Make_Tree(i*2+1, mid, r);
+  }
+ 
+void Push_Down(int i)
+  {
+    delta[i*2] += delta[i];
+    min_value[i*2] += delta[i];
+    delta[i*2+1] += delta[i];
+    min_value[i*2+1] += delta[i];
+    delta[i] = 0;
+  }
+ 
+void Update(int i)
+  {
+    min_value[i] = min(min_value[i*2], min_value[i*2+1]), sum[i] = 0;
+    if (min_value[i*2] == min_value[i]) sum[i] += sum[i*2];
+    if (min_value[i*2+1] == min_value[i]) sum[i] += sum[i*2+1];
+  }
+ 
+void Increase(int i, int l, int r, int l1, int r1, int d)
+  {
+    if (l1 <= l && r <= r1)
+      {
+        delta[i] += d;
+        min_value[i] += d;
+        if (min_value[i] == 0) ans += sum[i];
+        return;
+      }
+    if (delta[i]) Push_Down(i);
+    int mid = (l + r) >> 1;
+    if (l1 < mid) Increase(i*2, l, mid, l1, r1, d);
+    if (r1 > mid) Increase(i*2+1, mid, r, l1, r1, d);
+    Update(i);
+  }
+ 
+void Cal()
+  {
+    int i, j, t1, t2, total;
+    for (i = 1; i <= n; i ++)
+      tmp[i*2-1] = seg[i*2-1][1], tmp[i*2] = seg[i*2-1][2];
+    Sort1(1, 2*n);
+    sort(tmp+1, tmp+2*n+1);
+    total = unique(tmp+1, tmp+2*n+1) - (tmp+1);
+    Make_Tree(1, 1, total);
+    for (i = 1; i <= 2*n; i ++)
+      {
+        t1 = lower_bound(tmp+1, tmp+total+1, seg[i][1]) - tmp;
+        t2 = lower_bound(tmp+1, tmp+total+1, seg[i][2]) - tmp;
+        if (seg[i][0] == 0)
+          Increase(1, 1, total, t1, t2, 1);
+        else
+          Increase(1, 1, total, t1, t2, -1);
+      }
+  }
+ 
+int main()
+  {
+    int i;
+ 
+    freopen("picture.in", "r", stdin);
+    freopen("picture.out", "w", stdout);
+ 
+    scanf("%d", &n);
+    for (i = 1; i <= n; i ++)
+      scanf("%d%d%d%d", &x1[i], &y1[i], &x2[i], &y2[i]);
+    ans = 0;
+    for (i = 1; i <= n; i ++)
+      {
+        seg[i*2-1][0] = 0, seg[i*2-1][1] = x1[i];
+        seg[i*2-1][2] = x2[i], seg[i*2-1][3] = y1[i];
+        seg[i*2][0] = 1, seg[i*2][1] = x1[i];
+        seg[i*2][2] = x2[i], seg[i*2][3] = y2[i];
+      }
+    Cal();
+    for (i = 1; i <= n; i ++)
+      {
+        seg[i*2-1][0] = 0, seg[i*2-1][1] = y1[i];
+        seg[i*2-1][2] = y2[i], seg[i*2-1][3] = x1[i];
+        seg[i*2][0] = 1, seg[i*2][1] = y1[i];
+        seg[i*2][2] = y2[i], seg[i*2][3] = x2[i];
+      }
+    Cal();
+    printf("%d\n", ans * 2);
+    return 0;
+  }/*
+   Test 1: TEST OK [0.022 secs, 4128 KB]
+   Test 2: TEST OK [0.011 secs, 4128 KB]
+   Test 3: TEST OK [0.011 secs, 4128 KB]
+   Test 4: TEST OK [0.011 secs, 4128 KB]
+   Test 5: TEST OK [0.000 secs, 4128 KB]
+   Test 6: TEST OK [0.011 secs, 4128 KB]
+   Test 7: TEST OK [0.043 secs, 4692 KB]
+   Test 8: TEST OK [0.011 secs, 4128 KB]
+   Test 9: TEST OK [0.043 secs, 4692 KB]
+   Test 10: TEST OK [0.011 secs, 4128 KB]
+   Test 11: TEST OK [0.043 secs, 4268 KB]
+*/
+//线段树解决速度还可以
+#include<cstdio>
+#include<algorithm>
+#include<cmath>
+using namespace std;
+int n;
+struct aa{
+       int l,r,m,c;
+       bool leaf;
+       aa *lp,*rp;
+       };
+aa *first;
+void creat(aa* &p,int l,int r){
+     p=new aa;
+     p->l=l;
+     p->r=r;
+     p->c=0;
+     p->m=0;
+     if(r!=l+1){
+       creat(p->lp,l,(l+r)/2);
+       creat(p->rp,(l+r)/2,r);
+       p->leaf=false;
+     }
+     else
+       p->leaf=true;
+}
+void init(){
+     int l=-10000,r=10000;
+     first=new aa;
+     first->l=l;
+     first->r=r;
+     first->c=0;
+     first->m=0;
+     first->leaf=false;
+     creat(first->lp,l,(l+r)/2);
+     creat(first->rp,(l+r)/2,r);
+}
+void add(aa *p,int l,int r,int t){
+     if(l<=p->l&&p->r<=r){
+       p->c-=t;
+       p->m=p->r-p->l;
+     }
+     else{
+          if(l<p->lp->r)
+            add(p->lp,l,r,t);
+          if(p->rp->l<r)
+            add(p->rp,l,r,t);
+          }
+     if(p->c==0)
+         if(p->leaf)
+           p->m=0;
+         else
+           p->m=p->lp->m+p->rp->m;
+}
+bool compar(int *a,int *b){
+     return (a[0]<b[0])||(a[0]==b[0]&&a[3]<b[3]);
+}
+int main(){
+    freopen("picture.in","r",stdin);
+    freopen("picture.out","w",stdout);
+    scanf("%d",&n);
+    int **v=new int *[2*n];
+    int **h=new int *[2*n];
+    int x1,y1,x2,y2;
+    for(int i=0;i<n;i++){
+            scanf("%d%d%d%d",&x1,&y1,&x2,&y2);
+            v[i]=new int[4];
+            h[i]=new int[4];
+            v[i+n]=new int[4];
+            h[i+n]=new int[4];
+            v[i][0]=x1;
+            v[i][1]=y1;
+            v[i][2]=y2;
+            v[i][3]=-1;
+            h[i][0]=y1;
+            h[i][1]=x1;
+            h[i][2]=x2;
+            h[i][3]=-1;
+            v[i+n][0]=x2;
+            v[i+n][1]=y1;
+            v[i+n][2]=y2;
+            v[i+n][3]=1;
+            h[i+n][0]=y2;
+            h[i+n][1]=x1;
+            h[i+n][2]=x2;
+            h[i+n][3]=1;
+    }
+    init();
+    sort(v,v+2*n,compar);
+    sort(h,h+2*n,compar);
+    int ans=0,old;
+    for(int i=0;i<2*n;i++){
+      old=first->m;
+      add(first,v[i][1],v[i][2],v[i][3]);
+      ans+=abs(old-first->m);
+    }
+    for(int i=0;i<2*n;i++){
+      old=first->m;
+      add(first,h[i][1],h[i][2],h[i][3]);
+      ans+=abs(old-first->m);
+    }
+    printf("%d\n",ans);
+}Compiling...
+Compile: OK
+ 
+Executing...
+   Test 1: TEST OK [0.022 secs, 7312 KB]
+   Test 2: TEST OK [0.011 secs, 7312 KB]
+   Test 3: TEST OK [0.011 secs, 7312 KB]
+   Test 4: TEST OK [0.000 secs, 7312 KB]
+   Test 5: TEST OK [0.022 secs, 7312 KB]
+   Test 6: TEST OK [0.022 secs, 7312 KB]
+   Test 7: TEST OK [0.119 secs, 7480 KB]
+   Test 8: TEST OK [0.011 secs, 7312 KB]
+   Test 9: TEST OK [0.119 secs, 7480 KB]
+   Test 10: TEST OK [0.011 secs, 7312 KB]
+   Test 11: TEST OK [0.162 secs, 7312 KB]
+ 
+All tests OK.
+ 
+线段树加离散化。。。 貌似线段树的常数写大了。
+ 
+/*
+	ID:echooat1
+	LANG:C++
+	TASK:picture
+	*/
+#include <fstream>
+#include <cstring>
+#define len 50000
+#define mm len*2+10
+using namespace std;
+ifstream fin("picture.in");ofstream fout("picture.out");
+struct ttt{
+	long y1,y2,x1,x2;
+}b[len];
+struct re{
+	long tt,u1,u2,da;
+}temp[mm];
+long l[mm]={0},r[mm]={0},n=0,c[mm]={0},a[mm]={0},v[mm]={0};
+long rr=0;
+void buid(void){
+	l[1]=1;r[1]=len;
+	for(long i=1;i<=len;i++){
+		long temp=i<<1;
+		l[temp]=l[i];
+		r[temp]=(l[i]+r[i])>>1;
+		r[temp+1]=r[i];
+		l[temp+1]=r[temp];
+		}
+}
+int comp(const void*a,const void*b){
+	return *(long*)a-*(long*)b;
+}
+int cmp(const void*a,const void*b){
+	long r=((re*)a)->tt-((re*)b)->tt;
+	if(!r)
+		r=((re*)a)->da-((re*)b)->da;
+	return r;
+}
+long inp(long l1,long l2,long k,long flag){
+	if(r[k]-l[k]==1)
+		if(flag==0){
+		long o=a[r[k]]-a[l[k]];
+		if(v[k])o=0;
+		v[k]++;return o;
+		}
+		else {
+			v[k]--;
+			long o=a[r[k]]-a[l[k]];
+			if(v[k])o=0;
+			return o;
+		}
+	long t1=0,t2=0;
+	if(l1<r[k<<1])t1=inp(l1,l2,k<<1,flag);
+	if(l2>l[k*2+1])t2=inp(l1,l2,k*2+1,flag);
+	c[k]+=t1+t2;
+	return t1+t2;
+}
+long find(long u){
+	long l1=1,l2=rr;
+	while(l1<=l2){
+		long mid=(l1+l2)>>1;
+		if(u==a[mid]){while(a[mid]==u)mid++;return mid-1;}
+		if(u>a[mid])l1=mid+1;else l2=mid-1;
+	}
+	return 0;
+}
+int main(int argc,char** argv){
+	buid();
+	fin >>n;
+	for(long i=1;i<=n;i++){
+		long l1,l2,l3,l4;fin >>l1>>l2>>l3>>l4;
+		b[i].x1=l1;b[i].x2=l3;b[i].y1=l2;b[i].y2=l4;
+		a[++rr]=l2;
+		a[++rr]=l4;
+		temp[i].u1=temp[i+n].u1=b[i].y1;temp[i+n].u2=temp[i].u2=b[i].y2;temp[i].tt=b[i].x1;temp[i+n].tt=b[i].x2;
+		temp[i+n].da=1;
+	}
+	a[0]=-0x7ffffff;
+	temp[0].tt=-0x7ffffff;
+	qsort(a,rr+1,sizeof a[0],comp);
+	qsort(temp,(n<<1)+1,sizeof (temp[0]),cmp);
+	for(long i=1;i<=(n<<1);i++){
+		temp[i].u1=find(temp[i].u1),temp[i].u2=find(temp[i].u2);
+		inp(temp[i].u1,temp[i].u2,1,temp[i].da);
+	}
+	long sum=c[1];
+//xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+	memset(a,0,sizeof a);
+	memset(c,0,sizeof c);
+	memset(temp,0,sizeof temp);
+	memset(v,0,sizeof v);rr=0;
+	for(long i=1;i<=n;i++){
+		a[++rr]=b[i].x1;
+		a[++rr]=b[i].x2;
+		temp[i].u1=temp[i+n].u1=b[i].x1;temp[i+n].u2=temp[i].u2=b[i].x2;temp[i].tt=b[i].y1;temp[i+n].tt=b[i].y2;
+		temp[i+n].da=1;
+	}
+	a[0]=-0x7ffffff;temp[0].tt=-0x7ffffff;
+	qsort(temp,rr+1,sizeof (temp[0]),cmp);
+	qsort(a,(n<<1)+1,sizeof a[0],comp);
+	for(long i=1;i<=(n<<1);i++){
+		temp[i].u1=find(temp[i].u1);temp[i].u2=find(temp[i].u2);
+		inp(temp[i].u1,temp[i].u2,1,temp[i].da);
+	}
+	sum+=c[1];
+	fout <<sum<<endl;
+	fin.close();fout.close();
+	return 0;
+}Test 1: TEST OK [0.011 secs, 3780 KB]
+   Test 2: TEST OK [0.022 secs, 3780 KB]
+   Test 3: TEST OK [0.022 secs, 3780 KB]
+   Test 4: TEST OK [0.011 secs, 3780 KB]
+   Test 5: TEST OK [0.032 secs, 3780 KB]
+   Test 6: TEST OK [0.011 secs, 3780 KB]
+   Test 7: TEST OK [0.043 secs, 3780 KB]
+   Test 8: TEST OK [0.022 secs, 3780 KB]
+   Test 9: TEST OK [0.032 secs, 3780 KB]
+   Test 10: TEST OK [0.011 secs, 3780 KB]
+   Test 11: TEST OK [0.011 secs, 3780 KB]
+   线段树。
+/*
+ID: zsyzgu1
+PROG: picture
+LANG: C++
+*/
+ 
+#include<stdio.h>
+#include<string.h>
+ 
+const int maxf=6000;
+const int maxl=11000;
+const int maxn=10000;
+ 
+struct square{int x1,y1,x2,y2;} ;
+    square f[maxf];
+ 
+struct line{int k,s,t,p;}; //层次、起点、终点、类型（0-下边 ；1-上边） 
+    line l[maxl];
+ 
+struct tree{int c,l;}; //覆盖数、总线段长度 
+    tree a[maxn * 8];
+ 
+int n,m;
+int ans=0;
+ 
+void init()
+{
+    scanf("%d",&n);
+    for (int i=1;i<=n;i++)
+        scanf("%d%d%d%d",&f[i].x1,&f[i].y1,&f[i].x2,&f[i].y2);
+}
+ 
+void sort(int s,int t)
+{
+    int i=s , j=t , x=l[(s+t)>>1].k , y=l[(s+t)>>1].p;
+    while (i<=j)
+    {
+        while (l[i].k<x || (l[i].k==x && l[i].p<y)) ++i;
+        while (l[j].k>x || (l[j].k==x && l[j].p>y)) --j;
+        if (i<=j)
+        {
+            line h=l[i]; l[i]=l[j]; l[j]=h;
+            ++i; --j;
+        }
+    }
+    if (s<j) sort(s,j);
+    if (i<t) sort(i,t);
+}
+ 
+void add(int p,int i,int j,int s,int t,int data) //覆盖s-t的格子 
+{
+    if (s<=i && j<=t)
+    {
+        a[p].l+=data;
+        if (a[p].l>0) a[p].c=j-i+1;
+        else
+        { 
+             if (i!=j) a[p].c=a[p*2+1].c + a[p*2+2].c;
+                  else a[p].c=0;
+        }
+        return;
+    }
+ 
+    int mid=(i+j)>>1;
+    if (s<=mid) add(p*2+1,i,mid,s,t,data);
+    if (mid+1<=t) add(p*2+2,mid+1,j,s,t,data);
+ 
+    if (a[p].l>0) a[p].c=j-i+1;
+             else a[p].c=a[p*2+1].c + a[p*2+2].c;
+}
+ 
+int find(int p,int i,int j,int s,int t) //求s-t中被覆盖的格子数 
+{
+    if (s<=i && j<=t) return a[p].c;
+ 
+    if (a[p].l>0)
+    {
+        if (s<=i && i<=t) return t-i+1;
+        if (s<=j && j<=t) return j-s+1;
+        return t-s+1;
+    }
+ 
+    int ans=0;
+    int mid=(i+j)>>1;
+    if (s<=mid) ans+=find(p*2+1,i,mid,s,t);
+    if (mid+1<=t) ans+=find(p*2+2,mid+1,j,s,t);
+    return ans;
+}
+ 
+void doit()
+{
+    memset(l,0,sizeof(l));
+    memset(a,0,sizeof(a));
+ 
+    m=0;
+    for (int i=1;i<=n;i++)
+    {
+        l[++m].k=f[i].x1; l[m].s=f[i].y1; l[m].t=f[i].y2-1; l[m].p=0;
+        l[++m].k=f[i].x2; l[m].s=f[i].y1; l[m].t=f[i].y2-1; l[m].p=1;
+    }
+    sort(1,m);
+ 
+    for (int i=1;i<=m;i++)
+        if (l[i].p==0) //下边先求长再覆盖 
+        {
+            ans+=(l[i].t-l[i].s+1)-find(0,-maxn,maxn,l[i].s,l[i].t);
+            add(0,-maxn,maxn,l[i].s,l[i].t,+1);
+        } else         //上边先覆盖再求长
+        {
+            add(0,-maxn,maxn,l[i].s,l[i].t,-1);
+            ans+=(l[i].t-l[i].s+1)-find(0,-maxn,maxn,l[i].s,l[i].t);
+        }
+}
+ 
+void mait()
+{
+    doit();
+    for (int i=1;i<=n;i++)
+    {
+        int h;
+        h=f[i].x1; f[i].x1=f[i].y1; f[i].y1=h;
+        h=f[i].x2; f[i].x2=f[i].y2; f[i].y2=h;
+    }
+    doit();
+}
+ 
+void ouit()
+{
+    printf("%d\n",ans);
+}
+ 
+int main()
+{
+    freopen("picture.in","r",stdin);
+    freopen("picture.out","w",stdout);
+    init();
+    mait();
+    ouit();
+    return 0;
+}

@@ -1,0 +1,102 @@
+/*
+ID:ybojan2
+LANG:C++
+TASK:inflate
+*/
+ 
+#include <iostream>
+#include <fstream>
+ 
+using namespace std;
+ 
+int main()
+{
+    ifstream fin("inflate.in");
+    ofstream fout("inflate.out");
+ 
+    int t,m,time,score,dp[10001];
+    memset(dp,0,sizeof(dp));
+    fin>>t>>m;
+    for (int i=1;i<=m;i++)
+    {
+        fin>>score>>time;
+        for (int j=time;j<=t;j++)
+            dp[j]=max(dp[j],dp[j-time]+score);
+    }
+ 
+    fout<<dp[t]<<endl;
+    return 0;
+}/*
+ID:nettle99
+PROG:inflate
+LANG:C++
+*/
+ 
+#include <cstdio>
+#define MAXT 10001
+ 
+FILE *fin = fopen("inflate.in", "r");
+FILE *fout = fopen("inflate.out", "w");
+ 
+int f[MAXT];
+int main()
+{
+int N, T, score, time;
+  fscanf(fin, "%d%d", &T, &N);
+  for (int i = 1; i <= N; i++)
+    {
+      fscanf(fin, "%d%d", &score, &time);
+      for (int j = time; j <= T; j++)
+        if (f[j] < f[j - time] + score) f[j] = f[j - time] + score;
+    }
+int max = f[1];
+  for (int i = 2; i <= T; i++)
+    if (f[i] > max) max = f[i];
+  fprintf(fout, "%d\n", max);
+  return 0;
+}Compiling...
+Compile: OK
+ 
+Executing...
+   Test 1: TEST OK [0.000 secs, 3012 KB]
+   Test 2: TEST OK [0.011 secs, 3012 KB]
+   Test 3: TEST OK [0.000 secs, 3012 KB]
+   Test 4: TEST OK [0.000 secs, 3012 KB]
+   Test 5: TEST OK [0.000 secs, 3012 KB]
+   Test 6: TEST OK [0.000 secs, 3012 KB]
+   Test 7: TEST OK [0.032 secs, 3012 KB]
+   Test 8: TEST OK [0.119 secs, 3012 KB]
+   Test 9: TEST OK [0.173 secs, 3012 KB]
+   Test 10: TEST OK [0.194 secs, 3012 KB]
+   Test 11: TEST OK [0.011 secs, 3012 KB]
+   Test 12: TEST OK [0.011 secs, 3012 KB]
+ 
+All tests OK.
+YOUR PROGRAM ('inflate') WORKED FIRST TIME!  That is fantastic
+-- and a rare thing.  Please accept these special automated
+congratulations.
+ 
+/*
+	ID:echoat1
+	LANG:C++
+	TASK:inflate
+	*/
+#include <fstream>
+#define max(a,b) ((a)>(b)?(a):(b))
+using namespace std;
+int main(int argc,char** argv){
+	ifstream fin("inflate.in");
+	ofstream fout("inflate.out");
+	long f[10003]={0};
+	long m,n;
+	fin >>m>>n;
+	for(long i=1;i<=n;i++){
+		long u=0,v=0;
+		fin >>v>>u;
+		for(long j=u;j<=m;j++)
+			f[j]=max(f[j],f[j-u]+v);
+	}
+	fout <<f[m]<<endl;
+	fin.close();fout.close();
+	return 0;
+}

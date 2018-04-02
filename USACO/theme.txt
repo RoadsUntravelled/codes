@@ -1,0 +1,361 @@
+/*
+ * Problem: pku1743 Musical Theme (USACO 28)
+ * Author: Guo Jiabao
+ * Time: 2009.4.17 16:38
+ * State: Solved
+ * Memo: 后缀数组 最长重复子串
+*/
+#include <iostream>
+#include <cstdio>
+#include <cstdlib>
+#include <cmath>
+#include <cstring>
+const int MAXN=20011,INF=0x7FFFFFFF;
+using namespace std;
+struct SufficArray
+{
+	struct RadixElement
+	{
+		int id,k[2];
+	}RE[MAXN],RT[MAXN],*R1,*R2;
+	int N,A[MAXN],SA[MAXN],Rank[MAXN],Height[MAXN],C[MAXN];
+	void RadixSort()
+	{
+		int i,y;
+		for (y=1,R1=RE,R2=RT;y>=0;y--)
+		{
+			memset(C,0,sizeof(C));
+			for (i=1;i<=N;i++) C[ R1[i].k[y] ]++;
+			for (i=1;i<MAXN;i++) C[i]+=C[i-1];
+			for (i=N;i>=1;i--) R2[ C[ R1[i].k[y] ]-- ]=R1[i];
+			R1=RT,R2=RE;
+		}
+		for (i=1;i<=N;i++)
+		{
+			Rank[RE[i].id]=Rank[RE[i-1].id];
+			if ( RE[i].k[0]!=RE[i-1].k[0] || RE[i].k[1]!=RE[i-1].k[1] )
+				Rank[RE[i].id]++;
+		}
+	}
+	void CalcSA()
+	{
+		int i,k;
+		Rank[RE[0].id=0]=0;RE[0].k[0]=-1;
+		for (i=1;i<=N;i++)
+			RE[i].id=i,RE[i].k[0]=A[i],RE[i].k[1]=0;
+		RadixSort();
+		for (k=1;k+1<=N;k*=2)
+		{
+			for (i=1;i<=N;i++)
+				RE[i].id=i,RE[i].k[0]=Rank[i],RE[i].k[1]=i+k<=N?Rank[i+k]:0;
+			RadixSort();
+		}
+		for (i=1;i<=N;i++)
+			SA[Rank[i]]=i;
+	}
+	void CalcHeight()
+	{
+		int i,k,h=0;
+		for (i=1;i<=N;i++)
+		{
+			if (Rank[i]==1)
+				h=0;
+			else
+			{
+				k=SA[Rank[i]-1];
+				if (h) h--;
+				for (;A[i+h]==A[k+h];h++);
+			}
+			Height[Rank[i]]=h;
+		}
+	}
+}SA;
+int N,Ans;
+void init()
+{
+	int i,c,d,md=INF;
+	freopen("theme.in","r",stdin);
+	freopen("theme.out","w",stdout);
+	SA.N=0;
+	scanf("%d",&N);
+	d=-100;
+	for (i=1;i<=N;i++)
+	{
+		scanf("%d",&c);
+		SA.A[++SA.N]=c-d;
+		if (c-d<md)
+			md=c-d;
+		d=c;
+	}
+	md--;
+	for (i=1;i<=N;i++)
+		SA.A[i]-=md;
+}
+bool check(int A)
+{
+	int i,j,Min,Max;
+	for (i=1;i<=SA.N;i++)
+	{
+		if (SA.Height[i]>=A)
+		{
+			Min=Max=SA.SA[i-1];
+			for (j=i;j<=SA.N && SA.Height[j]>=A;j++)
+			{
+				if (SA.SA[j]<Min)
+					Min = SA.SA[j];
+				if (SA.SA[j]>Max)
+					Max = SA.SA[j];
+			}
+			j--;
+			if (Max-Min>A)
+				return true;
+			i=j;
+		}
+	}
+	return false;
+}
+void solve()
+{
+	int a,b,m;
+	SA.CalcSA();
+	SA.CalcHeight();
+	a=0;b=SA.N;
+	while (a+1<b)
+	{
+		m=(a+b)/2;
+		if (check(m))
+			a=m;
+		else
+			b=m-1;
+	}
+	if (check(b))
+		a=b;
+	Ans=a+1;
+	if (Ans<5) Ans=0;
+}
+int main()
+{
+	init();
+	solve();
+	printf("%d\n",Ans);
+	return 0;
+}/*
+ID: cmykrgb1
+PROG: theme
+LANG: C++
+*/
+ 
+#include <iostream>
+#include <fstream>
+#define MAXN 5001
+#define INF 0x7FFFFFFF
+using namespace std;
+ifstream fi("theme.in");
+ofstream fo("theme.out");
+int N,ans;
+int a[MAXN];
+void init()
+{
+	int i,p,q;
+	fi >> N >> p;
+	for (i=1;i<=N;i++)
+	{
+		fi >> q;
+		a[i]=q-p;
+		p=q;
+	}
+	a[N]=INF;
+}
+ 
+void compute()
+{
+	int i,j,len,k;
+	for (i=1;i<=N-ans;i++)
+		for (j=i+ans;j<=N-ans;j++)
+			if (a[i]==a[j])
+			{
+				if (a[i]-a[i+1]!=a[j]-a[j+1]) continue;
+				len=1;
+				k=j;
+				while (a[i+len]==a[j+len] && k>i+len+1) len++;
+				if (len>ans)
+					ans=len;
+			}
+}
+ 
+void print()
+{
+	if (ans<4)	ans=-1;
+	fo << ans+1 << endl;
+	fi.close();
+	fo.close();
+}
+ 
+int main()
+{
+	init();
+	compute();
+	print();
+	return 0;
+}/*
+PROB: theme
+LANG: C++
+ID: tjbwyk1
+*/
+#include <fstream>
+using namespace std;
+ 
+ifstream cin("theme.in");
+ofstream cout("theme.out");
+ 
+const int maxn=5002;
+short int v[maxn];
+int ans,n;
+ 
+void init()
+{
+     cin>>n;
+     for (int i=1; i<=n; i++) cin>>v[i];
+}
+ 
+void doit()
+{
+     ans=0;
+     for (int i=5; i<n; i++)
+     {
+         int len=0, dis=100;
+         for (int j=1; j+i<=n; j++)
+           if (v[j]-v[j+i]==dis)
+           {
+                if (len==i) break;
+                len++;
+                if (len>=5) ans=max(ans,len);
+           }
+           else
+           {
+               len=1;
+               dis=v[j]-v[i+j];
+           }
+     }
+}
+ 
+void outit()
+{
+     cout<<ans<<endl;
+}
+ 
+int main()
+{
+    init();
+    doit();
+    outit();
+    cin.close();
+    cout.close();
+    return 0;
+}
+Test 1: TEST OK [0.011 secs, 2880 KB]
+   Test 2: TEST OK [0.011 secs, 2884 KB]
+   Test 3: TEST OK [0.000 secs, 2884 KB]
+   Test 4: TEST OK [0.000 secs, 2880 KB]
+   Test 5: TEST OK [0.000 secs, 2880 KB]
+   Test 6: TEST OK [0.000 secs, 2884 KB]
+   Test 7: TEST OK [0.022 secs, 2884 KB]
+   Test 8: TEST OK [0.011 secs, 2880 KB]
+   Test 9: TEST OK [0.011 secs, 2880 KB]
+   Test 10: TEST OK [0.000 secs, 2884 KB]
+   Test 11: TEST OK [0.140 secs, 2880 KB]
+   Test 12: TEST OK [0.162 secs, 2880 KB]
+   Test 13: TEST OK [0.022 secs, 2884 KB]
+   Test 14: TEST OK [0.227 secs, 2880 KB]
+   Test 15: TEST OK [0.000 secs, 2884 KB]
+有点慢～
+/*
+ID:lqp18_31
+PROG:theme
+LANG:C++
+*/
+#include<stdio.h>
+#include<string.h>
+#include<stdlib.h>
+FILE *fin=fopen("theme.in","r");
+FILE *fout=fopen("theme.out","w");
+int N,a[5005],c[5005];
+int maxlen=0;
+ 
+int main()
+{
+    fscanf(fin,"%d",&N);
+    for(int i=1;i<=N;i++)
+      fscanf(fin,"%d",a+i);
+    for(int i=1;i<N;i++)
+      c[i]=a[i+1]-a[i];
+    N--;
+    for(int i=1;i<=N;i++)
+    {
+      for(int j=i+maxlen+2;j+maxlen<=N;j++)
+      {
+              int k;
+              for(k=0;i+k+2<=j&&j+k<=N;k++)
+              if(c[i+k]!=c[j+k])
+                break;
+              if(maxlen<k) maxlen=k;    
+      }
+    }
+    fprintf(fout,"%d\n",maxlen+1>=5?(maxlen+1):0);
+    return 0;
+}O(n^2)动规+加滚动数组。。
+ 
+Compiling...
+Compile: OK
+ 
+Executing...
+   Test 1: TEST OK [0.011 secs, 3068 KB]
+   Test 2: TEST OK [0.000 secs, 3068 KB]
+   Test 3: TEST OK [0.000 secs, 3068 KB]
+   Test 4: TEST OK [0.000 secs, 3068 KB]
+   Test 5: TEST OK [0.000 secs, 3068 KB]
+   Test 6: TEST OK [0.011 secs, 3068 KB]
+   Test 7: TEST OK [0.011 secs, 3068 KB]
+   Test 8: TEST OK [0.011 secs, 3068 KB]
+   Test 9: TEST OK [0.011 secs, 3068 KB]
+   Test 10: TEST OK [0.011 secs, 3068 KB]
+   Test 11: TEST OK [0.097 secs, 3068 KB]
+   Test 12: TEST OK [0.097 secs, 3068 KB]
+   Test 13: TEST OK [0.140 secs, 3068 KB]
+   Test 14: TEST OK [0.130 secs, 3068 KB]
+   Test 15: TEST OK [0.097 secs, 3068 KB]
+ 
+All tests OK.
+ 
+ 
+ 
+/*
+	ID:echooat1
+	LANG:C++
+	TASK:theme
+	*/
+#include <fstream>
+#include <cstring>
+#define len 5003
+#define max(a,b) ((a)>(b)?(a):(b))
+using namespace std;
+ifstream fin("theme.in");ofstream fout("theme.out");
+long n=0,a[len]={0},l;
+long f[len]={0},f1[len]={0},ans=0;
+int main(int argc,char** argv){
+	fin >>n;l=n>>1;
+	for(long i=1;i<=n;i++)fin >>a[i];a[0]=0x7FFFFFFF;
+	for(long i=1;i<=n;i++){
+		for(long j=1;j<=i-1;j++)
+			if(a[i]-a[j]==a[i-1]-a[j-1]&&i-f1[j-1]-1>j){
+				f[j]=max(f[j],f1[j-1]+1);
+				ans=max(ans,f[j]);
+			}
+		memcpy(f1,f,sizeof f1);
+		memset(f,0,sizeof f);
+		}
+	if(ans+1>=5)
+	fout <<ans+1<<endl;else fout <<0<<endl;
+	fin.close();fout.close();
+	return 0;
+}

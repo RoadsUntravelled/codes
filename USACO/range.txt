@@ -1,0 +1,336 @@
+O(N^2)
+/*
+USER: Long Guo [jscompa1]
+TASK: range
+LANG: C++
+ 
+Compiling...
+Compile: OK
+ 
+Executing...
+   Test 1: TEST OK [0.000 secs, 2928 KB]
+   Test 2: TEST OK [0.000 secs, 2928 KB]
+   Test 3: TEST OK [0.000 secs, 2928 KB]
+   Test 4: TEST OK [0.000 secs, 2928 KB]
+   Test 5: TEST OK [0.000 secs, 2928 KB]
+   Test 6: TEST OK [0.000 secs, 2928 KB]
+   Test 7: TEST OK [0.000 secs, 2928 KB]
+ 
+All tests OK.
+YOUR PROGRAM ('range') WORKED FIRST TIME!  That's fantastic
+-- and a rare thing.  Please accept these special automated
+congratulations.
+ 
+*/
+#include<fstream>
+using namespace std;
+int i,j,n,f[2][251],now,last,maxsquare;
+int size[251];
+char ch;
+int main()
+ {
+    ifstream fin("range.in");
+    ofstream fout("range.out"); 
+    fin>>n;
+    now=0;last=1;
+    for (i=1;i<=n;i++)
+    {
+        now^=1;last^=1;
+        for (j=1;j<=n;j++)
+        {
+            fin>>ch;
+            if (ch=='0') f[now][j]=0;
+            else f[now][j]=min(f[now][j-1],min(f[last][j],f[last][j-1]))+1;
+            ++size[f[now][j]];
+            maxsquare=max(maxsquare,f[now][j]);
+        }
+    }
+    for (i=maxsquare-1;i>1;i--) size[i]+=size[i+1];
+    for (i=2;i<=maxsquare;i++) fout<<i<<" "<<size[i]<<endl;
+    return 0;
+}
+My USACO solution:hi.baidu.com/pwecar动态规划
+/*
+ID:ybojan2
+LANG:C++
+TASK:range
+*/
+ 
+#include <iostream>
+#include <fstream>
+ 
+using namespace std;
+ 
+int main()
+{
+    ifstream fin("range.in");
+    ofstream fout("range.out");
+ 
+    int n,dat[300][300],dp[300][300],cnt[300];
+    fin>>n;
+    memset(dp,0,sizeof(dp));
+    memset(cnt,0,sizeof(cnt));
+    for (int i=1;i<=n;i++)
+        for (int j=1;j<=n;j++)
+        {
+            char c;
+            fin>>c;
+            if (c=='1') dat[i][j]=1;
+            else dat[i][j]=0;
+        }
+    for (int i=1;i<=n;i++)
+        for (int j=1;j<=n;j++)
+            if (dat[i][j]==1) dp[i][j]=min(dp[i-1][j-1],min(dp[i-1][j],dp[i][j-1]))+1;
+    for (int i=1;i<=n;i++)        
+        for (int j=1;j<=n;j++)
+            for (int k=2;k<=dp[i][j];k++)
+                cnt[k]++;
+    for (int i=2;i<=n;i++)
+        if (cnt[i]!=0) fout<<i<<" "<<cnt[i]<<endl;
+    return 0;
+}
+作者CmYKRgB123
+/*
+ID: cmykrgb1
+PROG: range
+LANG: C++
+*/
+#include <iostream>
+#include <fstream>
+#define MAXN 251
+using namespace std;
+ifstream fi("range.in");
+ofstream fo("range.out");
+int G[MAXN][MAXN],n;
+long ans[MAXN];
+ 
+void init()
+{
+	long i,j;
+	char c;
+	fi >> n;
+	for (i=1;i<=n;i++)
+	{
+		for (j=1;j<=n;j++)
+		{
+			c=10;
+			while (c==10 || c==13) c=fi.get();
+			G[i][j]=c-48;
+		}
+	}
+}
+ 
+long min3(long a,long b,long c)
+{
+	long k=a;
+	if (b<k) k=b;
+	if (c<k) k=c;
+	return k;
+}
+ 
+void dynamic()
+{
+	long i,j,k;
+	for (i=n-1;i>=1;i--)
+	{
+		for (j=n-1;j>=1;j--)
+		{
+			if (G[i][j])
+				G[i][j]=min3(G[i+1][j],G[i][j+1],G[i+1][j+1])+1;
+			if (G[i][j]>1)
+				for (k=2;k<=G[i][j];k++)
+					ans[k]++;
+		}
+	}
+}
+ 
+void print()
+{
+	long i,j;
+	for (i=2;i<=MAXN;i++)
+	{
+		if (ans[i])
+			fo << i << ' ' << ans[i] << endl;
+	}
+	fi.close();
+	fo.close();
+}
+ 
+int main()
+{
+	init();
+	dynamic();
+	print();
+	return 0;
+}
+//枚举左上角后二分搜索最大边长,记录最大边长后累加
+//O(N^2logN)
+ 
+/*
+TASK:range
+LANG:C++
+*/
+ 
+#include<iostream>
+#include<fstream>
+using namespace std;
+ 
+bool k[252][252];
+int x[252][252];
+int n;
+int res[252];
+ 
+int main()
+{
+ifstream cin("range.in");
+ofstream cout("range.out");
+ 
+memset(k,0,sizeof(k));
+memset(x,0,sizeof(x));
+memset(res,0,sizeof(res));
+cin>>n;
+char t;
+for(int i=1;i<=n;i++)
+for(int j=1;j<=n;j++)
+{
+cin>>t;
+if(t=='1')
+{
+x[i][j]=1;
+k[i][j]=1;
+}
+}
+for(int i=1;i<=n;i++)
+for(int j=1;j<=n;j++)
+x[i][j]+=x[i][j-1];
+for(int i=1;i<=n;i++)
+for(int j=1;j<=n;j++)
+x[i][j]+=x[i-1][j];
+ 
+for(int i=1;i<n;i++)
+for(int j=1;j<n;j++)
+if(k[i][j] && k[i][j+1] && k[i+1][j] && k[i+1][j+1])
+{
+int l=1,r=min(n-i+1,n-j+1),m;
+while(r-l>1)
+{
+m=(l+r)/2;
+if(x[i+m][j+m]-x[i+m][j-1]-x[i-1][j+m]+x[i-1][j-1] == (m+1)*(m+1))
+l=m;
+else
+r=m;
+}
+res[l+1]++;
+}
+for(int i=250;i>=2;i--)
+res[i]+=res[i+1];
+for(int i=2;i<=250;i++)
+if(res[i]>0)
+cout<<i<<" "<<res[i]<<endl;
+return 0;
+}/*
+ID: yinzhen1
+LANG: C++
+TASK: range
+*/
+ 
+//dp[k][i][j] = dp[k-1][i][j] && dp[k-1][i][j+1] && dp[k-1][i+1][j] && maze[i+k][j+k] 
+#include <iostream>
+using namespace std;
+const int SZ = 251;
+char maze[260][260];
+bool dp[2][SZ][SZ];
+int num[SZ];
+ 
+int main()
+{
+	freopen("range.in", "r", stdin);
+	freopen("range.out", "w", stdout);
+	int n;
+	scanf("%d", &n);
+	int i, j, k;
+	for(i = 1; i <= n; ++i)
+		scanf("%s", maze[i]+1);
+	for(i = 1; i <= n; ++i)
+		for(j = 1; j <= n; ++j)
+			dp[0][i][j] = (bool)(maze[i][j]-'0');
+	int a = 0, b = 1;
+	for(k = 1; k <= n; ++k)
+	{
+		for(i = 1; i+k <= n; ++i)
+			for(j = 1; j+k <= n; ++j)
+			{
+				dp[b][i][j] = dp[a][i][j] && dp[a][i][j+1] 
+							&& dp[a][i+1][j] && (bool)(maze[i+k][j+k]-'0');
+				if(dp[b][i][j])
+					++num[k];	
+			}
+		swap(a, b);
+	}
+	for(i = 1; i <= n; ++i)
+		if(num[i])
+			printf("%d %d\n", i+1, num[i]);
+	return 0;
+}呃，搜索，加了一个弱剪枝，就这么过了。。
+ 
+具体方法就不说了，会被第一个位运算的牛BS的，顺便膜拜。。
+ 
+Compiling...
+Compile: OK
+ 
+Executing...
+   Test 1: TEST OK [0.000 secs, 3376 KB]
+   Test 2: TEST OK [0.000 secs, 3376 KB]
+   Test 3: TEST OK [0.011 secs, 3376 KB]
+   Test 4: TEST OK [0.000 secs, 3380 KB]
+   Test 5: TEST OK [0.011 secs, 3376 KB]
+   Test 6: TEST OK [0.000 secs, 3376 KB]
+   Test 7: TEST OK [0.054 secs, 3376 KB]
+ 
+All tests OK.
+ 
+ 
+/*
+	ID:echooat1
+	LANG:C++
+	TASK:range
+	*/
+#include <fstream>
+using namespace std;
+	bool a[300][300]={0};
+bool ok(long x,long y,long z){
+	for(long i=y;i<=y+z-1;i++)
+		if(!a[x+z-1][i])return false;
+	for(long i=x;i<=x+z-1;i++)
+		if(!a[i][y+z-1])return false;
+	return true;
+	}
+int main(int argc,char** argv){
+	ifstream fin("range.in");
+	ofstream fout("range.out");
+	long n=0;
+	fin >>n;fin.get();
+	for(long i=1;i<=n;i++){
+		for(long j=1;j<=n;j++){
+			char ch;
+			ch=fin.get();
+			a[i][j]=ch-'0';
+		}
+	fin.get();
+	}
+	long ans[300]={0},sum[300][300]={0};
+	for(long i=1;i<=n;i++)
+		for(long j=1;j<=n;j++)
+			if(a[i][j]){
+				for(long o=2;o<sum[i-1][j-1];o++)
+					ans[o]++;
+				for(long k=sum[i-1][j-1];k<=n;k++)
+					if(i+k-1<=n&&j+k-1<=n&&ok(i,j,k))ans[k]++;
+						else {sum[i][j]=k-1;break;}
+					}
+	for(long i=2;i<=n;i++)
+		if(ans[i])
+			fout <<i<<' '<<ans[i]<<endl;
+	fin.close();fout.close();
+	return 0;
+}

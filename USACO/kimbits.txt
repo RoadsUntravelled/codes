@@ -1,0 +1,271 @@
+USER: Yaguang Ding [dingyag1]
+TASK: kimbits
+LANG: C++
+ 
+Compiling...
+Compile: OK
+ 
+Executing...
+   Test 1: TEST OK [0.000 secs, 2892 KB]
+   Test 2: TEST OK [0.000 secs, 2892 KB]
+   Test 3: TEST OK [0.000 secs, 2892 KB]
+   Test 4: TEST OK [0.000 secs, 2892 KB]
+   Test 5: TEST OK [0.011 secs, 2892 KB]
+   Test 6: TEST OK [0.022 secs, 2892 KB]
+   Test 7: TEST OK [0.000 secs, 2892 KB]
+   Test 8: TEST OK [0.000 secs, 2892 KB]
+   Test 9: TEST OK [0.000 secs, 2892 KB]
+   Test 10: TEST OK [0.000 secs, 2892 KB]
+   Test 11: TEST OK [0.000 secs, 2892 KB]
+   Test 12: TEST OK [0.011 secs, 2892 KB]
+   Test 13: TEST OK [0.000 secs, 2892 KB]
+ 
+/*
+ID:dingyag1
+LANG:C++
+TASK:kimbits
+*/
+ 
+#include <stdio.h>
+#include <iostream>
+#include <string>
+#include <math.h>
+using namespace std;
+ 
+int dp[33][33];
+ 
+int digui(int N,int L)
+{
+	if (N==0 || L==0)
+	{
+		return 1;
+	}
+	if (dp[N][L]!=0)
+	{
+		return dp[N][L];
+	}
+	dp[N][L]=digui(N-1,L)+digui(N-1,L-1);
+	return dp[N][L];
+}
+ 
+int main()
+{
+	freopen("kimbits.in","r",stdin);
+	freopen("kimbits.out","w",stdout);
+	unsigned int N,L,I;
+	int i,j,num=0;
+	unsigned int t=0;
+	cin>>N>>L>>I;
+	I-=1;
+	for(t=N;t>0;--t)
+	{
+		if (I && digui(t-1,L)<=I)
+		{
+			cout<<1;
+			I-=digui(t-1,L);
+			L-=1;
+		}
+		else
+		{
+			cout<<0;
+		}
+	}
+	cout<<endl;
+	return 0;
+}
+//排列组合+动态规划
+/*
+ID:ybojan2
+LANG:C++
+TASK:kimbits
+*/
+ 
+#include <iostream>
+#include <fstream>
+ 
+using namespace std;
+ 
+int main()
+{
+    ifstream fin("kimbits.in");
+    ofstream fout("kimbits.out");
+ 
+    long long n,l,t,c[32][32],f[32][32];
+ 
+    fin>>n>>l>>t;
+    memset(c,0,sizeof(c));
+    for (int i=0;i<=n;i++)
+        c[i][0]=1;
+    for (int i=1;i<=n;i++)
+        for (int j=1;j<=i;j++)
+            c[i][j]=c[i-1][j-1]+c[i-1][j];
+    for (int i=0;i<=n;i++)
+        f[0][i]=1;
+    for (int i=1;i<=n;i++)
+    {
+        f[i][0]=1;
+        for (int j=1;j<=n;j++)
+            f[i][j]=f[i][j-1]+c[i][j];
+    }
+    for (int i=n;i>=1;i--)
+    {
+        if (t>f[i-1][l]){
+                         fout<<1;
+                         t-=f[i-1][l];
+                         l--;
+                         }
+        else {
+             fout<<0;
+             }
+    }
+    fout<<endl;
+    return 0;
+}
+/*
+  ID:nettle99
+  PROG:kimbits
+  LANG:C++
+  */
+ 
+  #include <cstdio>
+  #define MAXV 32
+  typedef unsigned unint;
+ 
+  FILE *fin = fopen("kimbits.in", "r");
+  FILE *fout = fopen("kimbits.out", "w");
+ 
+  unint f[MAXV][MAXV], N, L, I;
+ 
+  void Pre()
+  {
+    for (unint i = 0; i <= N; i++)
+      f[1][i] = 1;
+    for (unint i = 2; i <= L; i++)
+      for (unint j = 0; j <= N; j++)
+        if (i > j) f[i][j] = f[i - 1][j];
+          else
+            for (unint k = 0; k < j; k++)
+              f[i][j] += f[i - 1][k];
+    return ;
+  }
+ 
+  bool g[MAXV];
+ 
+  void Doit()
+  {
+  unint tmp = I, i = L, k;
+    while (true)
+      {
+        k = 0;
+        while (tmp > f[i][k])
+          {
+            tmp -= f[i][k];
+            k++;
+          }
+        if (tmp == f[i][k])
+          {
+            for (unint t = 0; t < i && k - t > 0; t++)
+              g[k - t] = true;
+            break;
+          }
+        g[k] = true;
+        i--;
+      }
+    for (int i = N; i >= 1; i--)
+      fprintf(fout, "%d", g[i]);
+    fprintf(fout, "\n");
+    return ;
+  }
+ 
+  int main()
+  {
+    fscanf(fin, "%u%u%u", &N, &L, &I);
+    Pre();
+    Doit();
+    return 0;
+  }我用搜索过的，只有一个剪枝，详细见程序。。
+ 
+Compiling...
+Compile: OK
+ 
+Executing...
+   Test 1: TEST OK [0.011 secs, 3012 KB]
+   Test 2: TEST OK [0.011 secs, 3012 KB]
+   Test 3: TEST OK [0.000 secs, 3012 KB]
+   Test 4: TEST OK [0.000 secs, 3012 KB]
+   Test 5: TEST OK [0.000 secs, 3012 KB]
+   Test 6: TEST OK [0.000 secs, 3012 KB]
+   Test 7: TEST OK [0.054 secs, 3012 KB]
+   Test 8: TEST OK [0.011 secs, 3012 KB]
+   Test 9: TEST OK [0.000 secs, 3012 KB]
+   Test 10: TEST OK [0.011 secs, 3012 KB]
+   Test 11: TEST OK [0.011 secs, 3012 KB]
+   Test 12: TEST OK [0.011 secs, 3012 KB]
+   Test 13: TEST OK [0.000 secs, 3012 KB]
+ 
+All tests OK.
+ 
+/*
+ ID:echooat1
+ LANG:C++
+ TASK:kimbits
+ */
+#include <fstream>
+using namespace std;
+unsigned long CountBit(unsigned long X)
+{
+X = (X & 0x55555555) + (X >> 1 & 0x55555555);
+X = (X & 0x33333333) + (X >> 2 & 0x33333333);
+X = (X & 0x0F0F0F0F) + (X >> 4 & 0x0F0F0F0F);
+X = (X & 0x00FF00FF) + (X >> 8 & 0x00FF00FF);
+X = (X & 0x0000FFFF) + (X >> 16 & 0x0000FFFF);
+return(X);
+}
+int main(int argc,char** argv){
+ long long n,l,k,temp=0,ans;
+ ifstream fin("kimbits.in");
+ ofstream fout("kimbits.out");
+ fin >>l>>n>>k;
+ long long y=((1LL)<<n);
+	if(k<=y){
+	 ans=k-1;
+	 long a[40]={0};
+ while(ans>0){
+  a[++a[0]]=ans&1;
+  ans>>=1;
+ }
+ for(long i=l;i>=1;i--)fout <<a[i];
+ fout <<endl;
+ fin.close();fout.close();
+ exit(0);
+ }
+ y--;
+long i=y+1;
+ temp=y+1;
+while(i<=((1<<l)-1)){
+     long p=(CountBit(i));
+	if(p>n){i++;continue;}
+   if(!(i&((1LL<<(n-p))-1)))
+	if(temp+(1LL<<(n-p))<k){
+		  i+=(1LL<<(n-p));
+		  temp+=(1LL<<(n-p));
+		  continue;
+	  }else {
+		  ans=i+k-temp-1;
+		  break;
+	  }
+  ans=i;
+  i++;
+  if(p<=n)temp++;
+  if(k==temp)break;
+  }
+ long a[40]={0};
+ while(ans>0){
+  a[++a[0]]=ans&1;
+  ans>>=1;
+ }
+ for(long i=l;i>=1;i--)fout <<a[i];
+ fout <<endl;
+ fin.close();fout.close();
+ return 0;
+}

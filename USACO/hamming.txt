@@ -1,0 +1,113 @@
+/*
+ID:ybojan2
+LANG:C++
+TASK:hamming
+*/
+ 
+#include <iostream>
+#include <fstream>
+ 
+using namespace std;
+ 
+int dd(int x,int y)
+{
+    int cnt=0,tmp=x^y;
+    for (;tmp>0;)
+    {
+        cnt++;
+        tmp=tmp-(tmp&(-tmp));
+    }
+    return cnt;
+}
+ 
+int main()
+{
+    ifstream fin("hamming.in");
+    ofstream fout("hamming.out");
+ 
+    int n,b,d,num[65],len=1;
+    fin>>n>>b>>d;
+    num[1]=0;
+    for (int i=1;i<(1<<b);i++)
+    {
+        bool okay=true;
+        for (int j=1;j<=len;j++)
+            if (dd(i,num[j])<d)
+            {
+                              okay=false;
+                              break;
+            }
+        if (okay) 
+        {
+                  len++;
+                  num[len]=i;
+        }
+        if (len==n) break;
+    }
+    for (int i=1;i<=len;i++)
+    {
+        fout<<num[i];
+        if ((i%10==0)||(i==len)) fout<<endl;
+        else fout<<" ";
+    }
+    return 0;
+}数据很弱，弱到爆搜就可以。
+在提交前我一直在卡那个64的数据，后来卡烦了，直接提交，没想到一次AC。
+PS：我用的是一种类似DP的方法计算i，j之间的hamming码的：c[i][j]=c[i>>1][j>>1]+abs((i&1)-(j&1));
+/*
+	ID:echooat1
+	LANG:C++
+	TASK:hamming
+	*/
+#include <fstream>
+#include <cstdlib>
+using namespace std;
+ifstream fin("hamming.in");
+ofstream fout("hamming.out");
+long c[512][512]={0},a[512][512]={0};
+long n,d,b,lim;
+long ans[65]={0},len=0;
+void find(long k){
+	if(len>=n){
+		for(long i=1;i<=len;i++){
+			if(i%10==1){fout <<ans[i];continue;}
+			if(i%10==0){fout <<' '<<ans[i]<<endl;continue;}
+			fout <<' '<<ans[i];
+		}
+		if(len%10)fout <<endl;
+		fin.close();fout.close();
+		exit(0);
+	}
+	for(long j=1;j<=a[k][0];j++){
+		long now=a[k][j];
+		bool bo=false;
+		for(long i=1;i<=len;i++)
+			if(c[ans[i]][now]<d){bo=true;break;}
+		if(bo)continue;
+		if(a[now][0]>=n-1){
+			len++;
+			ans[len]=now;
+			find(now);
+			ans[len]=0;
+			len--;
+		}
+	}
+}
+int main(int argc,char** argv){
+	fin >>n>>b>>d;
+	lim=(1<<b)-1;
+	for(long i=0;i<=lim;i++)
+		for(long j=0;j<=lim;j++){
+			c[i][j]=c[i>>1][j>>1]+abs((i&1)-(j&1));
+			if(c[i][j]>=d)a[i][++a[i][0]]=j;
+			}
+	for(long i=0;i<=lim;i++)
+		if(a[i][0]>=n-1){
+		len++;
+		ans[len]=i;
+		find(i);
+		ans[len]=0;
+		len--;
+	}
+	return 0;
+}

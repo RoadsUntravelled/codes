@@ -1,0 +1,605 @@
+/*
+ID: blackco3
+TASK: rect1 
+LANG: C++
+*/
+#include <iostream>
+#include <memory.h>
+using namespace std;
+#define _max_rect_ 1000
+#define _max_color_ 2500
+#define _max_size_ 10000
+struct t_rect {
+	int llx, lly, urx, ury, color ;
+} rects[_max_rect_];
+int mx[_max_size_+1], my[_max_size_+1];
+int pos_x[_max_size_], pos_y[_max_size_], n_x=0, n_y=0;
+int area[_max_color_], line[(_max_rect_<<1)+2];
+ 
+int main() {
+	freopen("rect1.in", "r", stdin);
+	freopen("rect1.out", "w", stdout);
+ 
+    int max_y, max_x, n_rect, max_color=0 ;
+    cin >> max_x >> max_y >> n_rect ;
+	for( t_rect *pc=rects; pc!=rects+n_rect; pc++ ){
+		cin >> pc->llx >> pc->lly >> pc->urx >> pc->ury >> pc->color ;
+		mx[pc->llx] = mx[pc->urx] = my[pc->lly] = my[pc->ury] = 1 ;
+		max_color= max_color<pc->color ? pc->color : max_color, pc->color--;
+	}
+	mx[0] = my[0] = mx[max_x] = my[max_y] = 1 ;
+	for( int *px=mx ; px!=mx+max_x+1; px++ )
+		if( *px )
+			pos_x[n_x]=px-mx, *px = n_x++ ;
+	for( int *py=my ; py!=my+max_y+1; py++ )
+		if( *py )
+			pos_y[n_y]=py-my, *py = n_y++ ;
+	for( t_rect *pc=rects; pc!=rects+n_rect; pc++ ){
+		pc->llx=mx[pc->llx], pc->urx=mx[pc->urx], pc->lly=my[pc->lly], pc->ury=my[pc->ury];
+	}
+	int lsize=sizeof(int)*(n_x+1) ;
+	for( int y=0; y<n_y-1; y++ ){
+		register int dy=pos_y[y+1]-pos_y[y];
+		memset(line, 0, lsize);
+		for( t_rect *pc=rects; pc!=rects+n_rect; pc++ ) {
+			if( pc->lly>y || pc->ury<=y )
+				continue ;
+			register int cur_color = pc->color ;
+			for( register int *px=line+pc->llx; px!=line+pc->urx; px++ )
+					*px=cur_color ;
+		}
+		register int* pl=line;
+		for( int *px=pos_x; px!=pos_x+n_x-1; px++)
+			area[*(pl++)] += (*(px+1)-*px)*dy ;
+	}
+	for( int *pa=area; pa!=area+max_color; pa++ ){
+		if( *pa )
+			cout << (pa-area)+1 << " " << *pa << endl ;
+	}
+	return 0;
+}#include<fstream>//非递归矩形切割
+using namespace std;
+ofstream fout ("rect1.out",ios::out);
+ifstream fin ("rect1.in",ios::in);
+const long MAX = 1001;
+struct node{
+  long llx,lly,urx,ury,colour;
+}rect[MAX];
+struct link1{
+  long llx,lly,urx,ury;
+  link1 *next,*up;
+}*head,*tail;
+long a,b,n,ans[2501];
+bool quit;
+inline long TMAX(long a,long b) {return (a>b?a:b);}
+inline long TMIN(long a,long b) {return (a<b?a:b);}
+inline bool add(long llx,long lly,long urx,long ury,link1 *t)
+{
+  if(llx==urx || lly==ury) return false;//the area cannot be zero
+  link1 *temp=new link1;
+  temp->llx=llx;
+  temp->lly=lly;
+  temp->urx=urx;
+  temp->ury=ury;
+  t->next=temp;
+  temp->up=t;
+  return true;
+}
+inline void work(int n)
+{
+  link1 *temp,*ttail;
+  long s=0;
+  for(int i=n;i>=1;i--) //倒序染色 
+  {
+    temp=head;
+    ttail=tail;
+	quit=false;
+    while(temp!=NULL)
+    {
+      if(rect[i].urx<=temp->llx || temp->urx<=rect[i].llx || rect[i].ury<=temp->lly || temp->ury<=rect[i].lly) 
+	  {
+		if(temp==tail) quit=true;
+	    temp=temp->next;
+	  }
+      else//扩展 
+      {
+		  long x1=TMIN(rect[i].urx,temp->urx),x2=TMAX(rect[i].llx,temp->llx),y1=TMIN(rect[i].ury,temp->ury),y2=TMAX(rect[i].lly,temp->lly);
+          if(rect[i].colour!=1) 
+		 {
+			s=(x1-x2)*(y1-y2);
+			ans[rect[i].colour]+=s;
+		    ans[1]-=s;
+		 }
+          if(rect[i].ury<temp->ury) if(add(temp->llx,rect[i].ury,temp->urx,temp->ury,ttail)) ttail=ttail->next; //1
+          if(rect[i].lly>temp->lly) if(add(temp->llx,temp->lly,temp->urx,rect[i].lly,ttail)) 	ttail=ttail->next;//3
+          if(rect[i].llx>temp->llx) if(add(temp->llx,y2,rect[i].llx,y1,ttail)) 	ttail=ttail->next; //2
+          if(rect[i].urx<temp->urx) if(add(rect[i].urx,y2,temp->urx,y1,ttail))  ttail=ttail->next; //4
+		link1 *tdelete=temp;
+		if(temp==tail) quit=true;
+		if(temp==head) { head=temp->next;head->up=NULL;}
+		else
+		{
+			temp->up->next=temp->next;
+			temp->next->up=temp->up;
+		}
+		temp=temp->next;
+		delete tdelete;
+      }
+	  if(quit) break;
+    }
+    tail=ttail;
+  }
+}
+int main()
+{
+  fin>>a>>b>>n;
+  ans[1]=a*b;
+  head=new link1;
+  head->llx=0;
+  head->lly=0;
+  head->urx=a;
+  head->ury=b;
+  tail=head;
+  for(int i=1;i<=n;i++)
+    fin>>rect[i].llx>>rect[i].lly>>rect[i].urx>>rect[i].ury>>rect[i].colour;
+  work(n);
+  for(int i=1;i<=2500;i++)
+    if(ans[i]!=0) fout<<i<<' '<<ans[i]<<endl;
+  return 0;
+}//举行切割
+/*
+ID:ybojan2
+LANG:C++
+TASK:rect1
+*/
+ 
+#include <iostream>
+#include <fstream>
+ 
+using namespace std;
+ 
+int a,b,n,color[2502],cnt[2502],x1[2502],y1[2502],x2[2502],y2[2502];
+ 
+int max(int x,int y)
+{
+    return (x>y)?x:y;
+}
+ 
+int min(int x,int y)
+{
+    return (x<y)?x:y;
+}
+ 
+void put(int xs,int ys,int xt,int yt,int d,int c)
+{
+     while (((xs>=x2[d])||(xt<=x1[d])||(ys>=y2[d])||(yt<=y1[d]))&&(d<=n)) d++;
+     if (d==n+1){
+                 cnt[c]+=(yt-ys)*(xt-xs);
+                 return ;
+                 }
+     if (xs<x1[d]) {
+                   put(xs,ys,x1[d],yt,d+1,c);
+                   xs=x1[d];
+                   }
+     if (xt>x2[d]) {
+                   put(x2[d],ys,xt,yt,d+1,c);
+                   xt=x2[d];
+                   }
+     if (ys<y1[d]) put(xs,ys,xt,y1[d],d+1,c);
+     if (yt>y2[d]) put(xs,y2[d],xt,yt,d+1,c);
+}
+ 
+int main()
+{
+    ifstream fin("rect1.in");
+    ofstream fout("rect1.out");
+    fin>>a>>b>>n;
+    memset(cnt,0,sizeof(cnt));
+    color[1]=1;
+    x1[1]=0;
+    y1[1]=0;
+    x2[1]=a;
+    y2[1]=b;
+    n++;
+    for (int i=2;i<=n;i++)
+        fin>>x1[i]>>y1[i]>>x2[i]>>y2[i]>>color[i];
+    for (int i=n;i>=1;i--)
+        put(x1[i],y1[i],x2[i],y2[i],i+1,color[i]);
+    for (int i=1;i<=2500;i++)
+        if (cnt[i]!=0) fout<<i<<" "<<cnt[i]<<endl;
+    return 0;
+}//倒序染色
+#include <fstream>
+using namespace std;
+ 
+int a, b, n;
+int llx[1001], lly[1001], urx[1001], ury[1001], color[1001];
+int cut(int lx, int ly, int rx, int ry, int b)
+{
+	if (lx==rx||ly==ry) return 0;
+	if (b>n) return (rx-lx)*(ry-ly);
+	if (lx>=urx[b]||ly>=ury[b]||rx<=llx[b]||ry<=lly[b])	return cut(lx,ly,rx,ry,b+1);
+	int x[4], y[4];
+	x[0]=lx; y[0]=ly; x[3]=rx; y[3]=ry;
+	x[1]=max(lx,llx[b]); y[1]=max(ly,lly[b]);
+	x[2]=min(rx,urx[b]); y[2]=min(ry,ury[b]);
+	int res=0;
+	for (int i=0; i<3; ++i) for (int j=0; j<3; ++j)
+		if (i!=1||j!=1) res+=cut(x[i], y[j], x[i+1], y[j+1], b+1);
+	return res;
+}
+ 
+int main() {
+    ofstream fout ("rect1.out");
+    ifstream fin ("rect1.in");
+    fin >> a >> b >> n;
+    llx[0]=0; lly[0]=0; urx[0]=a; ury[0]=b; color[0]=1;
+    for (int i=1; i<=n; ++i) fin >> llx[i] >> lly[i] >> urx[i] >> ury[i] >> color[i];
+    int count[2501];
+    memset(count, 0, sizeof(count));
+    for (int id=n; id>=0; --id)	count[color[id]]+=cut(llx[id],lly[id],urx[id],ury[id],id+1);
+	for (int i=1; i<=2500; ++i)	if (count[i]>0)	fout << i << " " << count[i] << endl;
+}//基本思路，切割矩形的方法，利用两个队列轮流存储信息
+/*TASK: rect1
+LANG: C++
+Executing...
+      Test 1: TEST OK [0.004 secs]
+      Test 2: TEST OK [0 secs]
+      Test 3: TEST OK [0.004 secs]
+      Test 4: TEST OK [0 secs]
+      Test 5: TEST OK [0.004 secs]
+      Test 6: TEST OK [0.004 secs]
+      Test 7: TEST OK [0.004 secs]
+      Test 8: TEST OK [0.004 secs]
+      Test 9: TEST OK [0.004 secs]
+      Test 10: TEST OK [0.004 secs]
+      Test 11: TEST OK [0.056 secs]
+ 
+*/
+ 
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <stdio.h>
+#include <queue>
+ 
+using namespace std;
+ 
+ifstream fin("rect1.in");
+ofstream fout("rect1.out");
+ 
+int A,B,N;
+struct rect
+{
+	short int x1,x2;
+	short int y1,y2;
+	short int color;
+	bool state;
+	rect(int X1,int X2,int Y1,int Y2)
+	{
+		x1=X1;y1=Y1;x2=X2;y2=Y2;
+	}
+	rect(){}
+	void reset(int X1,int X2,int Y1,int Y2,int c)
+	{
+		x1=X1;y1=Y1;x2=X2;y2=Y2;
+		color=c;
+	}
+ 
+};
+ 
+//两个队列
+queue<rect> r;
+queue<rect> r2;
+queue<rect> *R1,*R2;
+ 
+int ans[6000];
+ 
+//判断矩形a是否在矩形b中
+bool InRect(rect &a,rect &b)
+{
+	if (a.x1>=b.x1 && a.x2<=b.x2 && a.y1>=b.y1 && a.y2<=b.y2) return true;
+	return false;
+}
+ 
+//将矩形b对矩形a进行划分
+void Divide(rect &a,rect &b)
+{
+	//如果两个矩形不相交，则直接将a压入队列
+	if (a.x1>b.x2 || a.x2<b.x1) 
+	{
+		R2->push(a);
+		return;
+	}
+	if (b.y2<a.y1 || a.y2<b.y1)
+	{
+		R2->push(a);
+		return;
+	}
+ 
+	//如果b包含a，则直接跳过
+	if (a.x1>=b.x1 && a.x2<=b.x2 && a.y1>=b.y1 && a.y2<=b.y2) return;
+ 
+	//否则，截取划分坐标
+	int i,j;
+	int divx[4];
+	int divy[4];
+	int xs=0,ys=0;
+	rect temp;
+	temp.color=a.color;
+ 
+	divx[xs++]=a.x1;
+	if (b.x1>a.x1 && b.x1 <a.x2) divx[xs++]=b.x1;
+	if (b.x2>a.x1 && b.x2 <a.x2) divx[xs++]=b.x2;
+	divx[xs++]=a.x2;
+ 
+	divy[ys++]=a.y1;
+	if (b.y1>a.y1 && b.y1<a.y2) divy[ys++]=b.y1;
+	if (b.y2>a.y1 && b.y2<a.y2) divy[ys++]=b.y2;
+	divy[ys++]=a.y2;
+ 
+	//划分
+	for (i=0;i<xs-1;++i)
+		for (j=0;j<ys-1;++j)
+		{
+			temp.x1=divx[i];
+			temp.x2=divx[i+1];
+			temp.y1=divy[j];
+			temp.y2=divy[j+1];
+			//如果面积为0，跳过
+			if (temp.x1==temp.x2 || temp.y1==temp.y2) continue;
+			//如果划分出来的矩形是b的一部分，跳过
+			if (!InRect(temp,b)) R2->push(temp);
+		}
+ 
+}
+ 
+//交换两个队列指针
+void Swap(queue<rect> *&a,queue<rect> *&b)
+{
+	queue<rect> * temp;
+	temp=a;
+	a=b;
+	b=temp;
+}
+ 
+void init()
+{
+	fin>>A>>B>>N;
+ 
+	//初始化一个队列
+	rect temp,temp2;
+	temp.reset(0,A,0,B,1);
+	r.push(temp);
+ 
+	R1=&r;R2=&r2;
+ 
+	int i,j,k;
+ 
+	for (k=1;k<=N;++k)
+	{
+		//每次读入一个矩形
+		fin>>temp.x1>>temp.y1>>temp.x2>>temp.y2>>temp.color;
+		//如果矩阵坐标超过范围，剪掉
+		if (temp.x2>=A) temp.x2=A;
+		if (temp.y2>=B) temp.y2=B;
+ 
+		//当队列R1非空
+		while (!R1->empty())
+		{
+			//取一个元素，进行切割
+			temp2=R1->front();
+			R1->pop();
+			Divide(temp2,temp);
+		}
+ 
+		R2->push(temp);
+ 
+		//交换指针
+		Swap(R1,R2);
+ 
+	}
+ 
+ 
+	//计算面积
+	memset(ans,0,sizeof(0));
+	while (!R1->empty())
+	{
+		temp=R1->front();
+		R1->pop();
+		ans[temp.color]+=(temp.x2-temp.x1)*(temp.y2-temp.y1);
+	}
+ 
+	//输出答案
+	for (i=1;i<=2500;++i) if (ans[i]>0) fout<<i<<" "<<ans[i]<<endl;
+ 
+}
+ 
+ 
+int main()
+{
+	init();
+ 
+	//system("pause");
+	return 0;
+}离散（只有x轴）+ 线段树
+Test 1: TEST OK [0.011 secs, 3468 KB]
+   Test 2: TEST OK [0.000 secs, 3468 KB]
+   Test 3: TEST OK [0.011 secs, 3468 KB]
+   Test 4: TEST OK [0.011 secs, 3468 KB]
+   Test 5: TEST OK [0.011 secs, 3468 KB]
+   Test 6: TEST OK [0.011 secs, 3468 KB]
+   Test 7: TEST OK [0.000 secs, 3468 KB]
+   Test 8: TEST OK [0.000 secs, 3468 KB]
+   Test 9: TEST OK [0.011 secs, 3468 KB]
+   Test 10: TEST OK [0.022 secs, 3468 KB]
+   Test 11: TEST OK [0.788 secs, 3468 KB]/*
+ID:nettle99
+PROG:rect1
+LANG:C++
+*/
+ 
+/*
+*/
+ 
+#include <iostream>
+#include <string.h>
+using namespace std;
+ 
+FILE *fin = fopen("rect1.in", "r");
+FILE *fout = fopen("rect1.out", "w");
+ 
+#define MAXN 10009
+#define MAXM 1009
+#define MAXC 2500
+#define MIX -1
+ 
+struct rectangle
+{
+    int lx, ly, rx, ry, c;
+}   rect[MAXM];
+ 
+struct node
+{
+    int l, r, type;
+}   tree[MAXN << 2];
+ 
+int Hash[MAXN], X, Y, N;
+int Pos[MAXM << 1];
+ 
+void Join(int pos)
+{
+    if (Hash[pos]) return ;
+    Pos[++Pos[0]] = pos;
+    Hash[pos]++;
+    return ;
+}
+ 
+void Qsort(int left, int right)
+{
+int l = left, r = right, mid = Pos[(l + r) / 2], box;
+    while (l < r)
+    {
+        while (Pos[l] < mid) l++;
+        while (Pos[r] > mid) r--;
+        if (l <= r)
+        {
+            box = Pos[l]; Pos[l] = Pos[r]; Pos[r] = box;
+            l++, r--;
+        }
+    }
+    if (left < r) Qsort(left, r);
+    if (l < right) Qsort(l, right);
+    return ;
+}
+ 
+void Init()
+{
+    fscanf(fin, "%d %d %d", &Y, &X, &N);
+    X--, Y--;
+    for (int i = 1; i <= N; i++)
+    {
+        fscanf(fin, "%d %d %d %d %d", &rect[i].ly, &rect[i].lx, &rect[i].ry, &rect[i].rx, &rect[i].c);
+        Join(rect[i].lx); Join(rect[i].rx);
+        rect[i].rx--, rect[i].ry--;
+    }
+    Join(0), Join(X + 1);
+    Qsort(1, Pos[0]);
+    return ;
+}
+ 
+void Build(int now, int left, int right)
+{
+    tree[now].l = left, tree[now].r = right;
+    if (left == right) return ;
+int mid = (left + right) / 2;
+    Build(now * 2, left, mid);
+    Build(now * 2 + 1, mid + 1, right);
+    return ;
+}
+ 
+void Modify(int now, int left, int right, int c)
+{
+    if (left > tree[now].r || right < tree[now].l || c == tree[now].type) return ;
+    if (left <= tree[now].l && tree[now].r <= right)
+    {
+        tree[now].type = c;
+        return ;
+    }
+    if (tree[now].type != MIX)
+    {
+        tree[now * 2].type = tree[now * 2 + 1].type = tree[now].type;
+        tree[now].type = MIX;
+    }
+    Modify(now * 2, left, right, c);
+    Modify(now * 2 + 1, left, right, c);
+    return ;
+}
+ 
+void Count(int now, int length)
+{
+    if (tree[now].type != MIX)
+    {
+        Hash[tree[now].type] += length * (tree[now].r - tree[now].l + 1);
+        return ;
+    }
+    Count(now * 2, length);
+    Count(now * 2 + 1, length);
+    return ;
+}
+ 
+int main()
+{
+    Init();
+    Build(1, 0, Y);
+    memset(Hash, 0, sizeof(Hash));
+    for (int i = 1; i < Pos[0]; i++)
+    {
+        tree[1].type = 1;
+        for (int j = 1; j <= N; j++)
+            if (Pos[i] > rect[j].rx || Pos[i + 1] - 1 < rect[j].lx) continue;
+            else Modify(1, rect[j].ly, rect[j].ry, rect[j].c);
+        Count(1, Pos[i + 1] - Pos[i]);
+    }
+    for (int i = 1; i <= MAXC; i++)
+        if (Hash[i]) fprintf(fout, "%d %d\n", i, Hash[i]);
+    fclose(fin);
+    fclose(fout);
+    return 0;
+}//这是Maigo牛的算法 矩形切割上浮
+/*
+ID: budaish1
+PROG: rect1
+LANG: C++
+*/
+#include<cstdio>
+#include<cstring>
+using namespace std;
+int limx,limy,limc;
+int x1[1010],x2[1010],y1[1010],y2[1010],color[2510],area[2510];
+void cover(int dx,int ux,int dy,int uy,int floor,int c)
+{
+    while((floor<=limc) && ((dx>=x2[floor]) || (ux<=x1[floor]) || (dy>=y2[floor]) || (uy<=y1[floor])))
+        floor ++; //if the two rectangles are not overlap,come-up~
+    if(floor>limc) {area[c] += (ux-dx) * (uy-dy);return;}//when it comes to the topside,add its acreage
+    if(dx<x1[floor]) {cover(dx,x1[floor],dy,uy,floor+1,c); dx = x1[floor];}
+    if(ux>x2[floor]) {cover(x2[floor],ux,dy,uy,floor+1,c); ux = x2[floor];}
+    if(dy<y1[floor]) {cover(dx,ux,dy,y1[floor],floor+1,c); dy = y1[floor];}
+    if(uy>y2[floor]) {cover(dx,ux,y2[floor],uy,floor+1,c); uy = y2[floor];}
+}
+int main(void)
+{
+    FILE *fin = fopen("rect1.in","r");
+    FILE *fout = fopen("rect1.out","w");
+    memset(color,0,sizeof(color));
+    fscanf(fin,"%d %d %d",&x2[0],&y2[0],&limc);
+    x1[0] = y1[0] = 0; color[0] = 1;
+    for(int i=1 ; i<=limc ; i++)
+        fscanf(fin,"%d %d %d %d %d",&x1[i],&y1[i],&x2[i],&y2[i],&color[i]);
+    for(int i=limc ; i>=0 ; i--)
+        cover(x1[i],x2[i],y1[i],y2[i],i+1,color[i]);
+    for(int i=1 ; i<=2500 ; i++)
+        if(area[i])
+            fprintf(fout,"%d %d\n",i,area[i]);
+    return 0;
+}

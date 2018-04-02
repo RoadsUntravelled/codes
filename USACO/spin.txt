@@ -1,0 +1,420 @@
+/*
+ID:ybojan2
+LANG:C++
+TASK:spin
+*/
+ 
+#include <iostream>
+#include <fstream>
+ 
+using namespace std;
+ 
+int main()
+{
+    ifstream fin("spin.in");
+    ofstream fout("spin.out");
+ 
+    int v[6],d[6][360],w[6],s[6][6],t[6][6];
+    memset(d,0,sizeof(d));
+    for (int i=1;i<=5;i++)
+    {
+        fin>>v[i]>>w[i];
+        for (int j=1;j<=w[i];j++)
+        {
+            fin>>s[i][j]>>t[i][j];
+        }
+    }
+    for (int time=0;time<=360;time++)
+    {
+        int now[360];
+        for (int j=0;j<=359;j++)
+            now[j]=1;
+        for (int j=1;j<=5;j++)
+        {
+            int ss[360];
+            memset(ss,0,sizeof(ss));
+            for (int k=1;k<=w[j];k++)
+            {
+                for (int m=s[j][k];m<=s[j][k]+t[j][k];m++)
+                    ss[m%360]=1;
+            }
+            for (int k=0;k<=359;k++)
+                now[k]=now[k]&ss[k];
+        }
+        bool exist=false;
+        for (int j=0;j<=359;j++)
+            if (now[j]==1) {
+                           exist=true;
+                           break;
+                           }
+        if (exist) {
+                   fout<<time<<endl;
+                   return 0;
+                   }
+        for (int j=1;j<=5;j++)
+        {
+            int news[360];
+            for (int k=1;k<=w[j];k++)
+            {
+                s[j][k]+=v[j];
+                s[j][k]%=360;
+            }
+        }
+    }
+    fout<<"none"<<endl;
+    return 0;
+}#include <cstdio>
+#include <cstring>
+using namespace std;
+ 
+const int N(5), T(360);
+ 
+int S[N], W[N], A[N][N], E[N][N];
+bool all[T], now[T];
+ 
+FILE *fin(fopen("spin.in", "r")), *fout(fopen("spin.out", "w"));
+ 
+int main()
+{
+	int i, j, k, p;
+ 
+	for(i = 0; i < N; ++ i)
+	{
+		fscanf(fin, "%d%d", S+i, W+i);
+		for(j = 0; j < W[i]; ++ j)
+			fscanf(fin, "%d%d", A[i]+j, E[i]+j);
+	}
+ 
+	for(i = 0; i < T; ++ i)
+	{
+		memset(all, 1, sizeof all);
+		for(j = 0; j < N; ++ j)
+		{
+			memset(now, 0, sizeof now);
+			for(k = 0; k < W[j]; ++ k)
+			{
+				for(p = 0; p <= E[j][k]; ++ p)
+					now[ (A[j][k]+p) % T ] = 1;
+				A[j][k] = (A[j][k]+S[j]) % T;
+			}
+			for(k = 0; k < T; ++ k)
+				all[k] &= now[k];
+		}
+		for(j = 0; j < T; ++ j)
+			if(all[j]) break;
+		if(j < T) break;
+	}
+ 
+	if(i < T)
+		fprintf(fout, "%d\n", i);
+	else
+		fprintf(fout, "none\n");
+ 
+	fclose(fin);
+	fclose(fout);
+	return 0;
+}/*
+ID:nettle99
+PROG:spin
+LANG:C++
+*/
+ 
+#include <cstdio>
+ 
+FILE *fin = fopen("spin.in", "r");
+FILE *fout = fopen("spin.out", "w");
+ 
+bool f[6][360];
+int s[6], g[6];
+ 
+bool can(int d)
+{
+  for (int i = 1; i <= 5; i++)
+    if (!f[i][(g[i] + d) % 360]) return false;
+  return true;
+}
+ 
+int main()
+{
+int t, a, b;
+  for (int i = 1; i <= 5; i++)
+    {
+      fscanf(fin, "%d%d", &s[i], &t);
+      s[i] = 360 - s[i];
+      for (int j = 1; j <= t; j++)
+        {
+          fscanf(fin, "%d%d", &a, &b);
+          for (int k = 0; k <= b; k++)
+            f[i][(a + k) % 360] = true;
+        }
+    }
+bool key = false;
+  for (t = 0; t < 360; t++)
+    if (key) break;
+      else
+        {
+          for (int i = 0; i < 360; i++)
+            if (can(i)) {key = true; break;}
+          for (int i = 1; i <= 5; i++)
+            g[i] += s[i];
+        }
+  if (key) fprintf(fout, "%d\n", t - 1);
+    else fprintf(fout, "none\n", t);
+  return 0;
+} Test 1: TEST OK [0.011 secs, 2844 KB]
+ Test 2: TEST OK [0.011 secs, 2844 KB]
+ Test 3: TEST OK [0.011 secs, 2844 KB]
+ Test 4: TEST OK [0.011 secs, 2844 KB]
+ Test 5: TEST OK [0.000 secs, 2848 KB]
+ Test 6: TEST OK [0.000 secs, 2844 KB]
+ Test 7: TEST OK [0.000 secs, 2844 KB]
+ Test 8: TEST OK [0.000 secs, 2844 KB]
+/*
+ID: yinzhen1
+LANG: C++
+TASK: spin
+*/
+//360秒为周期,模拟求出每个时刻的所有5排轮子的交集若非空则得到结果 
+//用一个360的数组来记录每增加交集的个数如果超过5那么说明有交集 
+#include <iostream>
+using namespace std;
+struct Wheel
+{
+	int speed;
+	int num;
+	int st[6], ex[6];
+};
+Wheel whe[6];
+int over[400];
+ 
+ 
+int pro()
+{
+	int i, j, t, k;
+ 
+	for(t = 0; t < 360; ++t)
+	{
+		fill_n(over, 360, 0);
+		for(i = 0; i < 5; ++i)
+		{
+			for(j = 0; j < whe[i].num; ++j)
+			{
+				if(t>0)
+					whe[i].st[j] = 	(whe[i].st[j]+whe[i].speed)%360;
+				for(k = 0; k <= whe[i].ex[j]; ++k)
+					++over[(k+whe[i].st[j])%360];	//记录每个点被用的次数 
+			}
+		}
+		for(j = 0; j < 360; ++j)
+			if(over[j] >= 5)
+				return t;
+	}
+	return -1;
+}
+ 
+int main()
+{
+	freopen("spin.in", "r", stdin);
+	freopen("spin.out", "w", stdout);
+	int i, j;
+	for(i = 0; i < 5; ++i)
+	{
+		scanf("%d%d", &whe[i].speed, &whe[i].num);
+		for(j = 0; j < whe[i].num; ++j)
+			scanf("%d%d", &whe[i].st[j], &whe[i].ex[j]);
+	}
+	int ans = pro();
+	if(ans == -1)
+		printf("none\n");
+	else
+		printf("%d\n", ans);
+	return 0;
+}/*
+ID:   talenth1
+PROG: spin 
+LANG: C++
+*/
+#include<stdio.h>
+#include<stdlib.h>
+#include<math.h>
+#include<string.h>
+const int maxn=6,maxdeg=360;
+int v[maxn],w[maxn],s1[maxn][maxn],sl[maxn][maxn];
+bool wheel[maxn][360];
+void turn()
+{
+     for(int i=1;i<=5;i++){
+             bool tmp[360];
+             int k=-1;
+             for(int j=359-v[i]+1;j<=359;j++)//备份 
+                     {
+                     k++;
+                     tmp[k]=wheel[i][j];
+                     }
+             for(int j=359;j>=v[i];j--)//移动 
+                     wheel[i][j]=wheel[i][j-v[i]];
+ 
+             for(int j=0;j<=v[i]-1;j++)//还原 
+                     wheel[i][j]=tmp[j];
+             }//for i
+}
+int check()
+{
+    for(int i=0;i<=359;i++){
+            int p=1;
+            for(int j=1;j<=5;j++)
+                    if(!wheel[j][i])p=0;
+            if(p==1)return 1;
+            }//for i
+    return 0;
+}
+int main()
+{
+      freopen("spin.in","r",stdin);
+      freopen("spin.out","w",stdout);
+      for(int i=1;i<=5;i++){
+              scanf("%d%d",&v[i],&w[i]);
+              for(int j=1;j<=w[i];j++)
+                      scanf("%d%d",&s1[i][j],&sl[i][j]);
+              }//for i
+      memset(wheel,0,sizeof(wheel));
+      for(int i=1;i<=5;i++){
+              for(int j=1;j<=w[i];j++){
+                      int p=s1[i][j]-1;
+                      for(int k=1;k<=sl[i][j]+1;k++){//开始我这里写的是看k<=s[i][j],一直要错2个，对数据有点质疑
+                              p++;
+                              if(p>359)p-=360;
+                              wheel[i][p]=true;
+                              }
+                      }//for j                              
+              }//for i
+      bool signal=true;
+      for(int i=0;i<=359;i++){
+              if(i)turn();
+              if(check()){
+                          printf("%d\n",i);
+                          signal=false;
+                          break;
+                          }
+              }
+      if(signal)printf("none\n");
+      return 0;      
+}
+<hr>//纯模拟~~
+/*
+    ID : wml71
+    PROG : spin
+    LANG : C++
+*/
+#include <cstdio>
+#include <iostream>
+#include <string>
+#include <math.h>
+using namespace std;
+struct ss{
+       int data;
+       int start[6],sd[6];
+}s[6];
+int a[361],v[6];
+bool pd()
+{
+     for(int i=0;i<=359;i++)
+        if(a[i]==0)
+          return true;
+     return false;
+}
+void z(int i)
+{
+     for(int j=1;j<=s[i].data;j++)
+     {
+        for(int k=s[i].start[j];k<=s[i].start[j]+s[i].sd[j]&&k<=359;k++)
+           a[k]++,a[(k+v[i])%360]--;
+        for(int k=0;k<s[i].start[j]+s[i].sd[j]-359;k++)
+           a[k]++,a[(k+v[i])%360]--;
+        s[i].start[j]+=v[i];
+        s[i].start[j]%=360;
+     }
+     return;
+}
+int main()
+{
+    freopen("spin.in","r",stdin);
+    freopen("spin.out","w",stdout);
+    for(int i=1;i<=5;i++)
+    {
+       for(int j=0;j<=359;j++)
+          a[j]++;
+       scanf("%d%d",&v[i],&s[i].data);
+       for(int j=1;j<=s[i].data;j++)
+       {
+          scanf("%d%d",&s[i].start[j],&s[i].sd[j]);
+          for(int k=s[i].start[j];k<=s[i].start[j]+s[i].sd[j]&&k<=359;k++)
+             a[k]--;
+          for(int k=0;k<s[i].start[j]+s[i].sd[j]-359;k++)
+             a[k]--;
+       }
+    }
+    int i=0;
+    while(i<=100000)
+    {
+         if(pd())
+         {
+    //for(int i1=0;i1<=359;i1++)
+       //printf("%d %d\n",a[i1],i1);
+           printf("%d\n",i);
+           return 0;
+         }
+         else
+         {
+             for(int j=1;j<=5;j++)
+                z(j);
+             i++;
+         }
+    }
+    printf("none\n");
+    return 0;
+}/*
+	ID:echooat1
+	LANG:C++
+	TASK:spin
+	*/
+#include <fstream>
+using namespace std;
+	long v[6]={0},o[6][361]={0},l[6][361]={0};
+bool ok(void){
+	bool hash[361][6]={false};
+	for(long i=1;i<=5;i++)
+		for(long k=1;k<=o[i][0];k++)
+			for(long j=0;j<=l[i][k];j++)
+				hash[(o[i][k]%360+j)%360][i]=true;
+	for(long i=0;i<=359;i++)
+		if(hash[i][1]&&hash[i][2]&&hash[i][3]&&hash[i][4]&&hash[i][5])
+			return true;
+	return false;
+}
+int main(int argc,char** argv){
+	ifstream fin("spin.in");
+	ofstream fout("spin.out");
+	for(long i=1;i<=5;i++){
+		fin >>v[i]>>o[i][0];
+		l[i][0]=o[i][0];
+		for(long j=1;j<=o[i][0];j++)fin >>o[i][j]>>l[i][j];
+		}
+	long ans=0;
+	if(ok()){	fout <<ans<<endl;
+	fin.close();fout.close();}
+	for(long i=1;i<=361;i++){
+		if(i==9){
+			i=9;
+		}
+		for(long j=1;j<=5;j++)
+			for(long k=1;k<=o[j][0];k++)
+				o[j][k]+=v[j];
+		if(ok()){ans=i;break;}
+	}
+	if(ans)
+	fout <<ans<<endl;
+	else fout<<"none"<<endl;
+	fin.close();fout.close();
+	return 0;
+}

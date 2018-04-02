@@ -1,0 +1,412 @@
+/*
+ID: cn.qinz1
+PROG: milk6
+LANG: C++
+*/
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<queue>
+using namespace std;
+struct data{
+	long long x,y;
+}e[1000];
+long long n,m,map[33][33],flow[33][33],pre[33];
+bool used[33];
+queue<int> q;
+long long ek()
+{
+	long long t,i,min,val=0;
+	while(1)
+	{
+		memset(pre,0,sizeof(pre));
+		memset(used,false,sizeof(used));
+		used[1]=true;
+		q.push(1);
+		while(!q.empty())
+		{
+			t=q.front();
+			q.pop();
+			for(i=1;i<=n;i++)
+				if(!used[i]&&map[t][i]>flow[t][i])
+				{
+					used[i]=true;
+					pre[i]=t;
+					q.push(i);
+				}
+		}
+		if(pre[n]==0)
+			break;
+		min=(long long)9999999*9999999;
+		t=n;
+		while(pre[t]!=0)
+		{
+			if(min>map[pre[t]][t]-flow[pre[t]][t])
+				min=map[pre[t]][t]-flow[pre[t]][t];
+			t=pre[t];
+		}
+		val+=min;
+		t=n;
+		while(pre[t]!=0)
+		{
+			flow[pre[t]][t]+=min;
+			flow[t][pre[t]]-=min;
+			t=pre[t];
+		}
+	}
+	return val;
+}
+int main()
+{
+	freopen("milk6.in","r",stdin);
+	freopen("milk6.out","w",stdout);
+	long long i,t;
+	memset(map,0,sizeof(map));
+	memset(flow,0,sizeof(flow));
+	scanf("%lld%lld",&n,&m);
+	for(i=0;i<m;i++)
+	{
+		scanf("%lld%lld%lld",&e[i].x,&e[i].y,&t);
+		map[e[i].x][e[i].y]+=(long long)(t*1001+1)*500000+i;
+	}
+	t=ek();
+	printf("%lld %lld\n",t/500500000,(t/500000)%1001);
+	for(i=0;i<m;i++)
+		if(used[e[i].x]&&!used[e[i].y])
+			printf("%lld\n",i+1);
+	return 0;
+}
+//一个最基本的解法,在相同数量能达到最小割时,输出的是编号之和最小的解集.
+ 
+/*
+TASK:milk6
+LANG:C++
+*/
+ 
+#include<iostream>
+#include<fstream>
+using namespace std;
+ 
+unsigned long long int c[201][201];//容量
+unsigned long long int used[201][201];//当前使用 
+bool fx[201][201];//是否有i到j的边 
+bool fan[201][201];//反向连边? 
+ 
+int linked[201][201];//邻接表 
+int visited[201];//是否访问过 
+int n,m;//|V|,|E|
+unsigned long long int r;//result
+ 
+int Link_a[1001],Link_b[1001];
+ 
+void getmore()
+{
+unsigned long long int most=999999999;
+most*=9999;
+int w=n;
+while(w>1)
+{
+unsigned long long int s=0;
+if(fx[visited[w]][w])
+s=max(s,c[visited[w]][w]-used[visited[w]][w]);
+if(fx[w][visited[w]])
+s=max(s,used[w][visited[w]]);
+most=min(most,s);
+//cout<<w<<"<-";
+w=visited[w];
+}
+//cout<<1<<" :"<<most<<endl;
+w=n;
+r+=most;
+while(w>1)
+{
+if(fx[visited[w]][w]==1 && used[visited[w]][w]+most <= c[visited[w]][w])
+used[visited[w]][w]+=most;
+else
+used[w][visited[w]]-=most;
+w=visited[w];
+}
+}
+ 
+bool dfs(int now)
+{
+if(now==n)
+{
+getmore();
+return 1;
+}
+for(int i=1;i<=linked[now][0];i++)
+if(!visited[linked[now][i]])
+{
+int t=linked[now][i];
+if((fx[now][t]==1 && used[now][t]<c[now][t])||(fx[now][t]==0 && used[t][now]>0))
+{
+visited[t]=now;
+if(dfs(t))
+return 1;
+ 
+}
+}
+return 0;
+}
+int main()
+{
+ 
+ifstream cin("milk6.in");
+ofstream cout("milk6.out");
+ 
+r=0;
+memset(c,0,sizeof(c));
+memset(used,0,sizeof(used));
+memset(fx,0,sizeof(fx));
+memset(linked,0,sizeof(linked));
+memset(visited,0,sizeof(visited));
+memset(fan,0,sizeof(fan));
+visited[0]=1001;
+ 
+cin>>n>>m;
+ 
+for(int i=1;i<=m;i++)
+{
+unsigned long long int x,y,z;
+cin>>x>>y>>z;
+Link_a[i]=x;
+Link_b[i]=y;
+if(x!=y)
+{
+z=((1001*z)+1)*500501+i;
+c[x][y]+=z;
+if(fx[x][y]==0)
+{
+fx[x][y]=1;
+linked[x][++linked[x][0]]=y;
+}
+if(!fan[x][y])
+{
+fan[x][y]=1;
+linked[y][++linked[y][0]]=x;
+}
+}
+}
+while(dfs(1))
+{
+memset(visited,0,sizeof(visited));
+visited[0]=1001;
+}
+visited[1]=1;
+r/=500501;
+cout<<r/1001<<" "<<r%1001<<endl;
+ 
+for(int i=1;i<=m;i++)
+if(visited[Link_a[i]] && !visited[Link_b[i]])
+cout<<i<<endl;
+ 
+//system("pause");
+return 0;
+}我认为我的比较好理解
+/*
+LANG:C++
+PROB:milk6
+*/
+#include <iostream>
+#include <string.h>
+using namespace std;
+#define int64 long long 
+int64 n,m;
+struct edge
+{
+	int64 x,y,f;
+}e[2001];
+int64 c[40][40];
+int64 c2[40][40];
+int64 ans[2000];
+void init()
+{
+	freopen("milk6.in","r",stdin);
+	freopen("milk6.out","w",stdout);
+	cin>>n>>m;
+	for(int i=1;i<=m;i++)
+	{
+		int64 x,y,z;
+		cin>>x>>y>>z;
+		e[i].x=x;
+		e[i].y=y;
+		e[i].f=z*1001+1;
+		c[x][y]+=z*1001+1;
+	}
+}
+class NETFLOW
+{
+	public:
+	int64 vh[100],h[100];
+	int64 ans;
+	int64 flow;
+	bool found;
+	void aug(int x)
+	{
+		if(x==n)
+		{
+			found=true;
+			ans+=flow;
+			return;
+		}
+		int64  minh=n-1,old=flow,i;
+		for(i=1;i<=n;i++)
+			if(c2[x][i]>0)
+			{
+				if(h[i]+1==h[x])
+				{
+					if(c2[x][i]<flow)
+						flow=c2[x][i];
+					aug(i);
+					if(h[1]>=n) return;
+					if(found) break;
+				}
+				if(minh>h[i])
+					minh=h[i];
+			}
+		if(found)
+		{
+			c2[x][i]-=flow;
+			c2[i][x]+=flow;
+		}
+		else
+		{
+			vh[h[x]]--;
+			if(vh[h[x]]==0)
+				h[1]=n;
+			h[x]=minh+1;
+			vh[h[x]]++;
+		}
+	}
+	int64 getmax()
+	{
+		memset(h,0,sizeof(h));
+		memset(vh,0,sizeof(vh));
+		h[0]=n;
+		ans=0;
+		while(h[1]<n)
+		{
+			flow=0x7FFFFFFF;
+			found=false;
+			aug(1);
+		}
+		return ans;
+	}
+}maxflow;
+ 
+main()
+{
+	init();
+	memcpy(c2,c,sizeof(c2));
+	int64 max=maxflow.getmax();
+	cout<<max/1001<<' ';
+	for(int64 i=1;i<=m;i++)
+	{
+		if(max==0) break;
+		memcpy(c2,c,sizeof(c2));
+		c2[e[i].x][e[i].y]-=e[i].f;
+		int64 now=maxflow.getmax();
+		if(now+e[i].f==max)
+		{
+			max-=e[i].f;
+			c[e[i].x][e[i].y]-=e[i].f;
+			ans[0]++;
+			ans[ans[0]]=i;
+		}
+	}
+	cout<<ans[0]<<endl;
+	for(int64 i=1;i<=ans[0];i++)
+		cout<<ans[i]<<endl;
+	return 0;
+}/*
+	ID:echoaot1
+	LANG:C++
+	TASK:milk6
+	*/
+#include <fstream>
+#include <cstring>
+#define V 52
+#define E 1003
+using namespace std;
+struct re{
+	long x,y,z,l;
+};
+re g[E];
+ifstream fin("milk6.in");ofstream fout("milk6.out");
+long level[V]={0},a[V][V]={0},c[V][V]={0},c1[V][V];
+long n=0,m=0;
+bool bfs(void){
+	memset(level,-1,sizeof level);
+	long d[V]={0,1},head=1,tail=1;
+	level[1]=0;
+	while(head<=tail){
+		long now=d[head++];
+		for(long i=1;i<=a[now][0];i++)
+			if(c[now][a[now][i]]>0&&level[a[now][i]]==-1)
+				level[d[++tail]=a[now][i]]=level[now]+1;
+		}
+	return level[n]!=-1;
+}
+long extent(long u,long sum){
+	long r=0,t=0;
+	if(u==n)return sum;
+	for(long i=1;i<=a[u][0]&&r<sum;i++)
+		if(level[a[u][i]]==level[u]+1){
+		t=c[u][a[u][i]];
+		if(t>sum-r)t=sum-r;
+		t=extent(a[u][i],t);
+		r+=t;c[u][a[u][i]]-=t;c[a[u][i]][u]+=t;
+	}
+	if(!r)level[u]=-1;
+	return r;
+}
+long dinic(void){
+	long t=0,r=0;
+	while(bfs()){
+		bool bo=false;
+		while(t=extent(1,0x7fffffff)){
+			r+=t;bo=true;}
+		if(!bo)break;
+	}
+	return r;
+}
+int comp(const void* a,const void* b){
+	long r=((re*)b)->z-((re*)a)->z;
+	if(r)return r;
+	r=((re*)a)->l-((re*)b)->l;
+	return r;
+}
+bool hash[E]={0};
+long o=0;
+int main(int argc,char** argv){
+	fin >>n>>m;
+	for(long i=1;i<=m;i++){
+		long x,y,z;
+		fin >>x>>y>>z;a[x][++a[x][0]]=y;a[y][++a[y][0]]=x;c1[x][y]+=z;c[x][y]=c1[x][y];
+		g[i].x=x;g[i].y=y;g[i].z=z;g[i].l=i;
+	}
+	long sum=dinic();
+	qsort(g,m+1,sizeof g[0],comp);
+	long ans[E]={0};
+	long max=sum;
+	for(long i=0;i<m;i++){
+		long x=g[i].x,y=g[i].y;
+		long now=g[i].z;
+		if(now<=max){
+			memcpy(c,c1,sizeof c);
+			c[x][y]-=now;
+			long s=dinic();
+			if(max-s==now){
+				hash[g[i].l]=true;o++;
+				max=s;
+				c1[g[i].x][g[i].y]-=now;
+			}
+		}
+	}
+	fout <<sum<<' '<<o<<endl;
+	for(long i=1;i<=m;i++)
+		if(hash[i])fout <<i<<endl;
+	fin.close();fout.close();
+	return 0;
+}

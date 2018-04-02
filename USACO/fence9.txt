@@ -1,0 +1,258 @@
+数学方法
+/*
+ID:ybojan2
+LANG:C++
+TASK:fence9
+*/
+ 
+#include <iostream>
+#include <fstream>
+ 
+using namespace std;
+ 
+int gcd(int x,int y)
+{
+    if (x>y) swap(x,y);
+    if (x==0) return y;
+    return gcd(y%x,x);
+}
+ 
+int main()
+{
+    ifstream fin("fence9.in");
+    ofstream fout("fence9.out");
+ 
+    int n,m,p,b=0,s;
+    fin>>n>>m>>p;
+    s=(m*p)/2;
+    b+=gcd(n,m);
+    if (n!=p) b+=gcd(abs(n-p),m);
+    else b+=m;
+    b+=p;
+    fout<<s+1-(b/2)<<endl;
+    return 0;
+}
+/*
+ID: cmykrgb1
+PROG: fence9
+LANG: C++
+*/
+#include <iostream>
+#include <fstream>
+using namespace std;
+ifstream fi("fence9.in");
+ofstream fo("fence9.out");
+long n,m,p,ans;
+ 
+void init()
+{
+	fi >> n >> m >> p;
+}
+ 
+long gcd(long x,long y)
+{
+	int tmp;
+	while (y>0)
+	{
+		tmp=y;
+		y=x % y;
+		x=tmp;
+	}
+	return x;
+}
+ 
+void compute()
+{
+	double S,b;
+	long w1,w2;
+	S=p*m/2.0;
+	w1=gcd(n,m);
+	w2=gcd(m,abs(p-n));
+	b=p+w1+w2;
+	ans=S-b/2.0+1;
+}
+ 
+void print()
+{
+	fo << ans << endl;
+	fi.close();
+	fo.close();
+}
+ 
+int main()
+{
+	init();
+	compute();
+	print();
+	return 0;
+}
+如果完全模拟怎么写呢？~~：
+/*
+*Written By Satily
+*/
+#include <iostream>
+#include <fstream>
+#include <stdlib.h> 
+using namespace std;
+ 
+ifstream fin("fence9.in");
+ofstream fout("fence9.out");
+ 
+long i=0; 
+long n,m,p;
+long s=0; 
+double k=0;
+int t2=0; 
+double t1=0.0; 
+ 
+ 
+long Count(int n,int m); 
+ 
+int main(void)
+{
+    fin>>n >>m >>p;
+ 
+    s+=Count(n,m); 
+ 
+    long t=Count(abs(p-n),m);
+ 
+    if (p<n)
+    {
+ 
+        for (i=1;i<m;i++)
+        {
+            t1=i*k;
+            t2=(int)t1;
+            t1=t1-t2;
+            if ((t1<1e-10) && (t1>-1e-10))
+                t++;
+        } 
+        s-=t;
+    }
+    else 
+        s+=(t+m-1);
+ 
+    fout<<s<<endl;
+    return 0;
+} 
+ 
+ 
+long Count(int n,int m)
+{
+    k=n;
+    k/=m; 
+    long s=0;
+    for (i=1;i<m;i++)
+    {
+        t1=i*k;
+        t2=(int)t1;
+        t1=t1-t2;
+        if ((t1<0) && (t1>-1e-10))
+            t2++;  
+        s+=(n-t2-1); 
+    }
+    return s; 
+}局部枚举：
+/*
+ID: softwar3
+PROG: fence9
+LANG: C++
+*/
+//注意浮点误差！ 
+#include <iostream>
+#include <fstream>
+using namespace std;
+ 
+int N, M, P;
+double x, y;
+ 
+int main()
+{
+    freopen("fence9.in", "r", stdin);
+    freopen("fence9.out", "w", stdout);
+    scanf("%d%d%d", &N, &M, &P);
+    if(N > P){
+         int cnt1 = 0; 
+         int cnt2 = 0;
+         for(int i = 1; i <= N; i++)
+                 cnt1 += int(double(M)/N * i);
+         for(int i = P + 1; i <= N; i++)
+                 cnt2 += int(double(M)/(N - P) * (i - P));
+         cnt1 -= cnt2;
+         for(int i = 1; i <= N - 1; i++)//减去线段上的格点
+                 if((M * i) % N == 0)
+                       --cnt1;
+         printf("%d\n", cnt1);
+         return 0;
+    }
+    if(N == P){
+         int cnt = 0;
+         for(int i = 1; i < N; i++){
+                 cnt += int(double(M)/N * i);
+                 if((M * i) % N == 0)
+                       --cnt;
+         }
+         printf("%d\n", cnt);
+         return 0;
+    }
+    if(N < P){
+         int cnt = 0;
+         for(int i = 1; i < N; i++){
+                 cnt +=int(double(M) * i/ N);
+                 if((M * i) % N == 0)
+                       --cnt;
+         }
+         for(int i = N; i < P; i++){
+                 cnt += int(double(M) * (i - P)/(N - P));
+                 if((M * (i - P)) % (N - P) == 0)
+                       --cnt;
+         }
+         printf("%d\n", cnt);
+         return 0;
+    }
+    return 0;
+}Compiling...
+Compile: OK
+ 
+Executing...
+   Test 1: TEST OK [0.000 secs, 3012 KB]
+   Test 2: TEST OK [0.011 secs, 3012 KB]
+   Test 3: TEST OK [0.000 secs, 3012 KB]
+   Test 4: TEST OK [0.000 secs, 3012 KB]
+   Test 5: TEST OK [0.011 secs, 3012 KB]
+   Test 6: TEST OK [0.000 secs, 3012 KB]
+   Test 7: TEST OK [0.011 secs, 3012 KB]
+   Test 8: TEST OK [0.011 secs, 3012 KB]
+   Test 9: TEST OK [0.000 secs, 3012 KB]
+   Test 10: TEST OK [0.011 secs, 3012 KB]
+   Test 11: TEST OK [0.000 secs, 3012 KB]
+   Test 12: TEST OK [0.011 secs, 3012 KB]
+ 
+All tests OK.
+YOUR PROGRAM ('fence9') WORKED FIRST TIME!  That is fantastic
+-- and a rare thing.  Please accept these special automated
+congratulations./*
+	ID:echooat1
+	LANG:C++
+	TASK:fence9
+	*/
+#include <fstream>
+using namespace std;
+ifstream fin("fence9.in");
+ofstream fout("fence9.out");
+long gcd(long a,long b){
+	if(a<b){long c=a;a=b;b=c;}
+	while(a!=b&&b!=0){
+		long k=a%b;
+		a=b;
+		b=k;
+	}
+	return a;
+}
+int main(int argc,char** argv){
+	long n,m,p;
+	fin >>n>>m>>p;
+	if(m==0||p==1)fout <<0<<endl;else
+	fout <<((p*m)>>1)+1-(((gcd(n,m)+1)+(gcd(abs(n-p),m)+1)+p-2)>>1)<<endl;
+	return 0;
+}

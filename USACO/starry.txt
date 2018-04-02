@@ -1,0 +1,1406 @@
+/*
+ID:selfcon2
+LANG:C++
+PROG:starry
+*/
+#include <fstream>
+#include <cstring>
+#include <cctype>
+using namespace std;
+ifstream fin("starry.in");
+ofstream fout("starry.out");
+struct node{int x,y;};
+const node way[8]={{-1,-1},{-1,0},{-1,1},{0,-1},{0,1},{1,-1},{1,0},{1,1}};
+static int x1,x2,y1,y2,w,h,dictn,flag,flag2;
+static char a[105][105];
+struct node2
+{
+	int w,h;
+	char map[105][105];
+};
+node2 dict[26],b;
+void floodfill(int y,int x,int c)
+{
+	a[y][x]=c;
+	x1=min(x1,x);x2=max(x2,x);
+	y1=max(y1,y);y2=min(y2,y);
+	for(int i=0;i<8;i++)
+	{
+		int ty=y+way[i].y,tx=x+way[i].x;
+		if(ty>=0&&ty<h&&tx>=0&&tx<w&&a[ty][tx]!=c&&a[ty][tx]!='0')
+			floodfill(ty,tx,c);
+	}	
+}
+int main()
+{
+	//-----------------------------------------init
+	fin>>w>>h;
+	for(int i=0;i<h;i++)
+		for(int j=0;j<w;j++)fin>>a[i][j];
+	//-----------------------------------------calc
+	for(int i=0;i<h;i++)
+		for(int j=0;j<w;j++)
+			if(a[i][j]=='1')
+			{
+				x1=w;x2=0;y1=0;y2=h;
+				floodfill(i,j,'2');
+				memset(b.map,'0',sizeof(b.map));
+				for(int ii=y2;ii<=y1;ii++)
+					for(int jj=x1;jj<=x2;jj++)
+						if(a[ii][jj]=='2')b.map[ii-y2][jj-x1]=a[ii][jj];
+				b.w=x2-x1+1;b.h=y1-y2+1;
+ 
+				flag2=0;
+				for(int k=0;k<dictn;k++)
+				{
+ 
+					for(int l=0;l<4;l++)
+					{	
+						//右旋90°
+						node2 tem=b;
+						b.w=tem.h;b.h=tem.w;
+						for (int ii=0;ii<tem.h;ii++)
+							for (int jj=0;jj<tem.w;jj++)
+								b.map[jj][b.w-ii-1]=tem.map[ii][jj];
+						//原图对比
+						flag=1;
+						if(b.w!=dict[k].w||b.h!=dict[k].h)flag=0;
+						if(flag)
+							for(int ii=0;ii<b.h;ii++)
+								for(int jj=0;jj<b.w;jj++)
+									if(b.map[ii][jj]!=dict[k].map[ii][jj]){flag=0;break;}
+						if(flag){floodfill(i,j,(char)('a'+k));flag2=1;break;}
+						//上下对称
+						flag=1;
+						if(b.w!=dict[k].w||b.h!=dict[k].h)flag=0;
+						if(flag)
+							for(int ii=0;ii<b.h;ii++)
+								for(int jj=0;jj<b.w;jj++)
+									if(b.map[ii][jj]!=dict[k].map[b.h-ii-1][jj]){flag=0;break;}
+						if(flag){floodfill(i,j,(char)('a'+k));flag2=1;break;}	
+					}	
+					if(flag2)break;
+				}	
+				if(!flag2)
+				{
+					floodfill(i,j,(char)(dictn+'a'));
+					dict[dictn]=b;
+					dictn++;
+				}
+			}
+	//---------------------------------------print
+	for(int i=0;i<h;i++)
+	{	
+		for(int j=0;j<w;j++)fout<<a[i][j];
+		fout<<endl;
+	}	
+	return 0;
+}#include <stdio.h>
+#include <stdlib.h>
+#include <assert.h>
+ 
+#define NAME "starry"
+/* MAXSTAR is the largest a cluster can be */
+#define MAXSTAR 160
+ 
+/* the board */
+char board[100][100];
+int w, h;
+ 
+/* clusters already lettered */
+int stars[26][MAXSTAR]; /* stars are stored as xval + yval*1000 */
+int count[26]; /* number of stars */
+int size[26][2]; /* the x & y dimensions */
+int nstart; /* number of clusters */
+ 
+/* the current cluster */
+int current[MAXSTAR][2]; /* y, x */
+int ncurrent; /* number of stars in current cluster */
+ 
+/* int_comp is integer comparison, used for bsearch and qsort */
+int
+int_comp(const void *pa, const void *pb)
+ {
+  int a = *(int*)pa;
+  int b = *(int*)pb;
+  if (a > b) return 1;
+  else if (a < b) return -1;
+  else return 0;
+ }
+ 
+/* find the boundary (in my,mx,My, and Mx.. m is minimum, M is maximum */
+/* also fills in current */
+int
+find_boundary(int y, int x, int *my, int *mx, int *My, int *Mx)
+ {
+  int rv = 0;
+  if (board[y][x] != '1') return 0; /* not a star or already visited */
+  rv++; /* one more star */
+  board[y][x] = '2'; /* mark as visited */
+ 
+  /* put in current cluster */
+  current[ncurrent][0] = y;
+  current[ncurrent][1] = x;
+  ncurrent++;
+ 
+  /* update boundary */
+  if (y < *my) *my = y;
+  if (y > *My) *My = y;
+  if (x < *mx) *mx = x;
+  if (x > *Mx) *Mx = x;
+ 
+  /* check all adjacent stars */
+  if (x > 0) 
+   {
+    x--;
+    rv += find_boundary(y, x, my, mx, My, Mx);
+    if (y > 0) rv += find_boundary(y-1, x, my, mx, My, Mx);
+    if (y+1 < h) rv += find_boundary(y+1, x, my, mx, My, Mx);
+    x++;
+   }
+  if (y > 0) rv += find_boundary(y-1, x, my, mx, My, Mx);
+  if (y+1 < h) rv += find_boundary(y+1, x, my, mx, My, Mx);
+  if (x+1 < w)
+   {
+    x++;
+    rv += find_boundary(y, x, my, mx, My, Mx);
+    if (y > 0) rv += find_boundary(y-1, x, my, mx, My, Mx);
+    if (y+1 < h) rv += find_boundary(y+1, x, my, mx, My, Mx);
+    x--;
+   }
+  return rv;
+ }
+ 
+/* this is a very basic flood fill...fill ch everywhere there's not a '0' */
+void
+mark_shape(int y, int x, char ch)
+ {
+  if (board[y][x] == ch) return; /* done already */
+  if (board[y][x] == '0') return; /* nothing to do */
+ 
+  board[y][x] = ch;
+ 
+  /* recurse on all boundary stars */
+  if (x > 0) 
+   {
+    x--;
+    mark_shape(y, x, ch);
+    if (y > 0) mark_shape(y-1, x, ch);
+    if (y+1 < h) mark_shape(y+1, x, ch);
+    x++;
+   }
+  if (y > 0) mark_shape(y-1, x, ch);
+  if (y+1 < h) mark_shape(y+1, x, ch);
+  if (x+1 < w) 
+   {
+    x++;
+    mark_shape(y, x, ch);
+    if (y > 0) mark_shape(y-1, x, ch);
+    if (y+1 < h) mark_shape(y+1, x, ch);
+   }
+ }
+ 
+/* is shape id the same as the current shape */
+/* specify the orientation with dy/dx and by/bx */
+/* dy/dx is the difference value to associate with y and x changes */
+/* by/bx is the upper right corner of the bounding box with respect
+   to the current orientation */
+/* NOTE: assumes that the number of stars are the same */
+int
+check_shape(int id, int dy, int dx, int by, int bx)
+ {
+  int lv;
+  int pval;
+ 
+  for (lv = 0; lv < ncurrent; lv++)
+   {
+    pval = (current[lv][0]-by)*dy + (current[lv][1]-bx)*dx;
+    if (!bsearch(&pval, stars[id], count[id], sizeof(stars[id][0]), int_comp))
+      return 0; /* found a star that didn't match */
+   }
+  return 1;
+ }
+ 
+/* we found a star here, make it a cluster */
+void
+fix_board(int y, int x)
+ {
+  int mx, my, Mx, My;
+  int cnt;
+  int lv;
+  int pw, ph;
+  int f;
+ 
+/* gather the cluster information */
+  mx = Mx = x;
+  my = My = y;
+ 
+  ncurrent = 0;
+  cnt = find_boundary(y, x, &my, &mx, &My, &Mx);
+ 
+  pw = Mx - mx + 1;
+  ph = My - my + 1;
+ 
+  f = 0;
+  /* check each cluster */
+  for (lv = 0; lv < nstart; lv++)
+    if (cnt == count[lv]) /* the cluster must have the same # of stars */
+     {
+      if (pw == size[lv][1] && ph == size[lv][0])
+       { /* the bounding box sizes match */
+	f += check_shape(lv, 1000, 1, my, mx);
+	f += check_shape(lv, 1000, -1, my, Mx);
+	f += check_shape(lv, -1000, 1, My, mx);
+	f += check_shape(lv, -1000, -1, My, Mx);
+       }
+      if (pw == size[lv][0] && ph == size[lv][1])
+       { /* the bounding box sizes match */
+	f += check_shape(lv, 1, 1000, my, mx);
+	f += check_shape(lv, 1, -1000, my, Mx);
+	f += check_shape(lv, -1, 1000, My, mx);
+	f += check_shape(lv, -1, -1000, My, Mx);
+       }
+      if (f) break;
+     }
+  if (f) mark_shape(y, x, 'a' + lv); /* found match */
+  else { /* new cluster! */
+    count[nstart] = 0;
+    mark_shape(y, x, 'a' + nstart);
+    for (lv = 0; lv < ncurrent; lv++)
+      stars[nstart][lv] = (current[lv][0]-my)*1000 + (current[lv][1]-mx);
+    count[nstart] = ncurrent;
+    /* we need the stars in increasing order */
+    qsort(stars[nstart], count[nstart], sizeof(stars[nstart][0]), int_comp);
+    size[nstart][0] = ph;
+    size[nstart][1] = pw;
+    nstart++;
+   }
+ }
+ 
+ 
+int
+main(int argc, char **argv)
+ {
+  FILE *fin, *fout;
+  int lv, lv2;
+ 
+  fin = fopen(NAME ".in", "r");
+  fout = fopen(NAME ".out", "w");
+  assert(fin);
+  assert(fout);
+ 
+/* read in the data */
+  fscanf (fin, "%d %d", &w, &h);
+ 
+  for (lv = 0; lv < h; lv++) fscanf (fin, "%s", board[lv]);
+  fclose(fin);
+ 
+/* everywhere there's a star not in a cluster, make it into one */
+  for (lv = 0; lv < h; lv++)
+    for (lv2 = 0; lv2 < w; lv2++)
+      if (board[lv][lv2] == '1')
+        fix_board(lv, lv2);
+ 
+/* output data */
+  for (lv = 0; lv < h; lv++)
+   {
+    fprintf (fout, "%c", board[lv][0]);
+    for (lv2 = 1; lv2 < w; lv2++)
+      fprintf (fout, "%c", board[lv][lv2]);
+    fprintf (fout, "\n");
+   }
+ 
+  fclose(fout);
+  return 0;
+ }/*
+ID:ymf11111
+TASK:starry
+LANG:C++
+*/
+/*
+较为优化的猥琐程序
+大体思路还floodfill再判同构
+自己第一次设计hash妄图一次就靠rp而A掉
+结果前4个点还好，第5个点WA得很惨。。
+ 
+于是就开始老老实实地加上裸判。不过旋转部分自认为写的比较精简
+至于原来的hash表 不能废掉。。所以拿它来先排除一次，剪枝
+再用是这个hash值的所有模板来实验当前图样。使用随机取样来进行
+*/
+ 
+#include <iostream>
+#include <cstring>
+#include <cstdio>
+#include <cstdlib>
+ 
+#define M 1234
+#define MAXH 101
+#define MAXW 101
+#define MAXQ 10000
+#define MAXRP 43
+ 
+using namespace std;
+ 
+const int det[8][2] = {{1,0},{0,1},{-1,0},{0,-1},{-1,-1},{1,1},{-1,1},{1,-1}};
+ 
+int H,W; //row col
+int map[MAXH][MAXW];
+int comap[MAXH][MAXW];
+int tmap[MAXH][MAXW];
+int ttmap[MAXH][MAXW];
+ 
+int htable[M][100],nowc = 0;
+int patts[161][8][50][50];
+int tps[161][2],tps2[161][2],cnt;
+ 
+int cust_hash(int area[101][101],int sx,int sy,int ex,int ey) {
+ 
+	int xorx = 0,px = 0,xory = 0,py = 0,sum = 0;
+ 
+	for (int i = sx; i <= ex; i++)
+		for (int j = sy; j <= ey; j++)
+			if (!area[i][j]) area[i][j] = 2;
+	for (int i = sx; i <= ex; i++)
+	{
+		int txx = 0,tpx = 0,tt = 0;
+		for (int j = sy; j <= ey; j++)
+		{txx ^= area[i][j]; tpx += area[i][j]; sum += area[i][j];
+			xorx += tt;
+ 
+		}
+		px ^= tpx; xorx += txx;
+	}
+	for (int j = sy; j <= ey; j++)
+	{
+		int txy = 0,tpy = 0;
+		for (int i = sx; i <= ex; i++)
+		{txy ^= area[i][j]; tpy += area[i][j]; sum += area[i][j];}
+		py ^= tpy; xory += txy;
+	}
+ 
+	return (px + py + xorx + xory + sum + ex - sx + ey - sy) % M;
+}
+ 
+void floodfill(int area[101][101],int sx,int sy,int co,int &ox,int &oy,int &ex,int &ey) {
+ 
+	int que[MAXQ][2],l = 0,r = 1;
+	bool vis[MAXH][MAXW];
+ 
+	memset(vis,0,sizeof(vis));
+	que[0][0] = sx;
+	que[0][1] = sy;
+	vis[sx][sy] = 1;
+	area[sx][sy] = co;
+	ox = ex = sx; oy = ey = sy;
+	tps[cnt = 1][0] = sx;
+	tps[cnt][1] = sy;
+ 
+	while (l != r)	
+	{
+		for (int d = 0; d < 8; d++)
+		{
+			int nx = que[l][0] + det[d][0];
+			int ny = que[l][1] + det[d][1];
+			if (map[nx][ny] && !vis[nx][ny] && 1 <= nx && nx <= H && 1 <= ny && ny <= W)
+			{
+				que[r][0] = nx;
+				que[r][1] = ny;
+				tps[++cnt][0] = nx;
+				tps[cnt][1] = ny;
+				if (nx > ex) ex = nx; if (nx < ox) ox = nx;
+				if (ny > ey) ey = ny; if (ny < oy) oy = ny;
+				vis[nx][ny] = 1;
+				area[nx][ny] = co;
+				r++; if (r == MAXQ) r = 0;
+			}
+ 
+		}
+		l++; if (l == MAXQ) l = 0;
+	}
+}
+ 
+int RP_check(int addr,int tx,int ty,int ttx,int tty) {
+ 
+	int m = tx - ttx + 1,n = ty - tty + 1;
+	memset(ttmap,0,sizeof(ttmap));
+	for (int tcase = 1; tcase <= htable[addr][0]; tcase++)
+	{
+		int tc = htable[addr][tcase];
+		for (int i = 0; i < 8; i++)
+		{
+			bool flag = 1;
+			if (patts[tc][i][0][0] == m && patts[tc][i][0][1] == n)
+			{
+				for (int j = 1; j <= cnt; j++) ttmap[tps2[j][0]][tps2[j][1]] = 1;
+				for (int rp = 1; rp <= MAXRP; rp++)
+				{
+					int RP_x = rand() % m + 1;
+					int RP_y = rand() % n + 1;
+					if (patts[tc][i][RP_x][RP_y] != ttmap[RP_x][RP_y]) {flag = 0; break;}
+				} //RP TEST
+			} else flag = 0;
+			if (flag) return tc;
+		}
+	}
+	return 0;
+}
+ 
+void patts_ins(int nc,int xmin,int ymin,int xmax,int ymax) {
+ 
+	memset(patts[nc],0,sizeof(patts[nc]));
+	int m = xmax - xmin + 1;
+	int n = ymax - ymin + 1;
+	int tmp;
+ 
+	for (int i = 0; i < 8; i += 2) //8个方向的模板生成过程
+	{
+		for (int j = 1; j <= cnt; j++) 
+		{
+			tmp = tps2[j][0];
+			patts[nc][i + 1][m - tmp + 1][tps2[j][1]] = 1;
+			patts[nc][i][tps2[j][0]][tps2[j][1]] = 1;
+			tps2[j][0] = tps2[j][1]; 
+			tps2[j][1] = m - tmp + 1; 
+		}
+		patts[nc][i][0][0] = patts[nc][i + 1][0][0] = m; 
+		patts[nc][i][0][1] = patts[nc][i + 1][0][1] = n;
+		tmp = m; m = n; n = tmp;
+	}
+}
+ 
+int main () {
+ 
+	freopen("starry.in","r",stdin);
+	freopen("starry.out","w",stdout);
+	memset(comap,0,sizeof(comap));
+	memset(htable,0,sizeof(htable));
+	srand(43);
+ 
+	scanf("%d\n%d\n",&W,&H);
+	for (int i = 1; i <= H; i++)
+	{
+		char ch;
+		for (int j = 1; j <= W; j++) 
+		{
+			scanf("%c",&ch);
+			if (ch == 48) map[i][j] = 0; else map[i][j] = 1;
+		}
+		scanf("%c",&ch);
+	}
+ 
+	for (int i = 1; i <= H; i++)
+	{
+		for (int j = 1; j <= W; j++)
+			if (!comap[i][j] && map[i][j])
+			{
+				int ttx,tty,tx,ty,thash,tc;
+				memset(tmap,0,sizeof(tmap));
+				floodfill(tmap,i,j,1,ttx,tty,tx,ty);
+				thash = cust_hash(tmap,ttx,tty,tx,ty);
+				memmove(tps2,tps,sizeof(tps));
+				for (int t = 1; t <= cnt; t++)
+				{	
+					tps2[t][0] = tps2[t][0] - ttx + 1;
+					tps2[t][1] = tps2[t][1] - tty + 1;
+				}
+ 
+				if (htable[thash][0] && (tc = RP_check(thash,tx,ty,ttx,tty))) 
+				{
+					floodfill(comap,i,j,tc,ttx,tty,tx,ty);
+				}
+				else 
+				{
+					floodfill(comap,i,j,++nowc,ttx,tty,tx,ty); 
+					htable[thash][++htable[thash][0]] = nowc;
+					patts_ins(nowc,ttx,tty,tx,ty);
+				}
+			}
+	}
+	for (int i = 1; i <= H; i++)
+	{
+		for (int j = 1; j <= W; j++)
+			if (comap[i][j]) printf("%c",comap[i][j] + 96);
+			else printf("%c",'0');
+		printf("\n");
+	}
+	return 0;
+}/*
+ID: cmykrgb1
+PROG: starry
+LANG: C++
+*/
+//Written by CmYkRgB123
+#include <iostream>
+#include <fstream>
+#define MAX 100
+#define INF 0x7FFFFFFF
+ 
+using namespace std;
+ 
+typedef struct
+{
+	int x,y;
+}point;
+ 
+class queue
+{
+private:
+	long first,last;
+	point list[MAX*MAX+1];
+public:
+	long size;
+ 
+	queue()
+	{
+		reset();
+	}
+ 
+	void reset()
+	{
+		first=1;
+		last=size=0;
+	}
+ 
+	void ins(point k)
+	{
+		size++;
+		list[++last]=k;
+	}
+ 
+	point del()
+	{
+		size--;
+		return list[first++];
+	}
+};
+ 
+typedef struct
+{
+	int width,height;
+	char cate;
+	bool c[MAX*MAX];
+}hashcode;
+ 
+ifstream fi("starry.in");
+ofstream fo("starry.out");
+ 
+int M,N,hscnt=-1,w=0;
+char p[MAX][MAX],newcate='a';
+queue Q;
+hashcode Ht[30];
+point mv[8];
+ 
+void init()
+{
+	int i,j;
+	fi >> M >> N;
+	j=(char)fi.get();
+	for (i=0;i<N;i++)
+	{
+		for (j=0;j<M;j++)
+		{
+			p[i][j]=fi.get();
+		}
+		j=(char)fi.get();
+	}
+	mv[0].x=-1; mv[0].y=-1;
+	mv[1].x=-1; mv[1].y=0;
+	mv[2].x=-1; mv[2].y=1;
+	mv[3].x=0; mv[3].y=-1;
+	mv[4].x=0; mv[4].y=1;
+	mv[5].x=1; mv[5].y=-1;
+	mv[6].x=1; mv[6].y=0;
+	mv[7].x=1; mv[7].y=1;
+}
+ 
+void flip(hashcode &h,hashcode &w)
+{
+	int i,j;
+	//左右对称变换
+	w.height=h.height;
+	w.width=h.width;
+	for (i=0;i<=h.height-1;i++)
+	{
+		for (j=0;j<=h.width-1;j++)
+		{
+			w.c[(i+1)*h.width-1-j] = h.c[i*h.width+j];
+		}
+	}
+	return;
+}
+ 
+void turn(hashcode &h,hashcode &w)
+{
+	int i,j;
+	//右旋转90度
+	w.height=h.width;
+	w.width=h.height;
+	for (i=0;i<=h.height-1;i++)
+	{
+		for (j=0;j<=h.width-1;j++)
+		{
+			w.c[(j+1)*h.height-i-1] = h.c[i*h.width+j];
+		}
+	}
+}
+ 
+void transform(hashcode * H,int w)
+{
+	hashcode T;
+	if (w==1)
+	{
+		//左右对称变换
+		flip(H[0],H[w]);
+		return;
+	}
+	if (w==2)
+	{
+		//右旋转90度
+		turn(H[0],H[w]);
+		return;
+	}
+	if (w==3)
+	{
+		//右旋转180度
+		turn(H[0],T);
+		turn(T,H[w]);
+		return;
+	}
+	if (w==4)
+	{
+		//右旋转270度
+		turn(H[0],H[w]);
+		turn(H[w],T);
+		turn(T,H[w]);
+		return;
+	}
+	if (w==5)
+	{
+		//右旋转90度并对称
+		turn(H[0],T);
+		flip(T,H[w]);
+		return;
+	}
+	if (w==6)
+	{
+		//右旋转180度并对称
+		turn(H[0],H[w]);
+		turn(H[w],T);
+		flip(T,H[w]);
+		return;
+	}
+	if (w==7)
+	{
+		//右旋转270度并对称
+		turn(H[0],T);
+		turn(T,H[w]);
+		turn(H[w],T);
+		flip(T,H[w]);
+		return;
+	}
+}
+ 
+int findsame(hashcode &H)
+{
+	int i,j;
+	bool tar;
+	for (i=0;i<=hscnt;i++)
+	{
+		if (Ht[i].height!=H.height || Ht[i].width!=H.width) continue;
+		tar=true;
+		for (j=0;j<=H.width*H.height-1;j++)
+			if (H.c[j]!=Ht[i].c[j])
+			{
+				tar=false;
+				break;
+			}
+		if (tar)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+ 
+void floodfill(int a,int b)
+{
+	Q.reset();
+	point st,cr;
+	int i,j,maxx=0,maxy=0,minx=INF,miny=INF;
+	st.x=a;st.y=b;
+	Q.ins(st);
+	if (w==26)
+		w=w;
+	while (Q.size)
+	{
+		cr=Q.del();
+		if (cr.x<minx) minx=cr.x;
+		if (cr.y<miny) miny=cr.y;
+		if (cr.x>maxx) maxx=cr.x;
+		if (cr.y>maxy) maxy=cr.y;
+		p[cr.x][cr.y]='2';
+		for (i=0;i<8;i++)
+		{
+			st.x=cr.x+mv[i].x;
+			if (st.x<0 || st.x>N) continue;
+			st.y=cr.y+mv[i].y;
+			if (st.y<0 || st.y>M) continue;
+			if (p[st.x][st.y]=='1')
+			{
+				Q.ins(st);
+				p[st.x][st.y]='2';
+			}
+		}
+	}
+	//建立编码
+	int k=0;
+ 
+	hashcode nh[8];
+	char cate=0;
+	nh[0].width=maxy-miny+1;
+	nh[0].height=maxx-minx+1;
+	for (i=minx;i<=maxx;i++)
+	{
+		for (j=miny;j<=maxy;j++)
+		{
+			if (p[i][j]=='2')
+				nh[0].c[k]=true;
+			else
+				nh[0].c[k]=false;
+			k++;
+		}
+	}
+	//寻找全等图形
+	for (i=0;i<8;i++)
+	{
+		if ((k=findsame(nh[i]))!=-1)
+		{
+			cate=Ht[k].cate;
+			break;
+		}
+		transform(nh,i+1);
+	}
+	//建立新图形
+	if (!cate)
+	{
+		Ht[++hscnt]=nh[0];
+		cate=Ht[hscnt].cate=newcate++;
+	}
+	//修改原图
+	for (i=minx;i<=maxx;i++)
+	{
+		for (j=miny;j<=maxy;j++)
+		{
+			if (p[i][j]=='2')
+			{
+				p[i][j]=cate;
+			}
+		}
+	}
+}
+ 
+void compute()
+{
+	int i,j;;
+	for (i=0;i<N;i++)
+	{
+		for (j=0;j<M;j++)
+		{
+			if (p[i][j]=='1')
+			{
+				floodfill(i,j);
+				w++;
+				i=i;
+			}
+		}
+	}
+}
+ 
+void print()
+{
+	int i,j;
+	for (i=0;i<N;i++)
+	{
+		for (j=0;j<M;j++)
+		{
+			fo << p[i][j];
+		}
+		fo << endl;
+	}
+	fi.close();
+	fo.close();
+}
+ 
+int main()
+{
+	init();
+	compute();
+	print();
+	return 0;
+}自由发挥的HASH
+Executing...
+   Test 1: TEST OK [0.000 secs, 2860 KB]
+   Test 2: TEST OK [0.000 secs, 2856 KB]
+   Test 3: TEST OK [0.000 secs, 2856 KB]
+   Test 4: TEST OK [0.000 secs, 2860 KB]
+   Test 5: TEST OK [0.011 secs, 2860 KB]
+/*
+ID:lqp18_31
+PROG:starry
+LANG:C++
+*/
+#include<stdio.h>
+#include<string.h>
+#include<stdlib.h>
+FILE *fin=fopen("starry.in","r");
+FILE *fout=fopen("starry.out","w");
+char map[103][103];
+int H,W,tot;
+struct star{
+       int h,w;
+       int hash[4];
+}s[27];
+ 
+void init()
+{
+     fscanf(fin,"%d%d",&W,&H);
+     for(int i=1;i<=H;i++)
+       fscanf(fin,"%s",map[i]+1);
+}
+ 
+bool in(int y,int x)
+{
+     if(y<1||y>H) return 0;
+     if(x<1||x>W) return 0;
+     return 1;
+}
+ 
+int x1,x2,y1,y2;
+void floodfill(int y,int x,char t)
+{
+     if(x<x1) x1=x;    if(x>x2) x2=x;
+     if(y<y1) y1=y;    if(y>y2) y2=y;
+     char tmp=map[y][x];
+     map[y][x]=t;
+     for(int i=-1;i<=1;i++)
+       for(int j=-1;j<=1;j++)
+       if(in(y+i,x+j)&&map[y+i][x+j]==tmp)
+           floodfill(y+i,x+j,t);
+}
+ 
+int hash[4];
+ 
+void get_hash(int x1,int x2,int x3,int x4)
+{
+     #define max 1000003
+     #define max2 9999987
+     int h1=0,h2=0,t1=0,t2=0;
+     for(int i=y1;i<=y2;i++)
+     {
+             t1=0;  t2=0;
+             for(int j=x1;j<=x2;j++)
+             {
+               t1=(t1*103)+(map[i][j]=='.'?31:7);
+               t2=(t2*103)+(map[i][x1+x2-j]=='.'?31:7);
+             }
+             h1+=t1;  h2+=t2;  
+     }
+     hash[0]=h1;   hash[1]=h2;
+     h1=0,h2=0;
+     for(int i=x1;i<=x2;i++)
+     {
+             t1=0;  t2=0;
+             for(int j=y1;j<=y2;j++)
+             {
+               t1=(t1*103)+(map[j][i]=='.'?31:7);
+               t2=(t2*103)+(map[y1+y2-j][i]=='.'?31:7);
+             }
+             h1+=t1;  h2+=t2;
+     }
+     hash[2]=h1;   hash[3]=h2;
+}
+ 
+int cmp(const void*a,const void*b)
+{
+    return *(int*)a-*(int*)b;
+}
+ 
+void work()
+{
+     for(int i=1;i<=H;i++)
+      for(int j=1;j<=W;j++)
+      if(map[i][j]=='1')
+      {
+                      int l1,l2,m;
+                      bool ok=0;
+                      memset(hash,0,sizeof(hash));
+                      x1=y1=0x7fffffff;
+                      x2=y2=0;
+                      floodfill(i,j,'.');
+                      l1=x2-x1+1;  l2=y2-y1+1;
+                      get_hash(x1,x2,y1,y2);
+                      qsort(hash,4,sizeof(int),cmp);
+                      for(m=1;m<=tot;m++)
+                        if((s[m].w==l1&&s[m].h==l2)||(s[m].w==l2&&s[m].h==l1))
+                                if(memcmp(s[m].hash,hash,sizeof(hash))==0)
+                                {
+                                                         ok=1;
+                                                         break;
+                                }
+                      if(!ok)
+                      {
+                             m=++tot;
+                             s[m].h=l1;   s[m].w=l2;
+                             for(int k=0;k<4;k++)  s[m].hash[k]=hash[k];
+                      }
+                      floodfill(i,j,m+'a'-1);
+      }
+}
+ 
+int main()
+{
+    init();
+    work();
+    for(int i=1;i<=H;i++)
+    {
+      for(int j=1;j<=W;j++)
+        fprintf(fout,"%c",map[i][j]);
+      fprintf(fout,"\n");
+    }
+    return 0;
+}#include <iostream>
+#include <string.h>
+using namespace std;
+const char ct[]=" abcdefghijklmnopqrstuvwxyz";
+const int dir[9][2]={{0,0},{0,1},{1,0},{0,-1},{-1,0},{1,1},{1,-1},{-1,1},{-1,-1}};
+struct record
+{
+    int x1,y1,x2,y2;
+}a[501];
+int total;
+bool exist[501][101][101];
+int n,m;
+char map[101][101];
+bool vmap[101][101];
+void init()
+{
+    freopen("starry.in","r",stdin);
+    freopen("starry.out","w",stdout);
+    cin>>m>>n;
+    int i,j;
+    for(i=1;i<=n;i++)
+    {
+        for(j=1;j<=m;j++)
+        {
+            cin>>map[i][j];
+        }
+    }
+}
+void bfs(int x,int y)
+{
+    int q[10001][2];
+    memset(q,0,sizeof(q));
+    q[1][0]=x;
+    q[1][1]=y;
+    int l=0,r=1;
+    while(l<r)
+    {
+        l++;
+        int xx=q[l][0],yy=q[l][1];
+        for(int i=1;i<=8;i++)
+        {
+            if(map[xx+dir[i][0]][yy+dir[i][1]]=='1'&&xx+dir[i][0]<=n&&xx+dir[i][0]>=1&&yy+dir[i][1]<=m&&yy+dir[i][1]>=1&&!vmap[xx+dir[i][0]][yy+dir[i][1]])
+            {
+                r++;
+                q[r][0]=xx+dir[i][0];
+                q[r][1]=yy+dir[i][1];
+				vmap[q[r][0]][q[r][1]]=true;
+            }
+        }
+    }
+    total++;
+    int x1=10000000,y1=10000000,x2=0,y2=0;
+    for(int i=1;i<=r;i++)
+	{
+		if(q[i][0]<x1)
+			x1=q[i][0];
+		if(q[i][0]>x2)
+			x2=q[i][0];
+		if(q[i][1]<y1)
+			y1=q[i][1];
+		if(q[i][1]>y2)
+			y2=q[i][1];
+	}
+	a[total].x1=x1,a[total].y1=y1;
+	a[total].x2=x2,a[total].y2=y2;
+	for(int i=1;i<=r;i++)
+	{
+		exist[total][q[i][0]][q[i][1]]=true;
+	}
+}
+bool match(int x,int y)
+{
+	record q,p;
+	q=a[x],p=a[y];
+	char now1[101][101];
+	char now2[101][101];
+	for(int i=q.x1;i<=q.x2;i++)
+		for(int j=q.y1;j<=q.y2;j++)
+		{
+			if(exist[x][i][j])
+				now1[i][j]=map[i][j];
+			else
+				now1[i][j]='0';
+			}
+	for(int i=p.x1;i<=p.x2;i++)
+	{
+		for(int j=p.y1;j<=p.y2;j++)
+		{
+			if(exist[y][i][j])
+				now2[i][j]=map[i][j];
+			else
+				now2[i][j]='0';
+		}
+	}
+	if((q.x2-q.x1==p.x2-p.x1)&&(q.y2-q.y1==p.y2-p.y1))
+	{
+		bool can=true;
+		for(int i1=q.x1,i2=p.x1;i1<=q.x2,i2<=p.x2;i1++,i2++)
+		{
+			for(int j1=q.y1,j2=p.y1;j1<=q.y2,j2<=p.y2;j1++,j2++)
+			{
+				if(now1[i1][j1]!=now2[i2][j2])
+				{
+					can=false;
+					break;
+				}
+			}
+		}
+		if(can) return true;
+		can=true;
+		for(int i1=q.x1,i2=p.x1;i1<=q.x2,i2<=p.x2;i1++,i2++)
+		{
+			for(int j1=q.y1,j2=p.y2;j1<=q.y2,j2>=p.y1;j1++,j2--)
+			{
+				if(now1[i1][j1]!=now2[i2][j2])
+				{
+					can=false;
+					break;
+				}
+			}
+		}
+		if(can) return true;
+		can=true;
+		for(int i1=q.x1,i2=p.x2;i1<=q.x2,i2>=p.x1;i1++,i2--)
+		{
+			for(int j1=q.y1,j2=p.y1;j1<=q.y2,j2<=p.y2;j1++,j2++)
+			{
+				if(now1[i1][j1]!=now2[i2][j2])
+				{
+					can=false;
+					break;
+				}
+			}
+		}
+		if(can) return true;
+		can=true;
+		for(int i1=q.x1,i2=p.x2;i1<=q.x2,i2>=p.x1;i1++,i2--)
+		{
+			for(int j1=q.y1,j2=p.y2;j1<=q.y2,j2>=p.y1;j1++,j2--)
+			{
+				if(now1[i1][j1]!=now2[i2][j2])
+				{
+					can=false;
+					break;
+				}
+			}
+		}
+		if(can) return true;
+	}
+	if((q.x2-q.x1==p.y2-p.y1)&&(q.y2-q.y1==p.x2-p.x1))
+	{
+		bool can=true;
+		for(int i1=q.x1,i2=p.y1;i1<=q.x2,i2<=p.y2;i1++,i2++)
+		{
+			for(int j1=q.y1,j2=p.x1;j1<=q.y2,j2<=p.x2;j1++,j2++)
+			{
+				if(now1[i1][j1]!=now2[j2][i2])
+				{
+					can=false;
+					break;
+				}
+			}
+		}
+		if(can) return true;
+		can=true;
+		for(int i1=q.x1,i2=p.y1;i1<=q.x2,i2<=p.y2;i1++,i2++)
+		{
+			for(int j1=q.y1,j2=p.x2;j1<=q.y2,j2>=p.x1;j1++,j2--)
+			{
+				if(now1[i1][j1]!=now2[j2][i2])
+				{
+					can=false;
+					break;
+				}
+			}
+		}
+		if(can) return true;
+		can=true;
+		for(int i1=q.x1,i2=p.y2;i1<=q.x2,i2>=p.y1;i1++,i2--)
+		{
+			for(int j1=q.y1,j2=p.x1;j1<=q.y2,j2<=p.x2;j1++,j2++)
+			{
+				if(now1[i1][j1]!=now2[j2][i2])
+				{
+					can=false;
+					break;
+				}
+			}
+		}
+		if(can) return true;
+		can=true;
+		for(int i1=q.x1,i2=p.y2;i1<=q.x2,i2>=p.y1;i1++,i2--)
+		{
+			for(int j1=q.y1,j2=p.x2;j1<=q.y2,j2>=p.x1;j1++,j2--)
+			{
+				if(now1[i1][j1]!=now2[j2][i2])
+				{
+					can=false;
+					break;
+				}
+			}
+		}if(can) return true;
+	}
+	return false;
+}
+bool cnn[501][501];
+void connect()
+{
+	for(int i=1;i<=total;i++)
+	for(int j=1;j<=total;j++)
+	{
+		if(match(i,j))
+		cnn[i][j]=cnn[j][i]=1;
+	}
+}
+char ans[101][101];
+void work(int c,int x,int y)
+{
+	record p=a[x],q=a[y];
+	for(int i=p.x1;i<=p.x2;i++)
+		for(int j=p.y1;j<=p.y2;j++)
+		{
+			if(exist[x][i][j])
+				ans[i][j]=ct[c];
+		}
+	for(int i=q.x1;i<=q.x2;i++)
+		for(int j=q.y1;j<=q.y2;j++)
+		{
+			if(exist[y][i][j])
+				ans[i][j]=ct[c];
+		}
+}
+int main()
+{
+	init();
+	for(int i=1;i<=n;i++)
+		for(int j=1;j<=m;j++)
+		{
+			if(!vmap[i][j]&&map[i][j]=='1')
+			{
+				vmap[i][j]=true;
+				bfs(i,j);
+			}
+		}
+	connect();
+	for(int i=1;i<=n;i++)
+		for(int j=1;j<=m;j++)
+			ans[i][j]='0';
+	bool v2[501];
+	int col=0;
+	memset(v2,0,sizeof(v2));
+	for(int i=1;i<=total;i++)
+	{
+		bool have=false;
+		if(v2[i]) continue;
+		for(int j=1;j<=total;j++)
+		{
+			if(cnn[i][j]&&!v2[j])
+			{
+				have=true;
+				break;
+			}
+		}
+		if(!have) continue;
+		col++;
+		for(int j=1;j<=total;j++)
+		{
+			if(cnn[i][j]&&!v2[j])
+			{
+				v2[j]=true;
+				work(col,i,j);
+			}
+		}
+	}
+	for(int i=1;i<=n;i++)
+	{
+		for(int j=1;j<=m;j++)
+		{
+			cout<<ans[i][j];
+		}
+		cout<<endl;
+	}
+	return 0;
+}六个函数，158行，相信还是很冗长的。。
+/*
+	ID:echooat1
+	LANG:C++
+	TASK:starry
+	*/
+#include <fstream>
+#include <cstring>
+#define len 202
+#define max(a,b) ((a)>(b)?(a):(b))
+#define min(a,b) ((a)<(b)?(a):(b))
+using namespace std;
+ifstream fin("starry.in");ofstream fout("starry.out");
+long n,m;char aa[len][len];
+long fim[8][2]={{1,0},{0,1},{-1,0},{0,-1},{1,1},{-1,1},{1,-1},{-1,1}};
+char ch[len][len];bool a[len][len]={0};
+bool hash[len][len]={0};
+char mode[30][8][len][len]={0};
+long bianjie[30][2]={0};
+long star=0,lx=0,ly=0,sx=1000,sy=1000;
+void bfs(long x,long y){
+	long d[len*len][2]={0},head=1,tail=1;
+	hash[x][y]=true;lx=x;ly=y;sx=x;sy=y;d[1][0]=x;d[1][1]=y;
+	while(head<=tail){
+		long l1=d[head][0],l2=d[head++][1];
+		for(long i=0;i<8;i++){
+			long x1=l1+fim[i][0],y1=l2+fim[i][1];
+			if(x1<1||x1>n||y1<1||y1>m||hash[x1][y1]||ch[x1][y1]!='1')continue;
+			hash[x1][y1]=true;
+			d[++tail][0]=x1;d[tail][1]=y1;lx=max(lx,x1);ly=max(ly,y1);sx=min(x1,sx);sy=min(y1,sy);
+		}
+	}
+	for(long i=1;i<=tail;i++)
+		if(d[i][0]-sx+1>0&&d[i][1]-sy+1>0)
+		a[d[i][0]-sx+1][d[i][1]-sy+1]=1;
+	lx=lx-sx+1;ly=ly-sy+1;
+	lx=max(lx,ly);ly=lx;
+}
+bool ok(long u){
+	if(bianjie[u][0]!=lx||bianjie[u][1]!=ly)return false;
+	for(long k=0;k<=7;k++){
+		long x=bianjie[u][0],y=bianjie[u][1];
+		x=max(x,lx);y=max(y,ly);
+		bool bo=false;
+		for(long i=1;i<=x;i++)
+			for(long j=1;j<=y;j++)
+				if(mode[u][k][i][j]-'0'!=a[i][j]){bo=true;break;}
+		if(!bo)return true;
+		}
+	return false;
+}
+void zhuan(void){
+	char b[len][len]={0};
+		for(long i=1;i<=lx;i++)
+		for(long j=1;j<=ly;j++)
+			b[i][j]='0';
+	for(long i=1;i<=lx;i++)
+		for(long j=1;j<=ly;j++)
+			b[j][lx-i+1]=aa[i][j];
+	long temp=0;
+	for(long i=1;i<=ly;i++){
+		bool bo=false;
+		for(long j=1;j<=lx;j++)
+			if(b[j][i]=='1'){bo=true;break;}
+		if(bo){temp=i;break;}
+	}
+	if(temp>1){
+		for(long i=1;i<=lx;i++)
+			for(long j=temp;j<=ly;j++){
+				b[i][j-temp+1]=b[i][j];
+				b[i][j]='0';
+			}
+		}
+	memcpy(aa,b,sizeof b);
+}
+void fan(void){
+	char b[len][len];
+	for(long i=1;i<=lx;i++)
+		for(long j=1;j<=ly;j++)
+			b[i][j]='0';
+	for(long i=1;i<=lx;i++)
+		for(long j=1;j<=ly;j++)
+			b[i][lx-j+1]=aa[i][j];
+	long temp=0;
+	for(long i=1;i<=ly;i++){
+		bool bo=false;
+		for(long j=1;j<=lx;j++)
+			if(b[j][i]=='1'){bo=true;break;}
+		if(bo){temp=i;break;}
+	}
+	if(temp>1){
+		for(long i=1;i<=lx;i++)
+			for(long j=temp;j<=ly;j++){
+				b[i][j-temp+1]=b[i][j];
+				b[i][j]='0';
+			}
+		}
+	memcpy(aa,b,sizeof b);
+}
+void insert(){
+	star++;
+	for(long i=1;i<=lx;i++)
+		for(long j=1;j<=ly;j++)
+			aa[i][j]=a[i][j]+'0';
+	memcpy(mode[star][0],aa,sizeof aa);
+	for(long i=1;i<=3;i++){
+		zhuan();
+		memcpy(mode[star][i],aa,sizeof aa);
+	}
+	fan();
+	memcpy(mode[star][4],aa,sizeof aa);
+	for(long i=5;i<=7;i++){
+		zhuan();
+		memcpy(mode[star][i],aa,sizeof aa);
+	}
+	bianjie[star][0]=lx;bianjie[star][1]=ly;
+}
+void color(char cr,long x,long y){
+	ch[x][y]=cr;
+	for(long i=0;i<8;i++){
+			long x1=x+fim[i][0],y1=y+fim[i][1];
+			if(x1<1||x1>n||y1<1||y1>m||ch[x1][y1]!='1')continue;
+			color(cr,x1,y1);
+		}
+	}
+int main(int argc,char** argv){
+	fin >>m>>n;fin.get();
+	for(long i=1;i<=n;i++){
+		for(long j=1;j<=m;j++)
+			ch[i][j]=fin.get();
+		fin.get();
+	}
+	for(long i=1;i<=n;i++)
+		for(long j=1;j<=m;j++)
+			if(!hash[i][j]&&ch[i][j]=='1'){
+			memset(aa,0,sizeof aa);
+			lx=0;ly=0;memset(a,0,sizeof a);
+			bfs(i,j);
+			char c;bool bo=false;
+			for(long ii=1;ii<=star;ii++)
+				if(ok(ii)){bo=true;c=ii+'a'-1;}
+			if(bo)color(c,i,j);
+				else{insert();
+					color(char(star+'a'-1),i,j);}
+			}
+	for(long i=1;i<=n;i++){
+		for(long j=1;j<=m;j++)
+			fout <<ch[i][j];
+		fout <<endl;
+	}
+	fin.close();fout.close();
+	return 0;
+}

@@ -1,0 +1,220 @@
+//被超级菜鸟艰难地秒杀
+USER: Rain What [talenth1]
+TASK: frameup
+LANG: C++
+ 
+Compiling...
+Compile: OK
+ 
+Executing...
+   Test 1: TEST OK [0.011 secs, 2808 KB]
+   Test 2: TEST OK [0.000 secs, 2808 KB]
+   Test 3: TEST OK [0.022 secs, 2808 KB]
+   Test 4: TEST OK [0.022 secs, 2808 KB]
+   Test 5: TEST OK [0.011 secs, 2808 KB]
+   Test 6: TEST OK [0.011 secs, 2808 KB]
+   Test 7: TEST OK [0.011 secs, 2808 KB]
+   Test 8: TEST OK [0.011 secs, 2808 KB]
+   Test 9: TEST OK [0.043 secs, 2808 KB]
+ 
+All tests OK.
+ 
+/*
+ID:   talenth1
+PROG: frameup
+LANG: C++
+*/
+#include<stdio.h>
+#include<stdlib.h>
+#include<math.h>
+#include<string.h>
+const int maxn=50;
+int h,w,left[maxn],right[maxn],up[maxn],down[maxn],ind[maxn],ans[maxn],n=0;
+bool hash[maxn],graph[maxn][maxn],visited[maxn];//graph[i][j]=true i is covered by j
+char map[maxn][maxn];
+void dfs(int x,int d)
+{
+ 
+     ans[d]=x;
+     visited[x]=true;
+     if(d>=n){
+             for(int i=1;i<=n;i++)
+                     printf("%c",ans[i]+'A'-1);
+             printf("\n");
+             return;
+             }
+     if(ind[x]==0){
+                   for(int i=1;i<=26;i++)
+                           if(graph[x][i])ind[i]--;  
+ 
+                   for(int i=1;i<=26;i++)
+                           if(ind[i]==0&&!visited[i]&&hash[i]){
+                                         dfs(i,d+1);
+                                         visited[i]=false;
+                                         }
+ 
+                   for(int i=1;i<=26;i++)
+                           if(graph[x][i])ind[i]++;  
+                   }
+ 
+ 
+}
+int main()
+{
+      freopen("frameup.in","r",stdin);
+      freopen("frameup.out","w",stdout);
+      scanf("%d%d\n",&h,&w);
+      for(int i=1;i<=h;i++)
+              scanf("%s",&map[i][1]);
+      memset(left,0,sizeof(left));
+      memset(right,0,sizeof(right));
+      memset(up,0,sizeof(up));
+      memset(down,0,sizeof(down));
+      memset(hash,0,sizeof(hash));
+      memset(graph,0,sizeof(graph));
+      memset(ind,0,sizeof(ind));
+      for(int i=1;i<=h;i++)
+              for(int j=1;j<=w;j++){
+                      int tmp;
+                      if(map[i][j]=='.')continue;
+                      tmp=map[i][j]-'A'+1;
+                      if(!hash[tmp]){hash[tmp]=true;n++;}
+                      if(!up[tmp])up[tmp]=i;
+                      }//for j i---make hash and find up
+      for(int i=h;i>=1;i--)
+              for(int j=1;j<=w;j++){
+                      int tmp;
+                      if(map[i][j]=='.')continue;
+                      tmp=map[i][j]-'A'+1;
+                      if(!down[tmp])down[tmp]=i;
+                      }//for j i--find down
+      for(int j=1;j<=w;j++)
+              for(int i=1;i<=h;i++){
+                      int tmp;
+                      if(map[i][j]=='.')continue;
+                      tmp=map[i][j]-'A'+1;
+                      if(!left[tmp])left[tmp]=j;
+                      }//for j i--find left
+      for(int j=w;j>=1;j--)
+              for(int i=1;i<=h;i++){
+                      int tmp;
+                      if(map[i][j]=='.')continue;
+                      tmp=map[i][j]-'A'+1;
+                      if(!right[tmp])right[tmp]=j;
+                      }//for j i--find right
+ 
+      for(int i=1;i<=26;i++){
+              for(int j=left[i];j<=right[i];j++){//scan up and down
+                      if(!hash[i])continue;
+                      if(map[up[i]][j]=='.')continue;
+                      if(map[down[i]][j]=='.')continue;
+                      int tmp1=map[up[i]][j]-'A'+1;
+                      int tmp2=map[down[i]][j]-'A'+1;
+                      if(!graph[i][tmp1]&&tmp1!=i){ind[tmp1]++;graph[i][tmp1]=true;}
+                      if(!graph[i][tmp2]&&tmp2!=i){ind[tmp2]++;graph[i][tmp2]=true;}
+                      }//for j
+              for(int j=up[i];j<=down[i];j++){//scan left and right
+                      if(!hash[i])continue;
+                      if(map[j][left[i]]=='.')continue;
+                      if(map[j][right[i]]=='.')continue;
+                      int tmp1=map[j][left[i]]-'A'+1;
+                      int tmp2=map[j][right[i]]-'A'+1;
+                      if(!graph[i][tmp1]&&tmp1!=i){ind[tmp1]++;graph[i][tmp1]=true;}
+                      if(!graph[i][tmp2]&&tmp2!=i){ind[tmp2]++;graph[i][tmp2]=true;}
+                      }//for j
+              }// for i
+      for(int i=1;i<=26;i++){
+              memset(visited,0,sizeof(visited));
+              if(hash[i])dfs(i,1);
+              }
+      return 0;      
+}很纠结的拓扑排序，搞了我三个小时。。
+/*
+	ID:echooat1
+	LANG:C++
+	TASK:frameup
+	*/
+#include <fstream>
+#include <cstring>
+#include <set>
+#define min(a,b) ((a)<(b)?(a):(b))
+#define max(a,b) ((a)>(b)?(a):(b))
+using namespace std;
+set<string> ss;
+struct re{
+	long up,down,left,right;
+	re():up(0),down(0x7fffffff),left(0x7fffffff),right(0){}
+}g[27];
+ifstream fin("frameup.in");ofstream fout("frameup.out");
+char a[50][50]={0};
+long n,m;
+long inp[50]={0},e=0,l=0,p=0;
+bool v[30][30]={0};
+bool sEet[31][31]={false};
+bool hash[50]={0},h[50]={0};
+string ans[10000];
+void dfs(long u,string st){
+	if(u>=l+1){
+		if(ss.find(st)==ss.end()){
+		ans[++p]=st;ss.insert(st);}
+		return;
+	}
+	for(long i=0;i<=e;i++)
+		if(hash[i]&&!inp[i]&&!h[i]){
+			h[i]=true;
+			for(long k=0;k<=e;k++)
+				if(v[i][k])
+					inp[k]--;
+			dfs(u+1,st+char(i+'A'));
+			for(long k=0;k<=e;k++)
+				if(v[i][k])
+					inp[k]++;
+			h[i]=false;
+			}
+		}
+int main(int argc,char** argv){
+	fin >>n>>m;fin.get();
+	for(long i=1;i<=n;i++){
+		for(long j=1;j<=m;j++){
+			a[i][j]=fin.get();
+			long temp=a[i][j]-'A';if(a[i][j]=='.')continue;
+			e=max(temp,e);if(!hash[temp]){hash[temp]=true;l++;}
+			g[temp].up=max(n-i+1,g[temp].up);
+			g[temp].down=min(n-i+1,g[temp].down);
+			g[temp].left=min(j,g[temp].left);
+			g[temp].right=max(j,g[temp].right);
+		}
+		fin.get();
+	}
+	for(long i=0;i<=e;i++){
+		if(!hash[i])continue;
+		long l1=n-g[i].up+1,l2=n-g[i].down+1,l3=g[i].left,l4=g[i].right;
+		for(long j=l3;j<=l4;j++){
+			if(a[l1][j]!='.'&&a[l1][j]!='A'+i){
+				v[i][a[l1][j]-'A']=true;
+				sEet[l1][j]=true;
+			}
+			if(a[l2][j]!='.'&&a[l2][j]!='A'+i){
+				v[i][a[l2][j]-'A']=true;
+				sEet[l2][j]=true;
+			}
+		}
+		for(long j=l1;j<=l2;j++){
+			if(a[j][l3]!='.'&&a[j][l3]!='A'+i)
+				v[i][a[j][l3]-'A']=sEet[j][l3]=true;
+			if(a[j][l4]!='.'&&a[j][l4]!='A'+i)
+				v[i][a[j][l4]-'A']=sEet[j][l4]=true;
+		}
+	}
+	for(long i=0;i<=e;i++)
+		for(long j=0;j<=e;j++)
+			if(v[i][j]&&i!=j)inp[j]++;
+	string st;
+	dfs(1,st);
+	for(long i=1;i<p;i++)
+		for(long j=i+1;j<=p;j++)
+			if(ans[i]>ans[j]){string c=ans[i];ans[i]=ans[j];ans[j]=c;}
+	for(long i=1;i<=p;i++)fout <<ans[i]<<endl;
+	fin.close();fout.close();
+	return 0;
+}

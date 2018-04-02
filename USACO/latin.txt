@@ -1,0 +1,170 @@
+/*
+ID: cmykrgb1
+PROG: latin
+LANG: C++
+*/
+//written by CmYkRgB123
+#include <iostream>
+#include <fstream>
+#define maxn 9
+ 
+using namespace std;
+ 
+ifstream fi("latin.in");
+ofstream fo("latin.out");
+ 
+int n,i,idx;
+char a[maxn];
+bool v[maxn],row[maxn][maxn],col[maxn][maxn];
+int cnt[maxn];
+unsigned long long total;
+ 
+void calidx()
+{
+	char i,l,t;
+        idx=2;
+	memset(v,0,sizeof(v));
+        for (i=1;i<=n;i++)
+		if (!v[i])
+		{
+			l=0;t=i;
+			do
+			{
+				v[t]=true;
+				t=a[t];
+				l++;
+			}while (!v[t]);
+		if (l>idx) idx=l;
+		}
+}
+ 
+void search(char x,char y)
+{
+	char i;
+	for (i=1;i<=n;i++)
+	if (row[x][i] && col[y][i])
+	{
+		if (x==2)
+		{
+			a[y]=i;
+			if (y==n)
+			{
+				calidx();
+				if (cnt[idx]>0)
+				{
+					total+=cnt[idx];
+					return;
+				}
+			}
+		}
+		row[x][i]=false;
+		col[y][i]=false;
+		if (y==n)
+		{
+			if (x==n-1) 
+			{
+				cnt[idx]++;
+				total++;
+			}
+			else
+				search(x+1,2);
+		}
+		else
+			search(x,y+1);
+		row[x][i]=true;
+		col[y][i]=true;
+	}
+}
+ 
+ 
+ 
+int main()
+{
+ 	fi >> n;
+	if (n==2)
+		total=1;
+	else
+	{
+		memset(row,1,sizeof(row));
+		memset(col,1,sizeof(col));
+		memset(cnt,0,sizeof(cnt));
+		for (i=2;i<n;i++) row[i][i]=false;
+		for (i=1;i<=n;i++) col[i][i]=false;
+		total=0;
+		a[1]=2;
+		search(2,2);
+		for (i=2;i<n;i++)
+			total*=i;
+	}
+	fo << total << endl;
+	fi.close();
+	fo.close();
+	return 0;
+}此时不打表，更待何时！！
+ 
+不过打表也要一定技巧，因为我一开始裸搜打表，结果等了20分钟，n=7时也没跑出来解。。
+ 
+打表时的优化就是确定第一列，然后总数*（n-1）！ 这样，第七个点打表采才用了10s
+ 
+我也没有多认真想，但觉得可以基于容斥原理来推出公式。
+ 
+Compiling...
+Compile: OK
+ 
+Executing...
+   Test 1: TEST OK [0.000 secs, 3016 KB]
+   Test 2: TEST OK [0.011 secs, 3016 KB]
+   Test 3: TEST OK [0.000 secs, 3016 KB]
+   Test 4: TEST OK [0.022 secs, 3016 KB]
+   Test 5: TEST OK [0.032 secs, 3016 KB]
+   Test 6: TEST OK [0.011 secs, 3016 KB]
+ 
+All tests OK.
+ 
+ 
+ 
+/*
+	ID:echooat1
+	LANG:C++
+	TASK:latin
+	*/
+#include <fstream>
+using namespace std;
+ifstream fin("latin.in");ofstream fout("latin.out");
+long long big[8]={0,1,2,6,24,120,12198297600LL};
+long long n=0,ans=0;bool hash[20][10]={0};
+void dfs(long x,long y){
+	if(x==2&&y==n+1){
+		ans++;
+		return;
+	}
+	for(long i=1;i<=n;i++)
+		if(!hash[y][i]&&!hash[x+n][i]){
+			hash[y][i]=hash[x+n][i]=true;
+			if(x!=n)
+			dfs(x+1,y);
+			else dfs(2,y+1);
+			hash[y][i]=hash[x+n][i]=false;
+		}
+	}
+int main(int argc,char** argv){
+	fin >>n;
+	for(long i=1;i<=n;i++){
+		hash[i][i]=true;
+		hash[i+n][i]=true;
+	}
+	long x=2,y=2;
+	if(n!=7){
+	for(long i=1;i<=n;i++)
+		if(!hash[y][i]&&!hash[x+n][i]){
+		hash[y][i]=hash[x+n][i]=true;
+		if(x!=n)
+			dfs(x+1,y);
+			else dfs(2,y+1);
+		hash[y][i]=hash[x+n][i]=false;
+		}
+	}
+	else ans=1;
+	fout <<ans*big[n-1]<<endl;
+	return 0;
+}

@@ -1,0 +1,312 @@
+USER: Rain What [talenth1]
+TASK: runround
+LANG: C++
+ 
+Compiling...
+Compile: OK
+ 
+Executing...
+   Test 1: TEST OK [0.000 secs, 2716 KB]
+   Test 2: TEST OK [0.000 secs, 2716 KB]
+   Test 3: TEST OK [0.000 secs, 2716 KB]
+   Test 4: TEST OK [0.000 secs, 2716 KB]
+   Test 5: TEST OK [0.086 secs, 2712 KB]
+   Test 6: TEST OK [0.032 secs, 2712 KB]
+   Test 7: TEST OK [0.140 secs, 2716 KB]
+ 
+All tests OK.
+ 
+ 
+/*
+ID:   talenth1
+PROG: runround
+LANG: C++
+*/
+#include<stdlib.h>
+#include<stdio.h>
+#include<string.h>
+#include<math.h>
+unsigned long num;
+int check(unsigned long x)
+{
+    int n,i,j,k,p,mark[20],tmp[20];
+    i=0;
+    n=(int)log10(x)+1;
+    if( x <= 9 )return 1;     //这一行是后来加上去的,原代码会错误地认为1至9不是循环数.
+    while(x>0)
+    {
+      i++;
+      k=x%10;
+      x/=10;
+      tmp[n-i+1]=k;
+    }
+    memset(mark,0,sizeof(mark));
+    for(i=1;i<=n;i++)
+     mark[tmp[i]]++;
+    for(i=0;i<=9;i++)
+     if(mark[i]>1)return 0;
+    j=1;
+    memset(mark,0,sizeof(mark));
+    for(i=1;i<=n;i++)
+    {
+      p=tmp[j];
+      j=(tmp[j]+j)%n; 
+      if(!j)j+=n;
+      if(mark[j]||tmp[j]==p)return 0;
+      mark[j]=1;
+    }
+    if(j==1)return 1;
+            return 0;
+}
+int main()
+{
+    freopen("runround.in","r",stdin);
+    freopen("runround.out","w",stdout);
+    unsigned long i,j,k;
+    scanf("%d",&num);
+    for(i=num+1;1;i++)
+    {
+      if(check(i)){printf("%d\n",i);break;}
+    }
+    check(110);
+    return 0;
+}/*
+ID:ybojan2
+LANG:C++
+TASK:runround
+*/
+ 
+#include <iostream>
+#include <fstream>
+ 
+using namespace std;
+ 
+int l=0,num[10];
+ 
+bool same()
+{
+     int use[10];
+     memset(use,false,sizeof(use));
+     for (int i=1;i<=l;i++)
+     {
+         if (!use[num[i]]) use[num[i]]=true;
+         else return true;
+     } 
+     return false;
+}
+ 
+void add1()
+{
+     int tmp[10],i;
+     memset(tmp,0,sizeof(tmp));
+     for (i=1;i<=l;i++)
+         tmp[i]=num[l-i+1];
+     tmp[1]++;
+     i=1;
+     while (tmp[i]>=10)
+     {
+           tmp[i+1]++;
+           tmp[i]%=10;
+           i++;
+     }
+     if (i>l) l=i;
+     for (i=1;i<=l;i++)
+         num[i]=tmp[l-i+1];
+}
+ 
+void addup()
+{
+     add1();
+     while (same()) add1();
+}
+ 
+int main()
+{
+    ifstream fin("runround.in");
+    ofstream fout("runround.out");
+ 
+    char c;
+    fin>>c;
+    for (;!fin.eof();)
+    {
+        l++;
+        num[l]=c-'0';
+        fin>>c;
+    }
+    addup();
+    for (;;)
+    {
+        bool use[10];
+        int cnt=1;
+        for (int i=1;i<=l;i++) use[i]=false;
+        int x=1;
+        use[1]=true;
+        for (;;)
+        {
+            x=x+num[x];
+            while (x>l) x-=l;
+            if (use[x]) break;
+            use[x]=true;
+            cnt++;
+        }
+        if ((x==1)&&(cnt==l))
+        {
+                 for (int i=1;i<=l;i++)
+                     fout<<num[i];
+                 fout<<endl;
+                 return 0;
+        }
+        addup();
+    }
+    return 0;
+}/*
+ID:GeorgeG1
+PROB:runround
+LANG:C++
+*/
+#include <fstream>
+#include <cstdlib>
+#include <cmath>
+ 
+using namespace std;
+ 
+ifstream fin ("runround.in");
+ofstream fout ("runround.out");
+ 
+unsigned long E[10]={1,10,100,1000,10000,100000,1000000,10000000,100000000,1000000000};
+ 
+unsigned long n,ans;
+ 
+inline bool check(unsigned long num)
+{
+     long appeared=0,t;
+     long length=long(log(double(num))/log(10.0))+1;
+     long p=length-1;
+     for (long i=0;i<length;i++)
+     {
+         t=(num/E[p])%10;
+         if ((appeared>>t)&1) return false;
+         appeared+=(1<<t);
+         p=(length-(length-p+t)%length)%length;
+     }
+     if (p!=length-1) return false;
+     return true;
+}
+ 
+void make(long state,unsigned long num,long level)
+{
+       if (num>n) 
+       {
+          if (check(num))
+          {
+             fout <<num <<endl;
+             exit(0);
+             return;
+          }
+       }
+       if (level<0) return;
+       if (num==0) make(0,0,level-1);
+       for (long i=1;i<10;i++) 
+       {
+           if ((state>>i)&1) continue;
+           make(state+(1<<i),num+i*E[level],level-1);
+       }
+       return;
+}
+ 
+int main()
+{
+    fin >>n;
+    make(0,0,9);
+    return 0;
+}#include <fstream>
+using namespace std;
+ofstream fout ("runround.out",ios::out);
+ifstream fin ("runround.in",ios::in);
+long n,num[10],i;
+bool jl[10],tpd[10],texit;
+bool pd(int a)
+{
+	for(int y=1;y<=a;y++)
+		if(!jl[y]) return false;
+	return true;
+}
+int main()
+{
+	fin>>n;
+	n++;
+	for(;;)
+	{
+		int temp=n,te,pos=1,tot=0;
+		i=0;
+		texit=false;
+		for(int w=1;w<=9;w++) tpd[w]=false;
+		while (temp!=0)
+		{
+			te=temp%10;
+			temp/=10;
+			i++;
+			num[i]=te;
+			if(!tpd[te]) tpd[te]=true; else {texit=true;n++;break;}
+			jl[i]=false;
+		}
+		if(!texit)
+		{
+			for(int j=1;j<=i/2;j++)
+			{
+				int a=num[j];
+				num[j]=num[i-j+1];num[i-j+1]=a;
+			}
+			while(tot<i)
+			{
+				jl[pos]=true;
+				pos=(pos+num[pos])%i;
+				if(pos==0) pos=i;
+				tot++;
+			}
+			if((pd(i))&&(pos==1)) break;
+			else n++;
+		}
+	}
+	for(int k=1;k<i;k++)
+		fout<<num[k];
+	fout<<num[i]<<endl;
+    return 0;
+}/*
+	ID:echooat1
+	LANG:C++
+	TASK:runround
+	*/
+#include <fstream>
+#include <cstdlib>
+#include <cstring>
+using namespace std;
+int main(int argc,char** argv){
+	ifstream fin("runround.in");
+	ofstream fout("runround.out");
+	bool hash[10]={false};
+	long long n=0,oo=4294967295;
+	fin >>n;
+	for(long long i=n+1;i<=oo;i++){
+		memset(hash,false,sizeof hash);
+		char ch[200];
+		sprintf(ch,"%lld",i);
+		long l=strlen(ch);
+		for(long j=0;j<l;j++){
+			for(long k=1;k<=9;k++)
+				ch[j+l*k]=ch[j];
+		}
+		bool bo=false;
+		long len=1,u=ch[0]-'0',p=0;;
+		hash[ch[0]-'0']=true;
+		while(len<=l){
+			len++;
+			long temp=ch[p+u]-'0';
+			p=p+u;u=temp;
+			if(!hash[u]||(u==ch[0]-'0'&&len==l+1))hash[u]=true;
+		else {bo=true;break;}
+		}
+		if(!bo){fout <<i<<endl;fin.close();fout.close();exit(0);}
+	}
+	return 0;
+}

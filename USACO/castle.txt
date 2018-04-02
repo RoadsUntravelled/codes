@@ -1,0 +1,965 @@
+/*
+ID: zxinef1
+PROG: castle
+LANG: C++
+flood-fill sped by bit arithmetic.
+*/
+#include <cstdio>
+#define MAX 15
+#define MAXN 100
+#define MAXC 10000
+int N, M, tc, max, ansx, ansy;
+int map[MAXN][MAXN], tick[MAXN][MAXN], color[MAXC];
+int d_x[9] = {0, 0, -1, 0, 0, 0, 0, 0, 1}; // 1 2 4 8 refer to four directions of
+int d_y[9] = {0, -1, 0, 0, 1, 0, 0, 0, 0}; // W N R S
+char p[9] = {' ', 'W', 'N', ' ', 'E', ' ', ' ', ' ', 'S'};
+char ansc;
+ 
+void dfs (int x, int y) // flood-fill
+{
+    int st = map[x][y], i;
+    tick[x][y] = tc;
+    ++color[tc];
+    while (st != MAX)
+    {
+        i = (~st) & (st + 1); // find the first zero from left - the direction without wall
+        if (!tick[d_x[i] + x][d_y[i]+ y])
+           dfs (d_x[i] + x, d_y[i]+ y);
+        st = (st | i) & MAX;
+    }
+}
+ 
+void breakwall (int x, int y, int dir)
+{
+    int xx = x + d_x[dir], yy = y + d_y[dir];
+    int tot = 0;
+    if (xx > 0 && yy > 0 && xx <= N && yy <= M)
+       if (tick[xx][yy]!=tick[x][y])
+          tot = color[tick[xx][yy]] + color[tick[x][y]];
+       else tot = color[tick[x][y]];
+    else;
+    if (tot > max) max = tot, ansx = x, ansy = y, ansc = p[dir];
+}
+int main()
+{
+    freopen ("castle.in", "r", stdin);
+    freopen ("castle.out", "w", stdout);
+    scanf ("%d %d", &M, &N);
+    int i, j;
+    for (i = 1; i <= N; ++i)
+        for (j = 1; j <= M; ++j)
+            scanf ("%d", &map[i][j]);
+    for (i = 1; i <= N; ++i)
+        for (j = 1; j <= M; ++j)
+            if (!tick[i][j]) ++tc, dfs(i, j);
+    for (i = 1; i <= tc; ++i)
+        max = (max>color[i])?max:color[i];
+    printf ("%d\n%d\n", tc, max);
+    for (j = 1; j <= M; ++j)
+        for (i = N; i >= 1; --i)
+        {
+            breakwall (i, j, 1 << 1); // north
+            breakwall (i, j, 1 << 2); // east
+        }
+    printf ("%d\n%d %d %c\n", max, ansx, ansy, ansc);
+    return 0;
+}
+//floodfill (By Zx.MYS)
+/*
+ID:manyous1
+PROG:castle
+LANG:C++
+*/
+#define loops for(i=1;i<=n;i++)    for(j=1;j<=m;j++)
+#define loops2 for(j=1;j<=m;j++)   for(i=n;i>=1;i--)
+#include<stdio.h>
+#include<algorithm>  
+using namespace std;   
+int n,t,m,ga[52][52],room[52*52],i,j,maxi,maxj,maxr;//wall:  2
+char maxw;                                          //     1 + 3
+bool wall[52][52][5];                               //       4
+void deal(int w,int i,int j){
+     if(w&1)(wall[i][j][1]=true);
+     if(w&2)(wall[i][j][2]=true);
+     if(w&4)(wall[i][j][3]=true);
+     if(w&8)(wall[i][j][4]=true);
+}
+bool ff(int i,int j){
+     bool *a=wall[i][j];
+     if(ga[i][j]!=-1)return false;
+     ga[i][j]=t;
+     room[t]++;
+     if(!a[1])ff(i,j-1);
+     if(!a[2])ff(i-1,j);
+     if(!a[3])ff(i,j+1);
+     if(!a[4])ff(i+1,j);
+     return true;
+}
+int main(){
+    freopen("castle.in","r",stdin);
+    freopen("castle.out","w",stdout);
+    scanf("%d %d",&m,&n);
+    loops{
+                      scanf("%d",&t);
+                      deal(t,i,j);
+                      ga[i][j]=-1;
+                      }
+    t=0;
+    loops if(ff(i,j))t++;
+    printf("%d\n",t);
+    printf("%d\n",*max_element(room,room+t));
+    loops2{
+               if(ga[i][j]!=ga[i-1][j]&&i-1!=0)
+                            t=room[ga[i][j]]+room[ga[i-1][j]];
+               if(t>maxr){
+                         maxi=i;maxj=j;maxw='N';maxr=t;
+                         }
+               if(ga[i][j]!=ga[i][j+1]&&j+1<=m)
+                            t=room[ga[i][j]]+room[ga[i][j+1]];
+               if(t>maxr){
+                         maxi=i;maxj=j;maxw='E';maxr=t;
+                         }             
+           }           
+    printf("%d\n%d %d %c\n",maxr,maxi,maxj,maxw);
+}/*
+ID:ybojan2
+LANG:C++
+TASK:castle
+*/
+ 
+#include <iostream>
+#include <fstream>
+ 
+using namespace std;
+ 
+bool map[52][52][52][52]={false};
+int n,m,step[4][2]={{1,0},{-1,0},{0,1},{0,-1}},cnt=0;
+int color[51][51],maxv=0,sum=0,v[10000];
+ 
+int max(int x,int y)
+{
+    return ((x>y)?x:y);
+}
+ 
+int floodfill(int x,int y,int sign)
+{
+     int tt=1;
+     color[x][y]=sign;
+     for (int i=0;i<=3;i++)
+     {
+         int x1=x+step[i][0],y1=y+step[i][1];
+         if ((x1>=1)&&(x1<=n)&&(y1>=1)&&(y1<=m)&&(map[x][y][x1][y1])&&(color[x1][y1]==0))
+         {
+                      tt+=floodfill(x1,y1,sign);
+         }
+     }
+     return tt;
+}
+ 
+int main()
+{
+    ifstream fin("castle.in");
+    ofstream fout("castle.out");
+ 
+    fin>>m>>n;
+    for (int i1=1;i1<=n;i1++)
+        for (int i2=1;i2<=m;i2++)
+            for (int i3=1;i3<=n;i3++)
+                for (int i4=1;i4<=m;i4++)
+                    map[i1][i2][i3][i4]=true;
+    for (int i=1;i<=n;i++)
+    {
+        for (int j=1;j<=m;j++)
+        {
+            int x;
+            fin>>x;
+            if ((x&1)==1) map[i][j][i][j-1]=false;
+            if ((x&2)==2) map[i][j][i-1][j]=false;
+            if ((x&4)==4) map[i][j][i][j+1]=false;
+            if ((x&8)==8) map[i][j][i+1][j]=false;
+            color[i][j]=0;
+        }    
+    }
+ 
+ 
+    for (int i=1;i<=n;i++)
+    {
+        for (int j=1;j<=m;j++)
+        {
+            if (color[i][j]==0)
+            {
+                               cnt++;
+                               v[cnt]=floodfill(i,j,cnt);
+                               maxv=max(maxv,v[cnt]);
+            }
+        }
+    }
+ 
+    fout<<cnt<<endl;
+    fout<<maxv<<endl;
+    for (int i=n;i>=1;i--)
+    {
+        for (int j=1;j<=m;j++)
+        {
+            if ((color[i][j]!=color[i-1][j])&&(i>1))
+            {
+               sum=max(v[color[i][j]]+v[color[i-1][j]],sum);
+            }
+            if ((color[i][j]!=color[i][j+1])&&(j<m))
+            {
+               sum=max(v[color[i][j]]+v[color[i][j+1]],sum);
+            }            
+        }
+    }
+    fout<<sum<<endl;
+    for (int j=1;j<=m;j++)
+    {
+        for (int i=n;i>=1;i--)
+        {
+            if ((color[i][j]!=color[i-1][j])&&(i>1))
+            {
+               if (v[color[i][j]]+v[color[i-1][j]]==sum)
+               {
+                    fout<<i<<" "<<j<<" N"<<endl;
+                    return 0;
+               }
+            }
+            if ((color[i][j]!=color[i][j+1])&&(j<m))
+            {
+               if (v[color[i][j]]+v[color[i][j+1]]==sum)
+               {
+                    fout<<i<<" "<<j<<" E"<<endl;
+                    return 0;
+               }
+            }            
+        }
+    }
+    return 0;
+}不解释了~有点复杂~自己慢慢看~ -_-||~~
+--Nettle99 17:48 2008年6月11日 (CST)
+/*
+ ID:nettle99
+ PROG:castle
+ LANG:C++
+ */
+ 
+ #include <fstream>
+ using namespace std;
+ 
+ ifstream fin("castle.in");
+ ofstream fout("castle.out");
+ int a[101][101]={0},df[4]={1,2,4,8},x1,y1,m[250]={0};
+ int find(int x,int y,int n)
+ {
+   if (a[x][y]==0)
+     {
+     int sum=1;
+       a[x][y]=n;
+       if (a[x+1][y]==0) sum+=find(x+2,y,n);
+       if (a[x-1][y]==0) sum+=find(x-2,y,n);
+       if (a[x][y+1]==0) sum+=find(x,y+2,n);
+       if (a[x][y-1]==0) sum+=find(x,y-2,n);
+       return sum;
+     }
+   return 0;
+ }
+ 
+ void wall(int x,int y)
+ {
+ int k;
+   a[x][y]=0;
+   fin>>k;
+   for (int i=3;i>-1;i--)
+     if (k>=df[i])
+       {
+         switch(i)
+         {
+           case 0:a[x][y-1]=-1;break;
+           case 1:a[x-1][y]=-1;break;
+           case 2:a[x][y+1]=-1;break;
+           case 3:a[x+1][y]=-1;break;
+         }
+         k-=df[i];
+       }
+   return ;
+ }
+ 
+ void init()
+ { 
+   fin>>x1>>y1;
+   for (int i=0;i<=y1*2;i++)
+     {a[i][0]=-1;a[i][x1*2]=-1;}
+   for (int i=0;i<=x1*2;i++)
+     {a[0][i]=-1;a[y1*2][i]=-1;}
+   for (int i=1;i<=y1;i++)
+     for (int j=1;j<=x1;j++)
+       wall(i*2-1,j*2-1);
+   return ;
+ }
+ 
+ int main()
+ {
+   init();
+ int n=1;
+   for (int i=1;i<y1*2;i+=2)
+     for (int j=1;j<x1*2;j+=2)
+       {
+         if (a[i][j]) continue;
+         m[n-1]=find(i,j,n);
+         if (m[n-1]!=0) n++;
+       }
+   fout<<n-1<<endl;
+   int max=0;
+   for (int i=0;i<n-1;i++)
+     if (m[i] > max) max=m[i];
+   fout<<max<<endl;
+   int xx=0,yy=0;
+   char dr;
+   for (int j2=2;j2<=2*x1;j2+=2)
+     {
+     int j,i;
+       j=j2-1;
+       for (i=2*(y1-1);i>0;i-=2)
+         if (a[i][j] == -1 && m[a[i+1][j]-1]+m[a[i-1][j]-1]>max && a[i+1][j] != a[i-1][j])
+           {
+             max=m[a[i+1][j]-1]+m[a[i-1][j]-1];
+             xx=(i+2)/2;
+             yy=(j+1)/2;
+             dr='N';
+           }
+       j++;
+       for (i=2*y1-1;i>0;i-=2)
+         if (a[i][j] == -1 && m[a[i][j+1]-1]+m[a[i][j-1]-1]>max && a[i][j+1] != a[i][j-1])
+           {
+             max=m[a[i][j+1]-1]+m[a[i][j-1]-1];
+             xx=(i+1)/2;
+             yy=j/2;
+             dr='E';
+           }
+      }
+   fout<<max<<endl<<xx<<' '<<yy<<' '<<dr<<endl;
+   fin.close();
+   fout.close();
+   return 0;
+ }// 附加注释, 也不解释了...   于 2008-8-7  在 NOCOW 首次编辑..
+// 类似 zju 2412  并查集 
+#include <cstdio>
+const int Max = 55 ;
+ 
+int M, N ;
+int map[Max][Max] ;
+ 
+int set[Max*Max] ;      //  集合 
+int set_val[Max*Max];   // 并集权值 
+ 
+int find( int set[], int x ) // 查找 
+{
+    int i = x ;
+    while( i!=set[i] ){
+        set[i]=set[ set[i] ];   // 压缩路径 
+        i = set[i];
+    }
+    return i ;
+}
+ 
+void weighted_quick_union( int set[], int set_val[], int p, int q )  // 加权并集
+{
+    int i = find( set, p );
+    int j = find( set, q );
+    if( i==j ) return ;
+    if( set_val[i]<set_val[j] ){ 
+        set[i]=j;
+        set_val[j]+=set_val[i];
+    }
+    else{
+        set[j]= i;
+        set_val[i]+=set_val[j];
+    }
+}
+ 
+int mov[16][4] = {  // 标示 左 上 右 下 , 是否可行 
+    { 1,1,1,1 },    // 四周均无墙 
+    { 0,1,1,1 }, { 1,0,1,1 }, { 0,0,1,1 }, { 1,1,0,1 }, { 0,1,0,1 }, 
+    { 1,0,0,1 }, { 0,0,0,1 }, { 1,1,1,0 }, { 0,1,1,0 }, { 1,0,1,0 }, 
+    { 0,0,1,0 }, { 1,1,0,0 }, { 0,1,0,0 }, { 1,0,0,0 }, 
+    { 0,0,0,0 }     // 四周均有墙 
+} ;
+//四个方向  左 上 右 下
+int px[4] = {  0, -1, 0, 1 };
+int py[4] = { -1,  0, 1, 0 };
+ 
+int doit( int num , int x, int y )  // 判断四周可并集对象 
+{
+    int i ;
+    int tx , ty ;
+    for( i=0; i<4 ;++i )    //  匹配四个方向
+    {   
+        tx = x+px[i];  ty = y+py[i];
+        if( mov[ num ][ i ]==1 )
+            weighted_quick_union( set, set_val, M*x+y, M*tx+ty );
+    }
+}
+ 
+int main( )
+{
+    freopen("castle.in","r",stdin); freopen("castle.out","w",stdout);
+ 
+    int i, j ;
+    int total ;     //  矩阵全部元素数目  N*M 
+    int count ;     //  房间数 
+    int max ;       //  最大房间单元数 ,  可合并后的最大单元数 
+ 
+    int a, b ;      
+    int c, d ;      // 拆强所在单元坐标 
+    int tmp ;
+    bool flag ;     // 是否在东 
+ 
+    while( scanf ("%d %d", &M, &N )!=EOF )
+    {
+        total = N*M ;
+        for( i = 0; i < total; ++i ) {
+            set[i] = i; 
+            set_val[i] = 1 ;
+        }
+ 
+        for( i = 0; i < N; ++i )
+            for( j = 0; j < M; ++j )
+                scanf("%d", &map[i][j] ) ;
+ 
+        for( i = 0; i < N; ++i )
+            for( j = 0; j < M; ++j )
+                doit( map[i][j], i, j ) ;
+ 
+        max = count = 0 ;
+        for( i = 0; i < total; ++i ) 
+            if( set[i] == i )
+            {
+                if( set_val[i] > max )
+                    max = set_val[i];
+                ++count ; 
+            }
+ 
+        printf("%d\n", count );
+        printf("%d\n", max );
+ 
+        max = 0 ;       // 重新置零, 计算最大可合并单元 
+        for( j = M-1; j >= 0 ; --j )
+            for( i = 0; i < N; ++i )
+            {
+                if( j != M-1 && mov[ map[i][j] ][ 2 ] == 0 ) // 东侧有墙 
+                {
+                    a = find( set, M*i+j ) ;
+                    b = find( set, M*i+(j+1) ) ;
+                    if( a != b )
+                    {
+                        tmp = set_val[a] + set_val[b] ;
+                        if( tmp >= max ) 
+                        {
+                            max = tmp ;
+                            c = i; d = j;
+                            flag = true ; 
+                        }
+                    }
+                }
+                if( i!=0 && mov[ map[i][j] ][ 1 ] == 0 ) // 北侧有墙 
+                {
+                    a = find( set, M*i+j ) ;
+                    b = find( set, M*(i-1)+j ) ;
+                    if( a != b )
+                    {
+                        tmp = set_val[a] + set_val[b] ;
+                        if( tmp >= max )
+                        {
+                            max = tmp ;
+                            c = i; d = j;
+                            flag = false ; 
+                        }
+                    }
+                }
+            }
+ 
+        printf("%d\n", max );
+        printf("%d %d %c\n", c+1, d+1, flag ? 'E':'N' ); 
+    }
+    return 0;
+}
+ 
+/*
+代码是优点冗长..  不过效率尚可..
+Executing...
+   Test 1: TEST OK [0.022 secs, 2748 KB]
+   Test 2: TEST OK [0.000 secs, 2748 KB]
+   Test 3: TEST OK [0.000 secs, 2748 KB]
+   Test 4: TEST OK [0.000 secs, 2748 KB]
+   Test 5: TEST OK [0.000 secs, 2752 KB]
+   Test 6: TEST OK [0.000 secs, 2748 KB]
+   Test 7: TEST OK [0.000 secs, 2748 KB]
+   Test 8: TEST OK [0.000 secs, 2748 KB]
+ 
+All tests OK.
+*//*
+	ID: waterma3
+	PROG: castle
+	LANG: C++
+*/
+#include <fstream>
+#include <cstring>
+#define size 2600
+ 
+using namespace std;
+int rank[size];
+int wei[size];
+int root[size];
+int wall[55][55];
+int n,m;
+int clo[55][55];
+ofstream fout("castle.out");
+ 
+int get_root( int k) 
+{
+	if(root[k]!=k)
+		root[k]=get_root(root[k]);
+	return root[k];
+}
+ 
+void union_set( int a , int b )
+{
+	int ra,rb;
+ 
+	ra=get_root( a );
+	rb= get_root( b );
+	if(ra==rb) return ;
+	if( rank[ra] > rank[rb]) 
+	{
+		root[rb]=ra;
+		wei[ra]+=wei[rb];
+	}
+	else 
+	{
+		root[ra]=rb;
+		wei[rb]+=wei[ra];
+		if(rank[ra] == rank[rb]) ++rank[rb];
+	}
+}
+ 
+void init()
+{
+	ifstream fin("castle.in");
+	fin>> m >> n;
+ 
+	for ( int i=1 ; i<= n ; i++ )
+	{
+		for ( int j=1 ; j<= m ; j++ )
+			{
+				fin>>wall[i][j];
+			    wall[i][j]=15-wall[i][j];//转化为没有墙的方向
+		    }
+ 
+	}
+ 
+}
+ 
+int maindo()
+{
+	int done[size];
+	memset( rank,0,sizeof(rank));
+	memset( done,0, sizeof(done));
+	for( int i=1 ; i<=n*m ; i++ ) 
+		{
+			root[i]=i;
+			wei[i]=1;
+	    }
+ 
+	for ( int i=1 ; i<= n; i++ )
+	{
+		for ( int j=1 ; j<= m ; j++)
+		{
+			if( wall[i ][ j] >=8) //和南边的相邻
+			{
+				wall[i][j]-=8;
+				union_set(i*m+j,i*m-m+j);
+			}
+			if( wall [i] [j ] >=4) //和右边的相邻
+			{
+				wall[i][j]-=4;
+				union_set(i*m-m+j,i*m-m+j+1);
+			}
+		}
+	}
+ 
+ 
+	int maxw=0;
+	int num=0;
+	for( int i=1 ; i<=n*m ; i++ ) //找到最大的块
+	{
+		if( !done[get_root(i)]) 
+		{
+			done[root[i]]=1;
+			++num;
+			if(wei[root[i]]>maxw) maxw = wei[root[i]];
+		}
+ 
+	}
+ 
+	fout << num << endl << maxw << endl;
+	return maxw;
+}
+ 
+void getMax ( int mm) //找到应拆除的墙
+{
+	int max=mm;
+	int ans1,ans2,ans3;
+ 
+	for ( int j=1; j <= m ; j++ ) //自西向东枚举格子北面的墙
+		for ( int i=n ; i>1 ; i-- )
+			if( root[m*i-m+j] != root[m*i-m-m+j])
+			{
+				int temp =  wei[root[m*i-m+j]] + wei[root[m*i-m-m+j]];
+				if ( temp> max)
+				{
+					max =temp;
+					ans1=i, ans2=j; ans3=1;
+				}
+			}
+ 
+	for ( int j=1; j < m ; j++ )//枚举格子东边的墙
+		for ( int i=n ; i>=1 ; i-- )
+			if( root[m*i-m+j] != root[m*i-m+j+1])
+			{
+				int temp = wei[root[m*i-m+j]] + wei[root[m*i-m+j+1]];
+				if (   temp > max || (temp == max && ans2 > j) )
+				{
+					max = temp;
+					ans1=i, ans2=j; ans3=2;
+				}
+			}
+	fout << max << endl << ans1 <<" "<< ans2 ;
+	if ( ans3 == 1 ) fout << " N\n" ;
+	else fout << " E\n" ;
+}
+ 
+int main()
+{
+ 
+		init();
+		int mm = maindo();	
+		getMax(mm);
+ 
+	return 0;
+}//2009-08-13-00:03
+/*
+ID: 31440461
+LANG: C++
+TASK: castle
+*/
+#include<iostream>
+#include<memory.h>
+using namespace std;
+const int MAX = 50 + 10;
+int w,h,NO=0,rmsz[MAX*MAX],info[MAX][MAX],sign[MAX][MAX];
+ 
+void floodfill(int row, int col)
+{
+    if (sign[row][col]) return;
+    ++rmsz[NO];
+    sign[row][col] = NO;
+    int tmp = info[row][col] ^ ((1 << 10) - 1);
+    if (tmp & 1) floodfill(row , col-1);
+    if (tmp & 2) floodfill(row-1 , col);
+    if (tmp & 4) floodfill(row , col+1);
+    if (tmp & 8) floodfill(row+1 , col);
+}
+ 
+int main()
+{
+    freopen("castle.in","r",stdin);
+    freopen("castle.out","w",stdout);
+    memset(sign,0,sizeof(sign));
+    memset(rmsz,0,sizeof(rmsz));
+    cin >> w >> h;
+    for (int i = 1; i <= h; ++i)
+	for (int j = 1; j <= w; ++j)
+	    cin >> info[i][j];
+    for (int i = 1; i <= h; ++i)
+	for (int j = 1; j <= w; ++j)
+	    if (sign[i][j]==0)
+	    {
+		++NO;
+		floodfill(i,j);
+	    }
+    cout << NO << endl;
+    int MaxRm = 0;
+    for (int i = 1; i <= NO; ++i) MaxRm = max(MaxRm , rmsz[i]);
+    cout << MaxRm << endl;
+    int AnsH, AnsW;
+    char AnsD;
+    MaxRm = 0;
+    for (int i = 1; i <= w; ++i)
+	for (int j = h; j; --j)
+	{
+	    int s = sign[j][i], sl = sign[j][i+1], su = sign[j-1][i];
+	    if (su && su!=s && rmsz[s]+rmsz[su]>MaxRm)
+	    {
+		MaxRm = rmsz[s] + rmsz[su];
+		AnsH = j;
+		AnsW = i;
+		AnsD = 'N';
+	    }
+	    if (sl && sl!=s && rmsz[s]+rmsz[sl]>MaxRm)
+	    {
+		MaxRm = rmsz[s] + rmsz[sl];
+		AnsH = j;
+		AnsW = i;
+		AnsD = 'E';
+	    }
+	}
+    cout << MaxRm << endl;
+    cout << AnsH << ' ' << AnsW << ' ' << AnsD << endl;
+    return 0;
+}/*代码如下:#6
+1，错在c数组开小了，就开了106，其实有可能到10000的
+2，就是乱continue了
+方法：
+wall[i][j][4]用来存（i,j）这个位置周围四面墙的情况，cnt用来记房间的数量
+如果（i,j）输入第k个房间，则f[i][j]=k;这样以后可以很方便的比较f[][]的值判断是否在一个房间
+c[]用来表示第cnt个大房间的小房间数
+然后bfs分别求分量，记下最大值； 
+遍历所有房间求去掉一个墙后的最大值（只要判断c[f[i][j]]+c[f[i][j+1]](或c[f[i-1][j]])是否>mmax）
+*/
+/*
+ID:tbbd4261
+PROG:castle
+LANG:C++
+*/
+ 
+ 
+//#include <iostream>
+#include <fstream>
+#include <math.h>
+int Graph[105][105]={0};
+bool wall[105][105][4]={0};   //0代表无墙，1有墙 //第三个值：0西面有墙，1北面有墙，2东面有墙 3南面有墙 
+                                                        //    1
+                                                        //0       2
+                                                        //    3
+int  f[105][105]={0};       //记录各个连通分量 （第cnt个） 
+int c[10010]={0};      //第cnt个连通分量房间的数目 
+using namespace std;
+ 
+ifstream cin("castle.in");
+ofstream cout("castle.out");
+ 
+int n,m,cnt;           //cnt表示房间数 
+void input()
+{
+   cin>>n>>m;int temp;
+   for(int i=1; i<=m; i++)
+   for(int j=1; j<=n; j++)
+     {
+           cin>>temp;
+           if(temp&1)wall[i][j][0]=1;
+           if(temp&2)wall[i][j][1]=1;
+           if(temp&4)wall[i][j][2]=1;
+           if(temp&8)wall[i][j][3]=1;
+     }
+ 
+}
+ 
+void dfs(int i,int j,int &count)
+{
+     if(i<1||i>m||j<1||j>n||Graph[i][j])return;
+     f[i][j]=cnt; Graph[i][j]=++count;
+     if(!wall[i][j][0])dfs(i,j-1,count);
+     if(!wall[i][j][1])dfs(i-1,j,count);
+     if(!wall[i][j][2])dfs(i,j+1,count);
+     if(!wall[i][j][3])dfs(i+1,j,count);
+}
+ 
+ 
+ 
+int main()
+{
+    input();
+    cnt=0;
+    int max=0;
+    for(int i=1; i <= m; i++ )
+    for(int j=1; j <= n ; j++)
+    {
+      if(!Graph[i][j])
+         {
+                      int count=0;
+                      cnt++;
+                      dfs(i,j,count);
+ 
+                      if(count>max) 
+                            max=count;
+                      c[cnt]=count; 
+         }
+    } 
+ 
+    cout<<cnt<<endl;
+    cout<<max<<endl;
+    int ii,jj,mmax=0;char ch;// 最大房间的信息
+ 
+ 
+    for(int j=1; j<=n; j++) 
+    for(int i=m; i>=1; i--)
+    {
+      //i,j
+      if(wall[i][j][1]&&f[i][j]!=f[i-1][j])
+            {
+ 
+                int x1=f[i][j],x2=f[i-1][j];
+                if(c[x1]+c[x2]>mmax){ mmax=c[x1]+c[x2]; ii=i; jj=j; ch='N'; }
+            }
+      if(wall[i][j][2]&&f[i][j]!=f[i][j+1])
+         {
+ 
+            int x1=f[i][j],x2=f[i][j+1];
+            if(c[x1]+c[x2]>mmax){ mmax=c[x1]+c[x2]; ii=i; jj=j; ch='E'; }
+         }
+ 
+ 
+    }
+ 
+    cout<<mmax<<endl;
+    cout<<ii<<' '<<jj<<' '<<ch<<endl;
+ 
+    //system("pause");
+    return 0;
+}//程序巨长……
+/*
+ID: 
+PROG: castle
+LANG: C++
+*/
+ 
+#include<fstream>
+#include<cstdlib>
+using namespace std;
+ 
+ifstream fin("castle.in");
+ofstream fout("castle.out");
+ 
+class answer{
+	public:
+	short sum;
+	short maxn;
+	short wall[2];
+	char dire;
+};
+ 
+answer ans={0,0,{0,0},0};
+short m,n,castle[51][51],color[51][51],rooms[2502];
+bool flag[2501][2501];
+ 
+void col(short,short);
+void smax();
+int cmp(const void*,const void*);
+ 
+int main(){
+	fin>>m>>n;
+	for(int i=1;i<=n;i++)
+		for(int j=1;j<=m;j++)
+			fin>>castle[i][j];
+	for(int i=1;i<=n;i++)
+		for(int j=1;j<=m;j++)
+			if(!color[i][j])
+				rooms[++ans.sum]++,col(i,j);
+	smax();
+	qsort(rooms+1,ans.sum,sizeof(rooms[0]),cmp);
+	fout<<ans.sum<<endl<<rooms[1]<<endl<<ans.maxn<<endl<<ans.wall[0]<<' '<<ans.wall[1]<<' '<<ans.dire<<endl;
+	return 0;
+}
+ 
+void col(short x,short y){
+	color[x][y]=ans.sum;
+	switch(castle[x][y]){
+		case 0:
+			if(x-1>0&&color[x-1][y]==0)rooms[ans.sum]++,col(x-1,y);
+			if(x+1<=n&&color[x+1][y]==0)rooms[ans.sum]++,col(x+1,y);
+			if(y-1>0&&color[x][y-1]==0)rooms[ans.sum]++,col(x,y-1);
+			if(y+1<=m&&color[x][y+1]==0)rooms[ans.sum]++,col(x,y+1);
+			break;
+		case 1:
+			if(x-1>0&&color[x-1][y]==0)rooms[ans.sum]++,col(x-1,y);
+			if(x+1<=n&&color[x+1][y]==0)rooms[ans.sum]++,col(x+1,y);
+			if(y+1<=m&&color[x][y+1]==0)rooms[ans.sum]++,col(x,y+1);
+			break;
+		case 2:
+			if(x+1<=n&&color[x+1][y]==0)rooms[ans.sum]++,col(x+1,y);
+			if(y-1>0&&color[x][y-1]==0)rooms[ans.sum]++,col(x,y-1);
+			if(y+1<=m&&color[x][y+1]==0)rooms[ans.sum]++,col(x,y+1);
+			break;
+		case 3:
+			if(x+1<=n&&color[x+1][y]==0)rooms[ans.sum]++,col(x+1,y);
+			if(y+1<=m&&color[x][y+1]==0)rooms[ans.sum]++,col(x,y+1);
+			break;
+		case 4:
+			if(x-1>0&&color[x-1][y]==0)rooms[ans.sum]++,col(x-1,y);
+			if(x+1<=n&&color[x+1][y]==0)rooms[ans.sum]++,col(x+1,y);
+			if(y-1>0&&color[x][y-1]==0)rooms[ans.sum]++,col(x,y-1);
+			break;
+		case 5:
+			if(x-1>0&&color[x-1][y]==0)rooms[ans.sum]++,col(x-1,y);
+			if(x+1<=n&&color[x+1][y]==0)rooms[ans.sum]++,col(x+1,y);
+			break;
+		case 6:
+			if(x+1<=n&&color[x+1][y]==0)rooms[ans.sum]++,col(x+1,y);
+			if(y-1>0&&color[x][y-1]==0)rooms[ans.sum]++,col(x,y-1);
+			break;
+		case 7:
+			if(x+1<=n&&color[x+1][y]==0)rooms[ans.sum]++,col(x+1,y);
+			break;
+		case 8:
+			if(x-1>0&&color[x-1][y]==0)rooms[ans.sum]++,col(x-1,y);
+			if(y-1>0&&color[x][y-1]==0)rooms[ans.sum]++,col(x,y-1);
+			if(y+1<=m&&color[x][y+1]==0)rooms[ans.sum]++,col(x,y+1);
+			break;
+		case 9:
+			if(x-1>0&&color[x-1][y]==0)rooms[ans.sum]++,col(x-1,y);
+			if(y+1<=m&&color[x][y+1]==0)rooms[ans.sum]++,col(x,y+1);
+			break;
+		case 10:
+			if(y-1>0&&color[x][y-1]==0)rooms[ans.sum]++,col(x,y-1);
+			if(y+1<=m&&color[x][y+1]==0)rooms[ans.sum]++,col(x,y+1);
+			break;
+		case 11:
+			if(y+1<=m&&color[x][y+1]==0)rooms[ans.sum]++,col(x,y+1);
+			break;
+		case 12:
+			if(x-1>0&&color[x-1][y]==0)rooms[ans.sum]++,col(x-1,y);
+			if(y-1>0&&color[x][y-1]==0)rooms[ans.sum]++,col(x,y-1);
+			break;
+		case 13:
+			if(x-1>0&&color[x-1][y]==0)rooms[ans.sum]++,col(x-1,y);
+			break;
+		case 14:
+			if(y-1>0&&color[x][y-1]==0)rooms[ans.sum]++,col(x,y-1);
+			break;
+		case 15:
+			break;
+	}
+}
+ 
+void smax(){
+	for(int i=1;i<=m;i++)
+		for(int j=n;j>0;j--){
+			char tdir=0;
+			int tmax=0,t=color[j][i],u=color[j-1][i],r=color[j][i+1];
+			if(t!=u&&!flag[u][t]){
+				tmax=rooms[t]+rooms[u];
+				flag[t][u]=flag[u][t]=true;
+				tdir='N';
+			}
+			if(t!=r&&!flag[u][r]&&(tmax<rooms[t]+rooms[r]?true:false)){
+				tmax=rooms[t]+rooms[r];
+				flag[t][r]=flag[r][t]=true;
+				tdir='E';
+			}
+			if(tmax>ans.maxn){ans.wall[0]=j;ans.wall[1]=i;ans.dire=tdir;ans.maxn=tmax;}
+		}
+}
+ 
+int cmp(const void*a,const void*b){
+	return *(short*)b-*(short*)a;
+}

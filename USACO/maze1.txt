@@ -1,0 +1,351 @@
+/*
+ID:ybojan2
+LANG:C++
+TASK:maze1
+*/
+ 
+#include <iostream>
+#include <fstream>
+ 
+using namespace std;
+ 
+int t,w,h,dat[4][102][40],k[4][2]={{-1,0},{0,1},{1,0},{0,-1}},d[102][40];
+ 
+void go(int x,int y,int s)
+{
+     if (s<d[x][y]) d[x][y]=s;
+     else return;
+     for (int i=0;i<=3;i++)
+     {
+         if (dat[i][x][y]==1) continue;
+         int x1=x+k[i][0],y1=y+k[i][1];
+         if ((x1<1)||(x1>h)||(y1<1)||(y1>w)) continue;
+         go(x1,y1,s+1);
+     }
+}
+ 
+int main()
+{
+    ifstream fin("maze1.in");
+    ofstream fout("maze1.out");
+ 
+    memset(dat,0,sizeof(dat));
+    char c;
+    fin>>w>>h;
+    string str;
+    getline(fin,str);
+    getline(fin,str);
+    t=0;
+    for (int i=1;i<=w;i++)
+    {
+        t++;
+        if (str[t]=='-') dat[0][1][i]=1;
+        t++;
+    }
+    for (int i=1;i<=h;i++)
+    {
+        getline(fin,str);
+        t=0;
+        if (str[t]=='|') dat[3][i][1]=1;
+        for (int j=1;j<=w;j++)
+        {
+            t+=2;
+            if (str[t]=='|'){
+                        dat[1][i][j]=1;
+                        dat[3][i][j+1]=1;
+                        }
+        }
+        getline(fin,str);
+        t=0;
+        for (int j=1;j<=w;j++)
+        {
+            t++;
+            if (str[t]=='-'){
+                        dat[2][i][j]=1;
+                        dat[0][i+1][j]=1;
+                        }
+            t++;
+        }
+    }
+ 
+    for (int i=1;i<=h;i++)
+        for (int j=1;j<=w;j++)
+            d[i][j]=2147483647;
+ 
+    for (int i=1;i<=h;i++)
+    {
+        if (dat[3][i][1]==0){
+                             go(i,1,1);
+                             }
+        if (dat[1][i][w]==0){
+                             go(i,w,1);
+                             }
+    }
+    for (int i=1;i<=w;i++)
+    {
+        if (dat[0][1][i]==0){
+                             go(1,i,1);
+                             }
+        if (dat[2][h][i]==0){
+                             go(h,i,1);
+                             }
+    }
+ 
+ 
+    int res=0;
+ 
+    for (int i=1;i<=h;i++)
+    {
+        for (int j=1;j<=w;j++)
+        {
+            if (d[i][j]>res) res=d[i][j];
+        }
+    }
+ 
+    fout<<res<<endl;
+    return 0;
+}#include<fstream> //BFS
+using namespace std;
+ofstream fout ("maze1.out",ios::out);
+ifstream fin ("maze1.in",ios::in);
+int w,h,xmin[210][100],dl[20000][2],tail=0,fx[4][2]={{-2,0},{0,2},{2,0},{0,-2}},fy[4][2]={{-1,0},{0,1},{1,0},{0,-1}};
+char map[210][100];
+void  bfs(int head)
+{
+	int total=0,x,y,p,q;
+	xmin[dl[1][0]][dl[1][1]]=1;
+	xmin[dl[2][0]][dl[2][1]]=1;
+	if((dl[tail][1]==dl[tail-1][1])&&(dl[tail-1][0]==dl[tail][0])) tail--;
+	while(head<=tail)
+	{
+		head++;
+		x=dl[head][0];
+		y=dl[head][1];
+		for(int i=0;i<=3;i++)
+		{
+			p=x+fx[i][0];q=y+fx[i][1];
+			if((p>0)&&(p<h)&&(q>0)&&(q<w)&&(map[x+fy[i][0]][y+fy[i][1]]==' ')) 
+			if((xmin[p][q]==0)||(xmin[p][q]>(xmin[x][y]+1))) 
+			{
+				tail++;
+				dl[tail][0]=p;
+				dl[tail][1]=q;
+				xmin[p][q]=xmin[x][y]+1;
+			}
+		}
+	}
+	for(int i=1;i<=h;i++) 
+		for(int j=1;j<=w;j++)
+			total=(xmin[i][j]>total?xmin[i][j]:total);
+	fout<<total<<endl;
+}
+int main()
+{
+	fin>>w>>h;
+	h=2*h+1;
+	w=2*w+1;
+	for(int i=1;i<=h;i++)
+	{
+		fin.get();
+		for(int j=1;j<=w;j++)
+		{
+			map[i][j]=fin.get();
+			if((i==1)&&(map[i][j]==' ')) {tail++;dl[tail][0]=i+1;dl[tail][1]=j;}
+			if((i==h)&&(map[i][j]==' ')) {tail++;dl[tail][0]=i-1;dl[tail][1]=j;}
+			if((j==1)&&(map[i][j]==' ')) {tail++;dl[tail][0]=i;dl[tail][1]=j+1;}
+			if((j==w)&&(map[i][j]==' ')) {tail++;dl[tail][0]=i;dl[tail][1]=j-1;}
+		}
+	}
+	bfs(0);
+    return 0;
+}//DFS ff
+#include <fstream>
+#include <stdio.h>
+ 
+using namespace std;
+ 
+fstream fin ("m.in", ios::in) ; 
+fstream fout ("m.out", ios::out) ; 
+ 
+#define MAX_WIDE (38*2+1)+1 
+#define MAX_HIGH (100*2+1)+1 
+#define INFINITE 3800*2+1 
+ 
+int W, H ; 
+char G [MAX_HIGH][MAX_WIDE] ; //原始图(字符) 
+int  M [MAX_HIGH][MAX_WIDE] ; //填充图(整型, 两个图也可以合在一起, 但这样比较清晰) 
+int EXIT [2][2] ;  
+int DIRE [4][2] = {1,0, -1,0, 0,1, 0, -1} ; 
+ 
+void Init ()
+{
+ int i, j ; 
+ 
+ fin >> W >> H ; 
+ 
+ W = W * 2 + 1 ; 
+ H = H * 2 + 1 ;
+ 
+ char * buf = new char [W + 1] ;
+ fin.getline (buf, 1) ; 
+ for (i = 0 ; i < H ; i ++)
+ {
+  fin.getline (buf, W + 1) ; 
+  for (j = 0 ; j < W ; j ++) 
+  {      
+   if (buf [j] == ' ')
+    G [i][j] = '#' ; 
+ 
+   if ((i == 0 || i == H - 1 || j == 0 || j == W - 1) 
+    && G [i][j] == '#')
+   {
+    //记录出口点 
+    if (EXIT [0][0] || EXIT [0][1])
+    {
+     EXIT [1][0] = i ;
+     EXIT [1][1] = j ; 
+    }
+    else
+    {
+     EXIT [0][0] = i ;
+     EXIT [0][1] = j ; 
+    }
+   }
+  }
+ }
+ delete [] buf ;
+ //初始化填充图
+ for (i = 0 ; i < H ; i ++)
+  for (j = 0 ; j < W ; j ++)
+   M [i][j] = INFINITE ; 
+}
+ 
+//深度优先Flood Fill 
+void DFS (int n, int i, int j)
+{ 
+   M [i][j] = n ; 
+     //遍历4个方向 
+     int  k, x, y ; 
+     for (k = 0 ; k < 4 ; k ++)
+     {
+      x = i + DIRE [k][0] ;
+      y = j + DIRE [k][1] ;
+     if (G [x][y] == '#' && n + 1 < M [x][y])
+          DFS (n + 1, x, y) ;
+     }      
+}
+ 
+void Work ()
+{  
+     //用两个入口点调用DFS 
+     if (EXIT [0][0] || EXIT [0][1] )
+      DFS (1, EXIT [0][0], EXIT [0][1]) ; 
+     if (EXIT [1][0] || EXIT [1][1] )
+      DFS (1, EXIT [1][0], EXIT [1][1]) ; 
+     //再遍历一次图找最大值, 本来想在遍历的过程记录最大值, 但只会让问题复杂化 
+   int i, j, max = 0 ;
+   for (i = 1 ; i < H ; i += 2)
+     for (j = 1 ; j < W ; j += 2)
+        if (M [i][j] != INFINITE && M [i][j] > max)
+              max = M [i][j] ;
+            fout << max / 2 << endl ; 
+}
+ 
+int main()
+{
+    Init () ; 
+    Work () ; 
+    return 0 ;
+}/*
+	ID:echooat1
+	LANG:C++
+	TASK:maze1
+	*/
+#include <cstdio>
+#include <cstring>
+using namespace std;
+long max(long a,long b){
+	if(a>b)return a;else return b;
+		}
+long fim[4][2]={-1,0,0,1,1,0,0,-1};
+long a[300][300]={0};
+char ch[300][300]={0};
+long h,w;
+bool pp[300][300]={0};
+long bfs(void);
+long x[2]={0},y[2]={0};
+long d[100001][4]={0};
+long path[300][300]={0};
+long work(long uu){
+	long sum=0;long u=uu;
+	while(u!=0){
+		sum++;
+		u=d[u][3];
+	}
+	return sum;
+}
+int main(int argc,char** argv){
+	FILE *fin,*fout;
+fin=fopen("maze1.in","r");
+fout=fopen("maze1.out","w");
+	fscanf(fin,"%ld%ld",&w,&h);
+	char o;
+	fscanf(fin,"%c",&o);
+	for(long i=1;i<=h*2+1;i++){
+		for(long j=1;j<=w*2+1;j++)
+			fscanf(fin,"%c",&ch[i][j]);
+		fscanf(fin,"%c",&o);
+	}
+	long p=0;
+	for(long i=1;i<=h*2+1;i++){
+		if(ch[i][1]==' ')
+			{x[p]=i/2+(i&1);y[p++]=0;a[x[p-1]][y[p-1]]=2;}
+		if(ch[i][2*w+1]==' ')
+			{x[p]=i/2+(i&1);y[p++]=w+1;a[x[p-1]][y[p-1]]=8;}
+	}
+	for(long i=1;i<=w*2+1;i++){
+		if(ch[1][i]==' ')
+			{x[p]=0;y[p++]=i/2+(i&1);a[x[p-1]][y[p-1]]=4;}
+		if(ch[2*h+1][i]==' ')
+			{x[p]=h+1;y[p++]=i/2+(i&1);a[x[p-1]][y[p-1]]=1;}
+	}
+	for(long i=2;i<=2*h;i+=2)
+		for(long j=2;j<=2*w;j+=2)
+			{
+				long l1=i>>1,l2=j>>1;
+				for(long k=0;k<4;k++)
+					if(ch[i+fim[k][0]][j+fim[k][1]]==' ')
+						a[l1][l2]+=1<<k;
+				}
+	long ans=0;
+	for(long i=1;i<=h;i++)
+		for(long j=1;j<=w;j++)
+			path[i][j]=19940522;
+	ans=bfs();
+	fprintf(fout,"%ld\n",ans);
+			fclose(fin);fclose(fout);
+	return 0;
+}
+long bfs(void){
+	long hash[300][300]={0};
+	long head=1,tail=2;
+	memset(d,0,sizeof d);
+	d[1][1]=x[1];d[1][2]=y[1];
+	d[2][1]=x[0];d[2][2]=y[0];
+	hash[x[1]][y[1]]=true;
+	hash[x[0]][y[0]]=true;
+	while(head<=tail){
+		for(long y=1;y<=2;y++){
+		long l1=d[head][1],l2=d[head++][2];
+		for(long i=0;i<=3;i++)
+			if((a[l1][l2]&(1<<i))&&!hash[l1+fim[i][0]][l2+fim[i][1]]){
+				d[++tail][1]=l1+fim[i][0];
+				d[tail][2]=l2+fim[i][1];
+				d[tail][3]=head-1;
+				hash[l1+fim[i][0]][l2+fim[i][1]]=true;
+ 
+			}
+		}
+	}
+	return max(work(d[head-2][3]),work(d[head-1][3]));
+}

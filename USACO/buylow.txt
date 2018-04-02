@@ -1,0 +1,358 @@
+#include<fstream>//by adventop
+#include<cstring>
+#define cprint fout
+#define BIG 5005
+#define MAX(a,b) ((a)>(b)?(a):(b))
+using namespace std;
+ofstream fout ("buylow.out",ios::out);
+ifstream fin ("buylow.in",ios::in);
+struct elect{
+    long ele[BIG],len;
+    long MAXN(){return ele[len];}
+    long refresh(long VAL){ele[++len]=VAL;return len;}
+    long change(long VAL){  //二分查找
+        long left=1,right=len,mid=(left+right)>>1;
+        while(left<right)
+            if(VAL>ele[mid]){
+                left=mid+1;
+                mid=(left+right)>>1;
+            }
+            else{
+                right=mid;
+                mid=(left+right)>>1;
+            }
+        ele[left]=VAL;
+        return left;
+    }
+}num;
+class Plus{
+    int num[80],len;
+    public:
+    void refresh(){num[++len]=1;}
+    friend Plus operator + (const Plus &A,const Plus &B){
+        Plus C;
+        int LEN=MAX(A.len,B.len);
+        for(int i=1;i<=LEN;i++){
+            C.num[i]+=A.num[i]+B.num[i];
+            C.num[i+1]+=(C.num[i])/10;
+            C.num[i]%=10;
+        }
+        if(C.num[LEN+1]!=0) C.len=++LEN;
+            else C.len=LEN;
+        return C;
+    }
+    void operator = (const Plus &A){
+        for(int i=1;i<=A.len;i++) num[i]=A.num[i];
+        len=A.len;
+    }
+    void print(){for(int i=len;i>=1;i--) cprint<<num[i];cprint<<endl;}
+    Plus(){memset(num,0,sizeof(num));len=0;}
+}sum[BIG];
+long val[BIG][2],n;
+bool Find[BIG],flag;//Find保证不重复计数
+Plus tot;
+int main()
+{
+    fin>>n;
+    for(int i=1;i<=n;i++) fin>>val[i][0];
+    for(int i=n;i>=1;i--)
+        if(val[i][0]>num.MAXN()) val[i][1]=num.refresh(val[i][0]);
+            else{if(val[i][0]<num.MAXN()) val[i][1]=num.change(val[i][0]);
+                 else val[i][1]=num.len;}
+    for(int i=n;i>=1;i--){
+        flag=false;
+        for(int j=n;j>=i+1;j--){
+            if(!Find[j] && val[i][0]>val[j][0] && val[i][1]==val[j][1]+1){
+                sum[i]=sum[i]+sum[j];
+                flag=true;
+            }
+            else if(val[i][0]==val[j][0]) Find[j]=true;//避免重复，保留最当前的
+        }
+        if(!flag) sum[i].refresh();//未找到满足的，初始化为1
+    }
+    for(int i=n;i>=1;i--) if(!Find[i] && val[i][1]==num.len) tot=tot+sum[i];
+    fout<<num.len<<' ';
+    tot.print();
+    return 0;
+}/*
+ID:ybojan2
+LANG:C++
+TASK:buylow
+*/
+#include <fstream>
+using namespace std;
+ifstream cin("buylow.in");
+ofstream cout("buylow.out");
+int main()
+{
+    int n,num[5001],dp[5001],maxr=0,l[5001];
+    int count[5001][100],sum[200],ls=0;
+    memset(dp,0,sizeof(dp));
+    memset(count,0,sizeof(count));
+    memset(l,0,sizeof(l));
+    memset(sum,0,sizeof(sum));
+    cin>>n;
+    for (int i=1;i<=n;i++) cin>>num[i];
+    for (int i=1;i<=n;i++)
+    {
+        for (int j=1;j<i;j++)
+            if (num[j]>num[i]) dp[i]=max(dp[j],dp[i]);
+        dp[i]++;
+    }
+    for (int i=1;i<=n;i++)
+    {
+        for (int j=i-1;j>=1;j--)
+            if ((dp[j]+1==dp[i])&&(num[j]>num[i])){
+                                                  bool okay=true;
+                                                  for (int k=j+1;k<i;k++) if (num[j]==num[k]){
+                                                      okay=false;break;
+                                                  }
+                                                  if (okay) {
+                                                            for (int k=1;k<=l[j];k++) count[i][k]+=count[j][k];
+                                                            l[i]=max(l[i],l[j]);
+                                                            for (int k=1;k<=l[i];k++)
+                                                            {
+                                                                count[i][k+1]+=count[i][k]/10;
+                                                                count[i][k]%=10;
+                                                            }
+                                                            if (count[i][l[i]+1]>0) l[i]++;
+                                                            }
+                                                  }
+        if (l[i]==0) {
+                     count[i][1]=1;
+                     l[i]=1;
+                     }
+    }
+    for (int i=1;i<=n;i++) maxr=max(maxr,dp[i]);
+    cout<<maxr<<" ";
+    for (int i=n;i>=1;i--)
+        if ((dp[i]==maxr)){
+                           bool okay=true;
+                           for (int j=i+1;j<=n;j++) if (num[i]==num[j]){
+                               okay=false;break;
+                           }
+                           if (!okay) continue;
+                           for (int j=1;j<=l[i];j++)
+                               sum[j]+=count[i][j];
+                           ls=max(ls,l[i]);
+                           for (int j=1;j<=ls;j++)
+                           {
+                               sum[j+1]+=sum[j]/10;
+                               sum[j]%=10;
+                           }
+                           if (sum[ls+1]>0) ls++;
+                           }
+    for (int i=ls;i>=1;i--) cout<<sum[i];
+    cout<<endl;
+    return 0;
+}/*
+ID: cmykrgb1
+PROG: buylow
+LANG: C++
+*/
+//written by CmYkRgB123
+#include <iostream>
+#include <fstream>
+#define MAX 5002
+#define MAXP 8
+#define LIM 1000000000
+using namespace std;
+ 
+int cnt=0;
+ 
+class hpnum
+{
+public:
+	long sec[MAXP];
+	int seccnt;
+ 
+	hpnum()
+	{
+		sec[seccnt=1]=0;
+	}
+	void plus(hpnum &P)
+	{
+		cnt++;
+		int sect=seccnt>P.seccnt?seccnt:P.seccnt;
+		long T,up=0;
+		for(int i=1;i<=sect;i++)
+		{
+			if (i>seccnt)sec[i]=0;
+			if (i>P.seccnt)P.sec[i]=0;
+			T=sec[i]+P.sec[i]+up;
+			up=T/LIM;
+			sec[i]=T%LIM;
+		}
+		seccnt=sect;
+		if (up)
+			sec[++seccnt]=up;
+	}
+	void cpy(hpnum &P)
+	{
+		seccnt=P.seccnt;
+		for (int i=1;i<=seccnt;i++)
+			sec[i]=P.sec[i];
+	}
+};
+ 
+ifstream fi("buylow.in");
+ofstream fo("buylow.out");
+ 
+int N;
+long s[MAX],MaxLength[MAX],Next[MAX];
+hpnum MaxCnt[MAX];
+ 
+void init()
+{
+	int i,j;
+	fi >> N;
+	for (i=1;i<=N;i++)
+		fi >>s[i];
+	for (i=1;i<=N-1;i++)
+		for (j=i+1;j<=N;j++)
+			if (s[j]==s[i])
+			{
+				Next[i]=j;
+				break;
+			}
+	s[++N]=0;
+}
+ 
+void dynamic()
+{
+	int i,j;
+	MaxLength[1]=1;
+	MaxCnt[1].sec[1]=1;
+	for (i=2;i<=N;i++)
+	{
+		MaxCnt[i].sec[1]=1;
+		MaxLength[i]=1;
+		for (j=1;j<=i-1;j++)
+		{
+			if (Next[j] && Next[j]<i) continue;
+			if (s[j]>s[i])
+			{
+				if (MaxLength[j]+1>MaxLength[i])
+				{
+					MaxLength[i]=MaxLength[j]+1;
+					MaxCnt[i].cpy(MaxCnt[j]);
+				}
+				else if (MaxLength[j]+1==MaxLength[i])
+				{
+					MaxCnt[i].plus(MaxCnt[j]);
+				}
+			}
+		}
+	}
+}
+ 
+void writehp(hpnum &P)
+{
+	int i;
+	long k;
+	for (i=P.seccnt;i>=1;i--)
+	{
+		k=LIM/10;
+		if (i!=P.seccnt && P.sec[i]<k)
+		{
+			//补0输出
+			while (P.sec[i]<k)
+			{
+				fo << 0;
+				k/=10;
+			}
+		}
+		if (P.sec[i])
+			fo << P.sec[i];
+	}
+}
+ 
+void print()
+{
+	fo << MaxLength[N]-1 << ' ';
+	writehp(MaxCnt[N]);
+	fo << endl;
+	fi.close();
+	fo.close();
+}
+ 
+int main()
+{
+	init();
+	dynamic();
+	print();
+	return 0;
+}// 离散化后N^2强搞，压4位，最大的点0.2s
+// 另外膜拜一下那个二分的全0s的神牛
+ 
+/*
+PROG: buylow
+LANG: C++
+*/
+ 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+ 
+long a[5001];
+int f[5001], g[5001][20];
+bool v[5001];
+int n;
+ 
+int i, j, k;
+ 
+inline int cmp_idx(const void *x, const void *y) {
+	return a[*(int *)x] > a[*(int *)y] ? 1 : -1;
+}
+ 
+inline void print(const int *a) {
+	printf("%d", a[a[0]]);
+	for (i = a[0] - 1; i; --i) printf("%04d", a[i]);
+	printf("\n");
+}
+ 
+inline void add(int *a, const int *b) {
+	if (a[0] < b[0]) a[0] = b[0];
+	for (k = 1; k <= a[0]; ++k)
+		if ((a[k] += b[k]) > 9999) {
+			++a[k + 1];
+			a[k] -= 10000;
+		}
+	if (a[a[0] + 1]) ++a[0];
+}
+ 
+int main() {
+	freopen("buylow.in", "rt", stdin);
+	freopen("buylow.out", "wt", stdout);
+	scanf("%d", &n);
+	for (i = 0; i < n; ++i) {
+		scanf("%d", a + i);
+		f[i] = i;
+	}
+ 
+	qsort(f, n, sizeof(int), cmp_idx);
+	k = a[f[0]], a[f[0]] = 1;
+	for (j = 1, i = 1; i < n; ++i)
+		if (a[f[i]] != k) {
+			k = a[f[i]];
+			a[f[i]] = ++j;
+		} else a[f[i]] = j;
+	a[n] = 0;
+ 
+	memset(f, 0, sizeof f);
+	memset(g, 0, sizeof g);
+	for (i = 0; i <= n; ++i) {
+		memset(v, 0, sizeof v);
+		for (g[i][0] = g[i][1] = 1, j = i - 1; j >= 0; --j)
+			if (a[i] < a[j] && !v[a[j]]) {
+				v[a[j]] = true;
+				if (f[i] < f[j]) f[i] = f[j], memcpy(g[i], g[j], sizeof g[i]);
+				else if (f[i] == f[j]) add(g[i], g[j]);
+			}
+		++f[i];
+	}
+ 
+	printf("%d ", f[n] - 1);
+	print(g[n]);
+	return 0;
+}

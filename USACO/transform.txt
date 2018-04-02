@@ -1,0 +1,375 @@
+#include <iostream>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <string>
+#include <map>
+#include <list>
+using namespace std;
+ 
+FILE *in, *out;
+ 
+void openfile() { in = fopen("transform.in", "r"); out = fopen("transform.out", "w+"); }
+void closefile() { fclose(in); fclose(out); }
+ 
+struct matrix {
+    char map[12][12];
+    int n;
+};
+ 
+/** TODO VAR. */
+matrix mat_1, mat_2, tmp_mat;
+ 
+bool comp(matrix *mat_1, matrix *mat_2)
+{
+    for(int i = 0; i < mat_1->n; i++)
+        for(int j = 0; j < mat_1->n; j++)
+            if(mat_1->map[i][j] != mat_2->map[i][j]) return false;
+ 
+    return true;
+}
+ 
+void turn_90(matrix* mat)
+{
+    matrix *newmat = new matrix();
+    newmat->n = mat->n;
+    for(int i = 0; i < mat->n; i++)
+    {
+        for(int j = 0; j < mat->n; j++)
+            newmat->map[i][j] = mat->map[mat->n - 1 - j][i];
+    }
+ 
+    memcpy(mat, newmat, sizeof(matrix));
+    delete newmat;
+}
+ 
+void reflect(matrix *mat)
+{
+    matrix *newmat = new matrix();
+    newmat->n = mat->n;
+    for(int i = 0; i < mat->n; i++)
+    {
+        for(int j = 0; j < mat->n; j++)
+            newmat->map[i][j] = mat->map[i][mat->n - 1 - j];
+    }
+ 
+    memcpy(mat, newmat, sizeof(matrix));
+    delete newmat;
+}
+ 
+int main()
+{
+    openfile();
+    fscanf(in, "%d", &(mat_1.n));
+    mat_2.n = mat_1.n;
+    for(int i = 0; i < mat_1.n; i++) fscanf(in, "%s", mat_1.map[i]);
+    for(int i = 0; i < mat_1.n; i++) fscanf(in, "%s", mat_2.map[i]);
+ 
+    memcpy(&tmp_mat, &mat_1, sizeof(matrix));
+    for(int i = 1; i <= 3; i++)
+    {
+        turn_90(&tmp_mat);
+        if(comp(&tmp_mat, &mat_2))
+        {
+            fprintf(out, "%d\n", i);
+            closefile();
+            return 0;
+        }
+ 
+        reflect(&tmp_mat);
+        if(comp(&tmp_mat, &mat_2))
+        {
+            fprintf(out, "%d\n", 5);
+            closefile();
+            return 0;
+        }
+ 
+        reflect(&tmp_mat);
+    }
+ 
+    memcpy(&tmp_mat, &mat_1, sizeof(matrix));
+    reflect(&tmp_mat);
+    if(comp(&tmp_mat, &mat_2))
+    {
+        fprintf(out, "%d\n", 4);
+        closefile();
+        return 0;
+    }
+ 
+    if(comp(&mat_1, &mat_2))
+    {
+        fprintf(out, "%d\n", 6);
+        closefile();
+        return 0;
+    }
+ 
+    fprintf(out, "%d\n", 7);
+ 
+    closefile();
+    return 0;
+}#include <stdio.h>
+#include <string.h>
+ 
+char a[10][11], b[10][11], c[10][11];
+ 
+bool Compare(char src[][11], char dst[][11], int n)
+{
+	for (int i = 0; i < n; ++i)
+		if (memcmp(src[i], dst[i], n)) return false;
+	return true;
+}
+ 
+void Transform(char src[][11], char dst[][11], int n, int k)
+{
+	for (int i = 0; i < n; ++i)
+		for (int j = 0; j < n; ++j)
+			switch (k)
+			{
+			case 1: dst[i][j] = src[n-j-1][i]; break;
+			case 2: dst[i][j] = src[n-i-1][n-j-1]; break;
+			case 3: dst[i][j] = src[j][n-i-1]; break;
+			case 4: dst[i][j] = src[i][n-j-1];
+			}
+}
+ 
+int main()
+{
+	freopen("transform.in", "r", stdin);
+	freopen("transform.out", "w", stdout);
+	bool changed = false;
+	int bgn, end, n, res1 = 0, res2 = 0;
+	scanf("%d%*c", &n);
+	for (int i = 0; i < n; ++i)
+		gets(a[i]);
+	for (int i = 0; i < n; ++i)
+	{
+		gets(b[i]);
+		if (memcmp(a[i], b[i], n)) changed = true;
+	}
+	for (int k = 1; k <= 4; ++k)
+	{
+		Transform(a, c, n, k);
+		if (Compare(c, b, n)) return printf("%d\n", k), 0;
+	}
+	for (int k = 1; k <= 3; ++k)
+	{
+		Transform(c, a, n, k);
+		if (Compare(a, b, n)) return printf("%d\n", 5), 0;
+	}
+	puts(changed ? "7" : "6");
+}/*
+  ID : Your ID
+  PROG : transform
+  LANG : C++
+*/
+#include <iostream>
+#include <fstream>
+using namespace std;
+ifstream fin ("transform.in");
+ofstream fout ("transform.out");
+char a[11][11], b[11][11], c[11][11];
+bool mark;
+int n;
+int indea(char a[11][11], int k)
+{
+   char b[11][11];
+   for (int i = 1; i <= n; i++)
+     for (int j = 1; j <= n; j++)
+       b[i][j] = a[i][j];
+   for (int i = 1; i <= n; i++)
+     for (int j = 1; j <= n; j++)
+     {
+       if (k == 1) a[i][j] = b[n - j + 1][i];
+       if (k == 2) a[i][j] = b[n - i + 1][n - j + 1];
+       if (k == 3) a[i][j] = b[j][n - i + 1];
+       if (k == 4) a[i][j] = b[i][n - j + 1];
+     }  
+}
+int get(void)
+{
+    for (int i = 1; i <= n; i++)
+      for (int j = 1; j <= n; j++)
+        c[i][j] = a[i][j];
+}
+bool check(void)
+{
+   for (int i = 1; i <= n; i++)
+     for (int j = 1; j <= n; j++)
+       if (c[i][j] != b[i][j])
+          return false;       
+   return true;
+}
+int init(char a[11][11])
+{
+   for (int i = 1; i <= n; i++)
+   {
+     for (int j = 1; j <= n; j++)
+       fin >> a[i][j];
+   }
+}
+int main(void)
+{  
+ 
+   fin >> n;
+   init(a);
+   init(b);
+   for (int i = 1; i <= 4; i++)
+     { get(); indea(c, i); if (check()) { fout << i << endl; return 0;} }
+   for (int i = 1; i <= 3; i++)
+   {
+     get(); indea(c,4); indea(c,i);
+     if (check()) { fout << 5 << endl;  return 0;} 
+   }
+   get(); if (check()) { fout << 6 << endl; return 0;}
+   fout << 7 << endl;  return 0;
+}-----------------------------
+ 
+ 
+#include<iostream>
+using namespace std;
+ 
+const int Max=10+10;
+int n;
+char firsr[Max][Max],result[Max][Max],out[Max][Max];
+ 
+int change(char s1[Max][Max], int k){
+    char s2[Max][Max];
+    for(int i=1;i<=n;i++)
+        for(int j=1;j<=n;j++)
+            s2[i][j]=s1[i][j]; 
+    for(int i=1;i<=n;i++)
+        for(int j=1;j<=n;j++){
+            if(k==1)s1[i][j]=s2[n-j+1][i];
+            if(k==2)s1[i][j]=s2[n-i+1][n-j+1];
+            if(k==3)s1[i][j]=s2[j][n-i+1];
+            if(k==4)s1[i][j]=s2[i][n-j+1];
+    }
+}
+ 
+void get(){
+     for(int i=1;i<=n;i++)
+        for(int j=1;j<=n;j++)
+            out[i][j]=firsr[i][j]; 
+}
+ 
+int check(){
+   for(int i=1;i<=n;i++)
+       for(int j=1;j<=n;j++)
+           if(out[i][j]!=result[i][j])
+              return 0;       
+   return 1;
+}
+ 
+int main(){
+    freopen("transform.in","r",stdin);
+    freopen("transform.out","w",stdout);
+    cin>>n;
+    for(int i=1;i<=n;i++)
+        for(int j=1;j<=n;j++)
+            cin>>firsr[i][j];
+    for(int i=1;i<=n;i++)
+        for(int j=1;j<=n;j++)
+            cin>>result[i][j];
+    for(int i=1;i<=4;i++){ 
+       get(); 
+       change(out,i);
+       if(check()){
+           cout<<i<<endl;
+           return 0;
+       }
+    }
+    for(int i=1;i<=3;i++){
+        get(); 
+        change(out,4); 
+        change(out,i);
+        if(check()){
+           cout<<5<<endl;
+           return 0;
+        } 
+    }
+    get();
+    if(check()){
+       cout<<6<<endl;
+       return 0;
+    }
+    else cout<<7<<endl;
+    return 0;
+}/*
+ID: 31440461
+LANG: C++
+TASK: transform
+*/
+#include<iostream>
+using namespace std;
+typedef char arr[11][11];
+arr pat1,pat2,bak;
+int n;
+ 
+template <class T>
+void init(T& a)
+{
+  for (int i=0;i<n;i++)
+    for (int j=0;j<n;j++)
+      cin >> a[i][j];
+}
+ 
+template <class T>
+void eva(const T& a,T& b)
+{
+  for (int i=0;i<n;i++)
+    for (int j=0;j<n;j++)
+      b[i][j] = a[i][j];
+}
+ 
+template <class T>
+bool cmp(const T& a,const T& b)
+{
+  for (int i=0;i<n;i++)
+    for (int j=0;j<n;j++)
+      if (a[i][j] != b[i][j]) return 0;
+  return 1;
+}
+ 
+void tranf1()
+{
+  arr tmp;
+  eva(pat1,tmp);
+  for (int i=0;i<n;i++)
+    for (int j=0;j<n;j++)
+      pat1[j][n-1-i] = tmp[i][j];
+}
+ 
+void tranf4()
+{
+  arr tmp;
+  eva(pat1,tmp);
+  for (int i=0;i<n;i++)
+    for (int j=0;j<n;j++)
+      pat1[i][n-1-j] = tmp[i][j];
+}
+ 
+int main() 
+{
+  freopen ("transform.in","r",stdin);
+  freopen ("transform.out","w",stdout);
+  cin >> n;
+  init(pat1);
+  init(pat2);
+  eva(pat1,bak); 
+  tranf1();
+  if (cmp(pat1,pat2)) { cout << 1 << endl; return 0;}
+  tranf1();
+  if (cmp(pat1,pat2)) { cout << 2 << endl; return 0;}
+  tranf1();
+  if (cmp(pat1,pat2)) { cout << 3 << endl; return 0;}
+  tranf1();
+  tranf4();
+  if (cmp(pat1,pat2)) { cout << 4 << endl; return 0;} 
+  for (int i=0;i<3;i++){
+    tranf1();
+    if (cmp(pat1,pat2)) { cout << 5 << endl; return 0;}
+  }
+  if (cmp(pat1,pat2)) { cout << 6 << endl; return 0;}
+  cout << 7 << endl;
+  return 0;
+}

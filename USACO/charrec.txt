@@ -1,0 +1,417 @@
+/*
+TASK:charrec
+LANG:C++
+*/
+ 
+#include<iostream>
+#include<fstream>
+#include<string>
+using namespace std;
+ 
+struct Word
+{
+string l[22];
+}Font[27];
+string x[1201];
+int dif[27][22][1201],n,m;
+string table=" abcdefghijklmnopqrstuvwxyz";
+char now;
+int r[1209];
+string rem[1201];
+ 
+int search_20(int w)
+{
+m=10000000;
+for(int i=0;i<=26;i++)
+{
+int s=0;
+for(int j=1;j<=20;j++)
+s+=dif[i][j][w+j-1];
+if(s<m)
+{
+m=s;
+now=table[i];
+}
+}
+return m;
+}
+ 
+int diff(string a,string b)
+{
+int j=0;
+for(int i=0;i<20;i++)
+if(a[i]!=b[i])
+j++;
+return j;
+}
+ 
+int search_19(int w)
+{
+m=10000000;
+for(int i=0;i<=26;i++)
+{
+int s=10000000,Qian[21],Hou[21];
+memset(Qian,0,sizeof(Qian));
+memset(Hou,0,sizeof(Hou));
+for(int j=1;j<=19;j++)
+Qian[j]=Qian[j-1]+dif[i][j][w+j-1];
+for(int j=19;j>=1;j--)
+Hou[j]=Hou[j+1]+dif[i][j+1][w+j-1];
+for(int j=0;j<19;j++)
+s=min(s,Qian[j]+Hou[j+1]);
+if(s<m)
+{
+m=s;
+now=table[i];
+}
+}
+return m;
+}
+ 
+int search_21(int w)
+{
+m=10000000;
+for(int i=0;i<=26;i++)
+{
+int s=10000000,Qian[22],Hou[22];
+memset(Qian,0,sizeof(Qian));
+memset(Hou,0,sizeof(Hou));
+for(int j=1;j<=20;j++)
+Qian[j]=Qian[j-1]+dif[i][j][w+j-1];
+for(int j=21;j>=2;j--)
+Hou[j]=Hou[j+1]+dif[i][j-1][w+j-1];
+for(int j=1;j<=21;j++)
+s=min(s,Qian[j-1]+Hou[j+1]);
+if(s<m)
+{
+m=s;
+now=table[i];
+}
+}
+return m;
+}
+ 
+ 
+int main()
+{
+memset(dif,0,sizeof(dif));
+memset(r,0xe,sizeof(r));
+ifstream fin("font.in");
+ifstream cin("charrec.in");
+ofstream cout("charrec.out");
+fin>>n;
+for(int i=0;i<=26;i++)
+for(int j=1;j<=20;j++)
+fin>>Font[i].l[j];
+cin>>n;
+r[n+1]=0;
+for(int i=1;i<=n;i++)
+cin>>x[i];
+ 
+for(int i=0;i<=26;i++)
+for(int j=1;j<=20;j++)
+for(int k=1;k<=n;k++)
+dif[i][j][k]=diff(Font[i].l[j],x[k]);
+ 
+for(int i=n-18;i>=1;i--)
+{
+if(r[i+19]<10000000)
+if(search_19(i)+r[i+19]<r[i])
+{
+r[i]=m+r[i+19];
+rem[i]=now+rem[i+19];
+}
+if(r[i+20]<10000000)
+if(search_20(i)+r[i+20]<r[i])
+{
+r[i]=m+r[i+20];
+rem[i]=now+rem[i+20];
+}
+if(r[i+21]<10000000)
+if(search_21(i)+r[i+21]<r[i])
+{
+r[i]=m+r[i+21];
+rem[i]=now+rem[i+21];
+}
+}
+cout<<rem[1]<<endl;
+//system("pause");
+return 0;
+}// 强搞的代码，比较简明，但速度不是很快，最慢的点要0.19s
+/*
+PROG: charrec
+LANG: C++
+*/
+ 
+#include <stdio.h>
+#include <string.h>
+ 
+const char LETTER[] = " abcdefghijklmnopqrstuvwxyz";
+ 
+int bit[1049000] = {0};
+long a[27][20], b[1201];
+int n;
+ 
+char c[1201][3];
+long f[1201], g[1201][3];
+int prev[1201];
+ 
+long i, j;
+int k, l, p;
+ 
+inline void scan(long &x) {
+	for (x = 0, j = 0; j < 20; ++j) (x <<= 1) |= getchar() == '1';
+	scanf("\n");
+}
+ 
+void print(const int x) {
+	if (!x) return ;
+	print(prev[x]);
+	printf("%c", c[prev[x] + 1][x - prev[x] - 19]);
+}
+ 
+int main() {
+	freopen("font.in", "rt", stdin);
+	scanf("%*d\n");
+	for (i = 0; i < 540; ++i) scan(a[i / 20][i % 20]);
+ 
+	freopen("charrec.in", "rt", stdin);
+	freopen("charrec.out", "wt", stdout);
+	scanf("%d\n", &n);
+	for (i = 1; i <= n; ++i) scan(b[i]);
+ 
+	memset(g, 53, sizeof g);
+	for (i = 1; i < 1048576; ++i) bit[i] = bit[i >> 1] + (i & 1);
+	for (l = 1; l <= n; ++l) {
+		if (l + 18 <= n)
+			for (k = 0; k < 20; ++k) // 枚举比较时“删除”标准模板的哪一行
+				for (i = 0; i < 27; ++i) {
+					for (p = 0, j = 0; j < 20; ++j)
+						if (j != k) p += bit[a[i][j] ^ b[l + j - (j > k)]];
+					if (g[l][0] > p) g[l][0] = p, c[l][0] = LETTER[i];
+				}
+		if (l + 19 <= n)
+			for (i = 0; i < 27; ++i) {
+				for (p = 0, j = 0; j < 20; ++j) p += bit[a[i][j] ^ b[l + j]];
+				if (g[l][1] > p) g[l][1] = p, c[l][1] = LETTER[i];
+			}
+		if (l + 20 <= n) 
+			for (k = 0; k < 21; ++k) // 枚举比较时“删除”字符图案的哪一行
+				for (i = 0; i < 27; ++i) {
+					for (p = 0, j = 0; j < 21; ++j)
+						if (j != k) p += bit[a[i][j - (j > k)] ^ b[l + j]];
+					if (g[l][2] > p) g[l][2] = p, c[l][2] = LETTER[i];
+				}
+	}
+ 
+	memset(f, 53, sizeof f), f[0] = 0;
+	for (i = 19; i <= n; ++i) {
+		f[i] = f[i - 19] + g[i - 18][0], prev[i] = i - 19;
+		if (i >= 20 && f[i] > (j = f[i - 20] + g[i - 19][1])) f[i] = j, prev[i] = i - 20;
+		if (i >= 21 && f[i] > (j = f[i - 21] + g[i - 20][2])) f[i] = j, prev[i] = i - 21;
+	}
+	print(n), printf("\n");
+	return 0;
+}// This code is from oimaster (http://hi.baidu.com/oimaster)
+ 
+#include <iostream>
+#include <climits>
+ 
+using namespace std;
+ 
+const char letter[30] = " abcdefghijklmnopqrstuvwxyz";
+ 
+int font[28][21][21], data[1201][21], dif[28][21][1201], cost[1201][4];
+int from[1201][4], f[1201], g[1201], ans[1201];
+ 
+int main()
+  {
+    int n, i, j, k, p, total;
+ 
+    freopen("font.in", "r", stdin);
+    scanf("%d", &n), getchar();
+    for (i = 1; i <= 27; i ++)
+      for (j = 1; j <= 20; getchar(), j ++)
+        for (k = 1; k <= 20; k ++)
+          font[i][j][k] = getchar();
+ 
+    freopen("charrec.in", "r", stdin);
+    freopen("charrec.out", "w", stdout);
+ 
+    scanf("%d", &n), getchar();
+    for (i = 1; i <= n; getchar(), i ++)
+      for (j = 1; j <= 20; j ++)
+        data[i][j] = getchar();
+ 
+    for (i = 1; i <= 27; i ++)  // 预处理dif数组
+      for (j = 1; j <= 20; j ++)
+        for (k = 1; k <= n; k ++)
+          for (dif[i][j][k] = 0, p = 1; p <= 20; p ++)
+            dif[i][j][k] += int(data[k][p] != font[i][j][p]);
+    for (i = 1; i <= n; i ++)  // 预处理cost数组
+      {
+        cost[i][1] = cost[i][2] = cost[i][3] = INT_MAX;
+        if (i + 18 <= n)
+          for (j = 1; j <= 27; j ++) // 计算缺失一行的情况
+            {
+              for (total = 0, k = 2; k <= 20; k ++) total += dif[j][k][i+k-2];
+              if (total < cost[i][1]) cost[i][1] = total, from[i][1] = j;
+              for (k = 2; k <= 20; k ++)
+                {
+                  total += dif[j][k-1][i+k-2], total -= dif[j][k][i+k-2];
+                  if (total < cost[i][1]) cost[i][1] = total, from[i][1] = j;
+                }
+            }
+        if (i + 19 <= n)
+          for (j = 1; j <= 27; j ++) // 计算正好20行的情况
+            {
+              for (total = 0, k = 1; k <= 20; k ++) total += dif[j][k][i+k-1];
+              if (total < cost[i][2]) cost[i][2] = total, from[i][2] = j;
+            }
+        if (i + 20 <= n)
+          for (j = 1; j <= 27; j ++)  // 计算多余1行的情况
+            {
+              for (total = dif[j][1][i], k = 2; k <= 20; k ++)
+                total += dif[j][k][i+k];
+              if (total < cost[i][3]) cost[i][3] = total, from[i][3] = j;
+              for (k = 2; k <= 20; k ++)
+                {
+                  total += dif[j][k][i+k-1], total -= dif[j][k][i+k];
+                  if (total < cost[i][3]) cost[i][3] = total, from[i][3] = j;
+                }
+            }
+      }
+ 
+    for (f[0] = 0, i = 1; i <= n; i ++) f[i] = INT_MAX;
+    for (i = 19; i <= n; i ++) // 动态规划决策划分方案
+      {
+        if (i >= 19 && f[i-19] < INT_MAX && f[i-19] + cost[i-18][1] < f[i])
+          f[i] = f[i-19] + cost[i-18][1], g[i] = 19;
+        if (i >= 20 && f[i-20] < INT_MAX && f[i-20] + cost[i-19][2] < f[i])
+          f[i] = f[i-20] + cost[i-19][2], g[i] = 20;
+        if (i >= 21 && f[i-21] < INT_MAX && f[i-21] + cost[i-20][3] < f[i])
+          f[i] = f[i-21] + cost[i-20][3], g[i] = 21;
+      }
+    for (total = 0, i = n; i; i -= g[i])  // 得到解
+      ans[++ total] = from[i-g[i]+1][g[i]-18];
+ 
+    for (i = total; i; i --) printf("%c", letter[ans[i]-1]);
+    printf("\n");
+ 
+    return 0;
+  }Compiling...
+Compile: OK
+ 
+Executing...
+   Test 1: TEST OK [0.011 secs, 14712 KB]
+   Test 2: TEST OK [0.011 secs, 14712 KB]
+   Test 3: TEST OK [0.022 secs, 14712 KB]
+   Test 4: TEST OK [0.054 secs, 14712 KB]
+   Test 5: TEST OK [0.097 secs, 14712 KB]
+   Test 6: TEST OK [0.130 secs, 14712 KB]
+   Test 7: TEST OK [0.162 secs, 14800 KB]
+   Test 8: TEST OK [0.151 secs, 14800 KB]
+   Test 9: TEST OK [0.162 secs, 14804 KB]
+ 
+All tests OK.
+ 
+/*
+	ID:echooat1
+	LANG:C++
+	TASK:charrec
+*/
+#include <fstream>
+#include <cstring>
+#define ma 0x7fffffff-10000
+#define len 1205
+#define ll 40
+using namespace std;
+ifstream fin_("font.in");
+ifstream fin("charrec.in");
+ofstream fout("charrec.out");
+struct re{
+	string st;
+	long da;
+	re(){da=ma;}
+};
+struct r{
+	long da;
+	char ch;
+};
+string mode[len/20][ll],a[len];
+int f[len/20][len][ll]={0},n=0,t=0;
+r c[len][ll]={0};re cost[len+ll];
+long ok(long l1,long l2,long k){
+	long sum=0;
+	for(long i=0;i<=19;i++)
+		if(a[l1][i]!=mode[k][l2][i])sum++;
+	return sum;
+}
+int main(int argc,char** argv){
+	long n1=0;
+	fin_ >>n1;fin_.get();
+	t=n1/20;
+	for(long i=0;i<=len-1;i++)
+		c[i][19].da=c[i][20].da=c[i][21].da=ma;
+	for(long i=1;i<=t;i++)
+		for(long j=1;j<=20;j++)
+			getline(fin_,mode[i][j]);
+	fin >>n;fin.get();
+	for(long i=1;i<=n;i++)
+		getline(fin,a[i]);
+	for(long k=1;k<=t;k++)
+		for(long i=1;i<=n;i++)	
+			for(long j=1;j<=20;j++)
+				f[k][i][j]=ok(i,j,k);
+	for(long i=1;i<=n;i++){
+		long l1,l2,l3;l1=l2=l3=0x7fffffff;
+		char c1,c2,c3;
+		for(long k=1;k<=t;k++){
+			if(i+18<=n){
+				long pre[25]={0},tail[25]={0};
+				for(long j=1;j<=19;j++){
+					long yy=21-j;
+					pre[j]=pre[j-1]+f[k][i+j-1][j];
+					tail[j]=tail[j-1]+f[k][i+19-j][yy];
+				}
+				long temp=0x7fffffff;
+				for(long j=0;j<=19;j++)
+					temp=min(temp,pre[j]+tail[19-j]);
+				if(temp<l1){l1=temp;c1='a'+k-2;}
+			}
+			if(i+19<=n){
+				long sum=0;
+				for(long j=1;j<=20;j++)
+					sum+=f[k][i+j-1][j];
+				if(sum<l2){l2=sum;c2='a'+k-2;}
+			}
+			if(i+20<=n){
+				long pre[25]={0},tail[25]={0};
+				for(long j=1;j<=20;j++){
+					long yy=21-j;
+					pre[j]=pre[j-1]+f[k][i+j-1][j];
+					tail[j]=tail[j-1]+f[k][i+21-j][yy];
+				}
+				long temp=0x7fffffff;
+				for(long j=1;j<=20;j++)
+					temp=min(temp,pre[j]+tail[20-j]);
+				if(temp<l3){l3=temp;c3='a'+k-2;}
+			}
+		}
+		c[i][19].da=l1;c[i][19].ch=c1;c[i][19+1].da=l2;c[i][19+1].ch=c2;c[i][19+2].da=l3;c[i][19+2].ch=c3;
+	}
+	for(long i=n-18;i>=1;i--){
+		long min=ma;string ss;
+		for(long j=19;j<=21;j++)
+			if(cost[i+j].da+c[i][j].da<min)
+				{min=cost[i+j].da+c[i][j].da;ss=cost[i+j].st+c[i][j].ch;}
+		cost[i].da=min;cost[i].st=ss;
+	}
+	string ans=cost[1].st;
+	ans=ans.assign(ans.rbegin(),ans.rend());
+	for(size_t i=0;i<ans.length();i++)
+		if(ans[i]<'a')fout <<' ';else fout<<ans[i];
+	fout <<endl;
+	fin.close();fout.close();fin_.close();
+	return 0;
+}

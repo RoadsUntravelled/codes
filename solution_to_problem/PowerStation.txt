@@ -1,0 +1,95 @@
+题目:供电站
+题目内容:你一个程序员，不知为何就当上了你们镇的镇长（人的一生当然要靠自我奋斗，当然也要考虑历史的进程）。你们镇有 N (3 <= N <= 35)个村，分别标号为 1, 2, ..., N，有些村常年供电不足。现在你需要重新规划镇上的供电站的选址。现在的要求是，对于镇里的每个村，要么这个村有个供电站，要么这个村相邻的村中有一个供电站。你最少需要建几个供电站？
+输入：
+有多组输入。
+
+对于每组测试数据，第一行两个数 N, M，分别表示村子数量和直接相连的村子关系的数量。
+
+接下来 M 行，每行两个数，表示这两个村子直接相连。
+
+注意： 最后一组测试数据为 N = 0, M = 0，是一个标记，表示输入结束，无需计算和输出任何东西。
+输出：
+每组测试数据输出一个整数，表示最少需要建的供电站数量。
+题解：
+这道题目是图论，构建邻接表，不能用dfs来做，会超时。相邻的村庄设置为1.构建三个for循环，第一个循环依次选出一个村庄，后面的循环选出能填充的最大数组，
+填充进去，直到覆盖全部村庄。看一共选了多少村庄，然后比较步数。
+代码：
+
+/*************************************************************************
+	> File Name: powerstation.cpp
+	> Author: 魍魉楼主
+	> Mail: wangxufeng1997@outlook.com
+	> Created Time: 2018年03月31日 星期六 17时52分50秒
+ ************************************************************************/
+
+#include<iostream>
+#include<cstring>
+using namespace std;
+int N,M;
+int diff(int adj[40][40],int lowcost[40],int i){
+    int cnt=0;
+    for(int j=1;j<=N;j++)
+        if(adj[i][j]==1&&lowcost[j]==0)
+            cnt++;
+    return cnt;
+}
+int main(){
+    while(cin>>N>>M&&(M||N)){
+        int adjtab[40][40];
+        memset(adjtab,0,sizeof(adjtab));
+        for(int i=1;i<=N;i++)
+            adjtab[i][i]=1;
+        for(int i=0;i<M;i++){
+            int fir,sec;
+            cin>>fir>>sec;
+            adjtab[fir][sec]=1;
+            adjtab[sec][fir]=1;
+        }
+        int res=9999;
+        for(int l=1;l<=N;l++){
+        int lowcost[40];
+        int vis[40];
+        memset(lowcost,0,sizeof(lowcost));
+        memset(vis,0,sizeof(vis));
+        int tot=0;
+        int step=0;
+        lowcost[l]=1;
+        vis[l]=1;
+        tot++;
+        for(int j=1;j<=N;j++){
+                if(lowcost[j]==0&&adjtab[l][j]==1){
+                    lowcost[j]=1;
+                    tot++;
+                }
+            }
+        step++;
+        for(int i=1;i<=N;i++){
+            int MAX=0;
+            int k=-1;
+            for(int j=1;j<=N;j++){
+                int temp=diff(adjtab,lowcost,j);
+                if(!vis[j]&&temp>MAX){
+                    k=j;
+                    MAX=temp;
+                }
+            }
+            if(k!=-1){
+            for(int j=1;j<=N;j++){
+                if(lowcost[j]==0&&adjtab[k][j]==1){
+                    lowcost[j]=1;
+                    tot++;
+                }
+            }
+            vis[k]=1;
+            step++;
+            }
+            if(tot==N)
+                break;   
+        }
+        if(step<res)
+            res=step;
+        }
+        cout<<res<<endl;
+    }
+    return 0;
+}

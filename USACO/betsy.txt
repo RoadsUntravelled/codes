@@ -1,0 +1,580 @@
+/*
+ID: cmykrgb1
+PROG: betsy
+LANG: C++
+*/
+//Written by CmYkRgB123
+#include <iostream>
+#include <fstream>
+#define MAX 9
+ 
+using namespace std;
+ 
+ifstream fi("betsy.in");
+ofstream fo("betsy.out");
+ 
+int N,N_2,cnt;
+bool map[MAX][MAX];
+int pi[4]={0,0,1,-1},pj[4]={1,-1,0,0};
+ 
+void init()
+{
+	int i,j,k;
+	fi >> N;
+	N_2=N*N;
+	for (i=0;i<=N+1;i++)
+	{
+		map[0][i]=map[N+1][i]=map[i][0]=map[i][N+1]=true;
+	}
+	map[1][1]=1;
+}
+ 
+void print()
+{
+	fo << cnt << endl;
+	fi.close();
+	fo.close();
+}
+ 
+inline int getfree(int i,int j)
+{
+	int v=0;
+	for (int k=0;k<4;k++)
+	{
+		if (!map[ i+pi[k] ][ j+pj[k] ])
+			v++;
+	}
+	return v;
+}
+ 
+void go(int i,int j,int step)
+{
+	if (i==N && j==1)
+	{
+		if (step==N_2)
+			cnt++;
+		return;
+	}
+ 
+	if	(
+			(map[i][j-1] && map[i][j+1] && !map[i-1][j] && !map[i+1][j])
+			||
+			(!map[i][j-1] && !map[i][j+1] && map[i-1][j] && map[i+1][j])
+		)
+		return;
+ 
+	int k,di,dj,f,cntf=0,ki,kj;
+	for (k=0;k<4;k++)
+	{
+		di=i+pi[k],dj=j+pj[k];
+		if (map[di][dj] || (di==N && dj==1)) continue;
+		f=getfree(di,dj);
+		if (f<2)
+		{
+			cntf++;
+			ki=di;
+			kj=dj;
+		}
+	}
+ 
+	if (cntf>1)
+		return;
+	else
+	{
+		if (cntf==1)
+		{
+			map[ki][kj]=true;
+			go(ki,kj,step+1);
+			map[ki][kj]=false;
+		}
+		else
+		{
+			for (k=0;k<4;k++)
+			{
+				di=i+pi[k],dj=j+pj[k];
+				if (!map[di][dj])
+				{
+					map[di][dj]=true;
+					go(di,dj,step+1);
+					map[di][dj]=false;
+				}
+			}
+		}
+	}
+}
+ 
+int main()
+{
+	init();
+	go(1,1,1);
+	print();
+	return 0;
+}#include<cstdio>
+#include<iostream>
+using namespace std;
+#define exit {re(x,y);return;}
+ 
+int N;
+long C[10][10]={0},vis[10][10]={0},ans=0;
+ 
+inline void re(int x,int y)
+{
+    ++C[x][y-1];
+    ++C[x][y+1];
+    ++C[x+1][y];
+    ++C[x-1][y];
+    vis[x][y]=0;
+}
+ 
+inline int Check1(int x1,int y1,int d)
+{
+    int x=x1,y=y1;
+    if      (d==1) ++x;
+    else if (d==2) ++y;
+    else if (d==3) --x;
+    else if (d==4) --y;
+    if (!vis[x][y-1] && C[x][y-1]<2) return 0;
+    if (!vis[x][y+1] && C[x][y+1]<2) return 0;
+    if (!vis[x-1][y] && C[x-1][y]<2) return 0;
+    if (!vis[x+1][y] && C[x+1][y]<2) return 0;
+    return 1;
+}
+ 
+inline int Check2(int x,int y,int d)
+{
+    if (d==1)
+    {
+        if ( vis[x-1][y] && !vis[x][y+1] && !vis[x][y-1] )  return 0;
+        if ( vis[x-1][y-1] && !vis[x][y-1] && !vis[x-1][y] )return 0;
+        if ( vis[x-1][y+1] && !vis[x][y+1] && !vis[x-1][y] )return 0;
+    }else
+    if (d==2)
+    {
+        if ( vis[x][y-1] && !vis[x+1][y] && !vis[x-1][y] )  return 0;
+        if ( vis[x+1][y-1] && !vis[x][y-1] && !vis[x+1][y] )return 0;
+        if ( vis[x-1][y-1] && !vis[x][y-1] && !vis[x-1][y] )return 0;
+    }else
+    if (d==3)
+    {
+        if ( vis[x+1][y] && !vis[x][y+1] && !vis[x][y-1] )  return 0;
+        if ( vis[x+1][y+1] && !vis[x][y+1] && !vis[x+1][y] )return 0;
+        if ( vis[x+1][y-1] && !vis[x][y-1] && !vis[x+1][y] )return 0;
+    }else
+    if (d==4)
+    {
+        if ( vis[x][y+1] && !vis[x+1][y] && !vis[x-1][y] )  return 0;
+        if ( vis[x-1][y+1] && !vis[x][y+1] && !vis[x-1][y] )return 0;
+        if ( vis[x+1][y+1] && !vis[x][y+1] && !vis[x+1][y] )return 0;
+    }
+    return 1;
+}
+ 
+inline void DFS(int x,int y,int deep,int d)
+{
+    vis[x][y]=1;
+    --C[x][y-1];
+    --C[x][y+1];
+    --C[x+1][y];
+    --C[x-1][y];
+    if ( x==N && y==1 )
+    {
+        if (deep!=N*N) exit;
+        ++ans;
+        exit;
+    }
+    if ( ! x==N-1 && y==2 && !vis[N-1][1] && !vis[N][2]) exit;
+    if ( ! Check1(x,y,d) ) exit;
+    if ( ! Check2(x,y,d) ) exit;
+    if ( x+1 <=N && !vis[x+1][y] ) DFS(x+1,y,deep+1,3);
+    if ( x-1 > 0 && !vis[x-1][y] ) DFS(x-1,y,deep+1,1);
+    if ( y+1 <=N && !vis[x][y+1] ) DFS(x,y+1,deep+1,4);
+    if ( y-1 > 0 && !vis[x][y-1] ) DFS(x,y-1,deep+1,2);
+    re(x,y);
+}
+ 
+int main(void)
+{
+    freopen("betsy.in","r",stdin);
+    freopen("betsy.out","w",stdout);
+    scanf("%d",&N);
+    for (int i=0;i<=N+1;++i)
+    for (int j=0;j<=N+1;j++)
+        if (i==1 || i==N || j==1 || j==N)
+        C[i][j]=3;else C[i][j]=4;
+    for (int i=0;i<=N+1;++i) {vis[0][i]=1;vis[i][0]=1;vis[N+1][i]=1;vis[i][N+1]=1;}
+    if (N==1 || N==2) {printf("1\n");return 0;}
+    DFS(1,1,1,0);
+    printf("%ld\n",ans);
+    return 0;
+}// 基于连通性的状态压缩动态规划
+/*
+PROG: betsy
+LANG: C++
+*/
+ 
+#include <stdio.h>
+#include <string.h>
+ 
+/*
+终点和起点间连一条“[”形的边，将哈密顿路转换成哈密顿回路，就不需要独立插头和一大堆繁琐的判断了
+再将棋盘顺时针旋转90度，更加简化了问题
+ 
+0 #
+1 (
+2 )
+3 附加数据，无实意
+*/
+ 
+long a[330]; // 合法状态
+int brk[330][8] /* 匹配括号 */, br[8], tot = 0;
+long f[8][66000]; // 当前行第i个格子，状态集合为S的合法状态总数，可以压成f[8][400]，懒得压了
+int n;
+ 
+int j, k, p, q;
+long i, m, x;
+ 
+int main() {
+	freopen("betsy.in", "rt", stdin);
+	freopen("betsy.out", "wt", stdout);
+	scanf("%d", &n);
+ 
+	if (n == 1) {
+		printf("1\n");
+		return 0;
+	}
+	m = 1 << ((n + 1) << 1);
+	for (i = 0; i < m; ++i) {
+		for (x = i, k = 0, j = 0; j <= n; ++j, x >>= 2)
+			if ((x & 3) == 1) br[k++] = j;
+			else if ((x & 3) == 2)
+				if (k--) brk[tot][j] = br[k], brk[tot][br[k]] = j;
+				else break;
+			else if ((x & 3) == 3) {
+				k = -1;
+				break;
+			}
+		if (!k) a[tot++] = i;
+	}
+ 
+	memset(f, 0, sizeof f), f[n][1 | (2 << ((n - 1) << 1))] = 1;
+	for (m = 0, k = 1; k <= n; ++k) {
+		for (i = 0; i < tot; ++i) f[0][a[i]] = a[i] & 3 ? 0 : f[n][a[i] >> 2]; // 第0格，第一个插头必然不存在，状态最后一位必须为0
+		for (i = 1, x = 0; i <= n; ++i, x += 2) {
+			memset(f[i], 0, sizeof f[i]);
+			for (j = 0; j < tot; ++j) {
+				p = (a[j] >> x) & 3, q = (a[j] >> (x + 2)) & 3;
+				if (!p && !q) f[i][a[j] | (9 /* (21)4 */ << x)] += f[i - 1][a[j]]; // ## -> ()
+				else if (p && q) {
+					if (p == q)
+						if (p == 1) f[i][a[j] ^ (5 /* 11 */ << x) ^ (3 /* 2 -> 1 */ << (brk[j][i] << 1))] += f[i - 1][a[j]]; // ((...)) -> ##...()
+						else f[i][a[j] ^ (10 /* 22 */ << x) ^ (3 /* 1 -> 2 */ << (brk[j][i - 1] << 1))] += f[i - 1][a[j]]; // ((...)) -> ()...##
+					else
+						if (p == 1) {
+							if (k == n && i == n /* 在右下角 */ && a[j] == (9 << x) /* 只有一条回路 */) m += f[i - 1][a[j]]; // () -> ##
+						} else f[i][a[j] ^ (6 /* 12 */ << x)] += f[i - 1][a[j]]; // )( -> ##
+				} else {
+					f[i][a[j]] += f[i - 1][a[j]]; // 拐弯向右
+					f[i][a[j] ^ (p << x) ^ (q << (x + 2)) | (p << (x + 2)) | (q << x)] += f[i - 1][a[j]]; // 垂直向下  #( -> (# 依此类推
+				}
+			}
+		}
+	}
+ 
+	printf("%d\n", m);
+	return 0;
+}某菜鸟的基于连通性的状态压缩动态规划。
+/*
+ID: zsyzgu1
+PROG: betsy
+LANG: C++
+*/
+#include<stdio.h>
+#include<string.h>
+const int maxn=10;
+struct type //单位状态(四进制位压)
+{
+    int a; //每个插口的状态 
+    int l1[maxn]; //左括号对应右括号位置 
+    int l2[maxn]; //右括号对应左括号位置 
+};
+int tot=0; //总状态数 
+type s[500]; //每一种状态
+int place[65536]; //每一种状态在s中的位置 
+int f[100][500],tf=0; //f[i][j]表示从上倒下，从左到右第i个格子第j种状态的方案数
+int n;
+int get(int m,int i) //得到四进制位压数组的第i个数 
+{
+    return (m>>((i-1)*2))%4;
+}
+int let(int m,int i,int p) //得到该四进制位压数组第i个数改成p后的数组
+{
+    return m+(p-get(m,i))*(1<<((i-1)*2));
+}
+void init()
+{
+    scanf("%d",&n);
+}
+void fill() //预处理出每条分界线的状态
+{
+    int all=1<<((n+1)*2); //共有n+1个插口
+    for (int i=0;i<all;i++)
+    {
+        bool ok=true;
+        //判断状态在四进制表示三进制上是否存在
+        for (int j=1;j<=n+1;j++)
+            if (get(i,j)>=3)
+            {
+                ok=false;
+                break;
+            }
+        if (ok==false) continue;
+        //判断状态在括号匹配上是否存在，算出每一个左括号对应的右括号的位置
+        int q[10],t=0; //q记录未匹配左括号的位置，t是未匹配左括号个数 
+        int this_l1[maxn]; memset(this_l1,0,sizeof(this_l1));
+        int this_l2[maxn]; memset(this_l2,0,sizeof(this_l2)); //这个状态下的括号匹配
+        memset(q,0,sizeof(q));
+        for (int j=1;j<=n+1;j++)
+        {
+            if (get(i,j)==1) q[++t]=j;
+            if (get(i,j)==2)
+            {
+                if (t==0)
+                {
+                    ok=false; //状态不存在(右括号剩余) 
+                    break;
+                } else
+                {
+                    this_l1[q[t]]=j; //记录括号匹配的情况 
+                    this_l2[j]=q[t];
+                    --t;
+                }
+            }
+        }
+        if (t!=0) ok=false; //状态不存在(左括号剩余)
+ 
+        if (ok) //状态存在，添加在状态数组中 
+        {
+            ++tot;
+            s[tot].a=i;
+            memcpy(s[tot].l1,this_l1,sizeof(s[tot].l1));
+            memcpy(s[tot].l2,this_l2,sizeof(s[tot].l2));
+            place[i]=tot;
+        }
+    } 
+}
+void dev(int k,int j,int s1,int s2,int t1,int t2) //转移[j]:s1->t1 [j+1]:s2->t2
+{
+    int next;
+    if (get(s[k].a,j)==s1 && get(s[k].a,j+1)==s2)
+    {
+        next=s[k].a;
+        next=let(next,j,t1);
+        next=let(next,j+1,t2);
+ 
+        if (s1==1 && s2==1) //特殊情况 " ( ( " 
+           next=let(next,s[k].l1[j+1],1);
+        if (s2==2 && s2==2) //特殊情况 " ) ) "
+           next=let(next,s[k].l2[j],2);
+ 
+        f[tf][place[next]]+=f[tf-1][k];
+    }
+}
+void doit() //开始DP 
+{
+    //若n=4
+    // . . . . 
+    // . # # .
+    // s . . t
+    // . . . .
+    // . . . .
+    // . . . .
+    f[0][1]=1;
+    if (n==1) return; //特殊情况 " n==1 "
+    for (int i=1;i<=n+2;i++)
+    for (int j=1;j<=n;j++)
+    {
+        ++tf;
+        if (i!=2 || j==1 || j==n) //遇到'.'格的时候 */
+        {
+            for (int k=1;k<=tot;k++)
+            {
+                dev(k,j,0,0,1,2); //没有插头 
+ 
+                dev(k,j,2,1,0,0); //有两个插头 
+                if (i==n+2 && j==n) dev(k,j,1,2,0,0); //特殊情况，最后收尾 
+                dev(k,j,1,1,0,0);                     //特殊情况 " ( ( "
+                dev(k,j,2,2,0,0);                     //特殊情况 " ) ) "
+ 
+                dev(k,j,0,1,0,1); //有一个插头 
+                dev(k,j,0,1,1,0);
+                dev(k,j,1,0,1,0);
+                dev(k,j,1,0,0,1);
+                dev(k,j,0,2,0,2);
+                dev(k,j,0,2,2,0);
+                dev(k,j,2,0,2,0);
+                dev(k,j,2,0,0,2);
+            }
+        } else                    //遇到'#'格的时候
+        {
+            for (int k=1;k<=tot;k++)
+                dev(k,j,0,0,0,0); //没有插头
+        }
+        if (j==n) //换行  ? ? ? ? 0 --> 0 ? ? ? ?
+        {
+            ++tf;
+            for (int k=1;k<=tot;k++)
+                if (get(s[k].a,n+1)==0)
+                   f[tf][place[s[k].a<<2]]=f[tf-1][k];
+        }
+    }
+}
+void ouit()
+{
+    printf("%d\n",f[tf][1]);
+}
+int main()
+{
+    freopen("betsy.in","r",stdin);
+    freopen("betsy.out","w",stdout);
+    init();
+    fill();
+    doit(); 
+    ouit();
+    return 0;
+}// 基于连通性状态压缩的动态规划
+// This code is from oimaster (http://hi.baidu.com/oimaster)
+ 
+#include <iostream>
+#include <cstring>
+ 
+using namespace std;
+ 
+const int size = 19973;
+ 
+int head[size+1], next[size+1], tot1, tot2, *sum1, *sum2, *opt1, *opt2;
+int a[size+1], b[size+1], c[size+1], d[size+1];
+ 
+int Change(int opt, int loc, int x) // 修改状态opt第loc个位置的值为x 
+  {
+    return (opt + x * (1 << (loc-1 << 1)));
+  }
+ 
+int Get(int opt, int k)  // 得到状态opt的第k个位置的值 
+  {
+    return ((opt >> (k-1 << 1)) & 3);
+  }
+ 
+void Add_Opt(int opt, int delta)  // 将opt这个状态的sum加上delta 
+  {
+    int h, p;
+    h = opt % size;
+    for (p = head[h]; p; p = next[p])
+      if (opt2[p] == opt)
+        {
+          sum2[p] += delta;
+          return;
+        }
+    opt2[++ tot2] = opt, sum2[tot2] = delta;
+    next[tot2] = head[h], head[h] = tot2;
+  }
+ 
+int main()
+  {
+    int n, i, j, k, p, t, t1, t2, ans, now, delta, top;
+ 
+    freopen("betsy.in", "r", stdin);
+    freopen("betsy.out", "w", stdout);
+ 
+    scanf("%d", &n);
+ 
+    if (n == 1) // Special Check for 1
+      {
+        printf("1\n");
+        return 0;
+      }
+ 
+    sum1 = a, sum2 = b, opt1 = c, opt2 = d;
+    tot1 = tot2 = 0, Add_Opt(Change(Change(0, n+1, 2), 2, 1), 1);
+    swap(tot1, tot2), swap(sum1, sum2), swap(opt1, opt2);
+ 
+    for (ans = 0, i = 1; i <= n; i ++)
+      {
+        for (j = 1; j <= n; j ++)
+          {
+            tot2 = 0, memset(head, 0, sizeof(head));
+            for (k = 1; k <= tot1; k ++)
+              {
+                now = opt1[k], delta = sum1[k];
+                t1 = Get(now, j), t2 = Get(now, j+1);
+                now = Change(now, j, -t1), now = Change(now, j+1, -t2);
+ 
+                // 新增连通分量 
+                if (t1 == 0 && t2 == 0)
+                  {
+                    if (j < n && i < n)
+                      Add_Opt(Change(Change(now, j, 1), j+1, 2), delta);
+                    continue;
+                  }
+ 
+                if (t1 == 0)
+                  {
+                    // 维持连通分量，不改变括号 
+                    if (j < n) Add_Opt(Change(now, j+1, t2), delta);
+                    // 维持连通分量，交换括号 
+                    if (i < n) Add_Opt(Change(now, j, t2), delta);
+                    continue;
+                  }
+ 
+                if (t2 == 0)
+                  {
+                    // 维持连通分量，不改变括号 
+                    if (i < n) Add_Opt(Change(now, j, t1), delta);
+                    // 维持连通分量，交换括号
+                    if (j < n) Add_Opt(Change(now, j+1, t1), delta);
+                    continue;
+                  }
+ 
+                // 连接两个连通分量，将j+1的匹配的右括号变成左括号 
+                if (t1 == 1 && t2 == 1)
+                  {
+                    for (top = 1, p = j+2; top; p ++)
+                      {
+                        t = Get(now, p);
+                        if (t == 1) top ++;
+                        if (t == 2) top --;
+                      }
+                    Add_Opt(Change(now, p-1, -1), delta);
+                    continue;
+                  }
+ 
+                // 连接两个连通分量，将j的匹配的左括号变成右括号
+                if (t1 == 2 && t2 == 2)
+                  {
+                    for (top = 1, p = j-1; top; p --)
+                      {
+                        t = Get(now, p);
+                        if (t == 1) top --;
+                        if (t == 2) top ++;
+                      }
+                    Add_Opt(Change(now, p+1, 1), delta);
+                    continue;
+                  }
+ 
+                // 连接两个连通分量，找到方案
+                if (t1 == 1 && t2 == 2 && i == n && j == n) ans += delta;
+ 
+                // 连接两个连通分量，不改变匹配的左右括号
+                if (t1 == 2 && t2 == 1) Add_Opt(now, delta);
+              }
+ 
+            // 滚动数组 
+            swap(tot1, tot2), swap(sum1, sum2), swap(opt1, opt2);
+          }
+ 
+        for (j = 1; j <= tot1; j ++) opt1[j] <<= 2;
+      }
+ 
+    printf("%d\n", ans);
+ 
+    return 0;
+  }

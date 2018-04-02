@@ -1,0 +1,403 @@
+/*
+ID:ybojan2
+LANG:C++
+TASK:milk3
+*/
+ 
+#include <iostream>
+#include <fstream>
+ 
+using namespace std;
+ 
+bool got[21][21][21];
+int va,vb,vc;
+ 
+int min(int x,int y)
+{
+    return ((x<y)?x:y);
+}
+ 
+void dfs(int a,int b,int c)
+{
+     if (got[a][b][c]) return;
+     got[a][b][c]=true;
+     int delta=min(a+b,vb)-b;
+     if (delta>0) dfs(a-delta,b+delta,c);
+     delta=min(a+b,va)-a;
+     if (delta>0) dfs(a+delta,b-delta,c);
+ 
+     delta=min(a+c,vc)-c;
+     if (delta>0) dfs(a-delta,b,c+delta);
+     delta=min(a+c,va)-a;
+     if (delta>0) dfs(a+delta,b,c-delta);
+ 
+     delta=min(c+b,vb)-b;
+     if (delta>0) dfs(a,b+delta,c-delta);
+     delta=min(c+b,vc)-c;
+     if (delta>0) dfs(a,b-delta,c+delta);
+ 
+}
+ 
+int main()
+{
+    ifstream fin("milk3.in");
+    ofstream fout("milk3.out");
+ 
+    fin>>va>>vb>>vc;
+    for (int i=0;i<=20;i++)
+    {
+        for (int j=0;j<=20;j++)
+        {
+            for (int k=0;k<=20;k++)
+            {
+                got[i][j][k]=false;
+            } 
+        }
+    }
+    dfs(0,0,vc);
+ 
+    bool can[21];
+ 
+    for (int i=0;i<=vc;i++) can[i]=false;
+    for (int i=0;i<=vb;i++)
+    {
+        for (int j=0;j<=vc;j++)
+        {
+            if (got[0][i][j]) can[j]=true;
+        }
+    }
+    int len=0,res[21];
+    for (int i=0;i<=vc;i++)
+        if (can[i]) 
+        {
+                    len++;
+                    res[len]=i;
+        }
+    for (int i=1;i<len;i++)
+        fout<<res[i]<<" ";
+    fout<<res[len]<<endl;
+    return 0;
+}/*
+ID:GeorgeG1
+PROB:milk3
+LANG:C++
+*/
+#include <fstream>
+#include <cstdlib>
+#include <algorithm>
+ 
+using namespace std;
+ 
+ifstream fin ("milk3.in");
+ofstream fout ("milk3.out");
+ 
+long ans[50],p=-1;
+long a,b,c;      //各桶上限 
+bool found[50][50][50];     //搜索记录 
+ 
+bool isIn(long C)
+{
+     bool in=false;
+     for (long i=0;i<=p;i++)
+     {
+         if (ans[i]==C)
+         {
+            in=true;
+            break;
+         }
+     }
+     return in;
+}
+ 
+void DFS(long A,long B,long C)
+{
+     if (found[A][B][C]) return;
+     found[A][B][C]=true;
+     if (A==0)
+     {
+        if (!isIn(C))
+        {
+           ans[++p]=C;
+        }
+     }
+     if (A<=b-B) DFS(0,B+A,C);             //A->B     
+     else DFS(A-(b-B),b,C);
+     if (A<=c-C) DFS(0,B,C+A);             //A->C
+     else DFS(A-(c-C),B,c);
+     if (B<=a-A) DFS(A+B,0,C);             //B->A     
+     else DFS(a,B-(a-A),C);
+     if (B<=c-C) DFS(A,0,C+B);             //B->C
+     else DFS(A,B-(c-C),c);
+     if (C<=a-A) DFS(A+C,B,0);             //C->A     
+     else DFS(a,B,C-(a-A));
+     if (C<=b-B) DFS(A,B+C,0);             //C->B
+     else DFS(A,b,C-(b-B));
+     return;
+}
+ 
+int main()
+{
+    memset (ans,0,sizeof(ans));
+    memset (found,0,sizeof(found));
+    fin >>a >>b >>c;
+    DFS(0,0,c);
+    sort(ans,ans+p+1);
+    for (long i=0;i<=p;i++)     //输出
+    {
+        if (i!=0) fout <<' ';
+        fout <<ans[i];
+    }
+    fout <<endl;
+    return 0;
+}/*
+        ID: g0504141
+        PROG: milk3
+        LANG: C++
+ */
+#include <fstream>
+using namespace std;
+ifstream fin("milk3.in");
+ofstream fout("milk3.out");
+int a, b, c, tf[21][21] = {0};
+ 
+void dfs(int i, int k) {
+    if (tf[i][k])return;
+    tf[i][k] = 1;
+    dfs(0, k);
+    dfs(i, 0);
+    if (i >= b - k)dfs(i - b + k, b);
+    else dfs(0, i + k);
+    if (k >= a - i)dfs(a, k - a + i);
+    else dfs(i + k, 0);
+    int j = c - i - k;
+    if (j >= a - i)dfs(a, k);
+    else dfs(i + j, k);
+    if (j >= b - k)dfs(i, b);
+    else dfs(i, k + j);
+}
+ 
+int main() {
+    fin >> a >> b >> c;
+    dfs(0, 0);
+    for (int i = 20, ge = 0; i >= 0; i--)
+        if (tf[0][i]) {
+            if (ge)fout << ' ';
+            else ge = 1;
+            fout << c - i;
+        }
+    fout << endl;
+}/*
+ID:herohan1
+LANG:C++
+TASK:milk3
+*/
+ 
+#include <fstream>
+#include <iostream>
+ 
+using namespace std;
+ 
+class milk3{
+	int capacity[3];
+	int state[500][3];
+	int sCount;
+	bool leave_c[500];
+ 
+public:
+	milk3(ifstream& infile){
+ 
+		for(int i=0;i<3;i++)
+			infile>>capacity[i];
+		int size=capacity[2]+1;
+ 
+		for(int j=0;j<=capacity[2];j++)
+			leave_c[j]=false;
+		sCount=0;
+	}
+ 
+ 
+	void pour(int from,int to,int* remain){
+		if(remain[from]<=(capacity[to]-remain[to])){
+			remain[to]+=remain[from];
+			remain[from]=0;
+			}
+		else{
+			remain[from]-=(capacity[to]-remain[to]);
+			remain[to]=capacity[to];}
+	}
+ 
+	void addState(int* s){
+		for(int i=0;i<3;i++)
+	   	 state[sCount][i]=s[i];
+		sCount++;
+	}
+ 
+ 
+ 
+	bool finish(int* remain){
+		for(int i=0;i<sCount;i++)
+			if(state[i][0]==remain[0] && state[i][1]==remain[1])
+				return true;
+		return false;
+ 
+	}
+ 
+	void copy(int* orig,int* dupli,int num){
+		for(int i=0;i<num;i++)
+			dupli[i]=orig[i];
+	}
+ 
+    int howToPour(int* remain){
+		int* Remain=new int[3];
+		copy(remain,Remain,3);
+		for(int i=0;i<3;i++){
+			if(remain[i]!=0){
+				int s,
+					t;
+				if(i==0){
+					s=1;
+					t=2;}
+				else if(i==1){
+					s=0;
+					t=2;}
+				else{
+					s=0;
+					t=1;}							  
+				//case 1
+				pour(i,s,Remain);
+				if(Remain[0]==0){
+					int index=Remain[2];
+					leave_c[index]=true;}
+				if(!finish(Remain)){
+					addState(Remain);
+					howToPour(Remain);}
+ 
+				copy(remain,Remain,3);
+				//case 2
+				pour(i,t,Remain);
+					if(Remain[0]==0)
+					leave_c[Remain[2]]=true;
+					if(!finish(Remain)){
+						addState(Remain);
+						howToPour(Remain);}
+ 
+				copy(remain,Remain,3);
+ 
+				//case 3
+				if(Remain[0]==0)
+			    	leave_c[Remain[2]]=true;
+				if(!finish(Remain)){
+					addState(Remain);
+					howToPour(Remain);}
+ 
+				copy(remain,Remain,3);
+			}
+		}
+		return 1;
+	}
+ 
+	void output(ofstream& outfile){
+		for(int i=0;i<=capacity[2];i++){
+			if(leave_c[i]==true)
+				if(i<capacity[2])
+			    	outfile<<i<<" ";
+				else
+					outfile<<i<<endl;
+		}
+	}
+ 
+	void run(){
+		int remain[3]={0,0,capacity[2]};
+		addState(remain);
+		howToPour(remain);
+	}
+ 
+};
+ 
+ 
+int main(){
+	ifstream infile("milk3.in");
+	ofstream outfile("milk3.out");
+	milk3 m(infile);
+	m.run();
+	m.output(outfile);
+	return 0;
+}/*
+ID: hankjin1
+LANG: C++
+TASK: milk3
+*/
+#include <iostream>
+#include <fstream>
+#include <algorithm>
+#include <vector>
+using namespace std;
+ 
+#define BFS(a,b,c) bfs(((a)<<16)|((b)<<8)|(c))
+int A,B,C;
+vector<int> hist;
+vector<int> ans;
+ 
+inline void pour(int &from, int fromX, int &to, int toX){
+    if(from < toX-to){//pour all
+	to+=from;
+	from = 0;
+    }
+    else{//pour some
+	from -= toX-to;
+	to = toX;
+    }
+}
+void bfs(int status){
+    if(find(hist.begin(),hist.end(),status)!=hist.end())
+	return ;
+    hist.push_back(status);
+    if((status&0xFF0000) == 0){
+	ans.push_back(status&0xFF);
+	/*
+	cout<<((status&0xFF0000)>>16)<<","<<((status&0x00FF00)>>8)
+	    <<","<<(status&0x0000FF)<<endl;
+	    */
+    }
+    int a = (status&0xFF0000)>>16;
+    int b = (status&0x00FF00)>>8;
+    int c = (status&0x0000FF);
+    int x,y;
+    if(a>0){
+	x = a; y = b; //a->b
+	pour(x,A,y,B);
+	BFS(x,y,c);
+	x = a; y = c; //a->c
+	pour(x,A,y,C);
+	BFS(x,b,y);
+    }
+    if(b>0){
+	x = b; y = a;//b->a
+	pour(x,B,y,A);
+	BFS(y, x, c);
+	x = b; y = c;//b->c
+	pour(x,B,y,C);
+	BFS(a, x, y);
+    }
+    if(c>0){
+	x = c; y = a; //c->a
+	pour(x,C,y,A);
+	BFS(y, b, x);
+	x = c; y = b;//c->b
+	pour(x,C,y,B);
+	BFS(a,y,x);
+    }
+}
+int main(){
+    ifstream fin("milk3.in");
+    ofstream fout("milk3.out");
+    fin>>A>>B>>C;
+    bfs(C);
+    sort(ans.begin(), ans.end());
+    int i;
+    for(i = 0; i < ans.size()-1;i++)
+	fout<<ans[i]<<" ";
+    fout<<ans[i]<<endl;
+ 
+    return 0;
+}

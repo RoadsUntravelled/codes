@@ -1,0 +1,417 @@
+/*
+ID:songyan2
+PROG:clocks
+LANG:C++
+*/
+#include<fstream>
+using namespace std;
+ifstream cin("clocks.in");
+ofstream cout("clocks.out");
+int ways[10][10]={{0},{4,1,2,4,5},{3,1,2,3},{4,2,3,5,6},
+					{3,1,4,7},{5,2,4,5,6,8},{3,3,6,9},
+					{4,4,5,7,8},{3,7,8,9},{4,5,6,8,9}};
+int minnum=100000;
+int vec[10];
+int input[10]={0};
+int ans[36]={0};
+int change(int *p,int ind)
+{
+	for(int i=1;i<=ways[ind][0];++i)
+	{
+		p[ways[ind][i]]+=3;
+		if(p[ways[ind][i]]>12)	p[ways[ind][i]]%=12;
+	}
+	return 0; 
+}
+bool judge(int *p)
+{
+	for(int i=1;i<=9;++i)
+		if(p[i]!=12)	return false;
+	return true;
+}
+int dfs(int dep)
+{
+	if(dep==10)
+	{
+		int temp[10];
+		for(int k=0;k<=9;++k)	temp[k]=input[k];
+		for(int i=1;i<=9;++i)
+			for(int j=0;j<vec[i];++j)
+				change(temp,i);
+		if(judge(temp))
+		{
+			int counter=0;
+			for(int a=1;a<=9;++a)
+				counter+=vec[a];
+			if(counter<minnum)
+			{
+				minnum=counter;
+				int t=0;
+				for(int i=1;i<=9;++i)
+					for(int k=0;k<vec[i];++k)
+						ans[t++]=i;
+ 
+			}
+			else if(counter==minnum)
+			{
+				int t1=0,c=1,t=0;
+				int ans1[36]={0};
+				while(ans[t1]!=0)	t1++;
+				for(int i=1;i<=9;++i)
+					for(int k=0;k<vec[i];++k)
+						ans1[t++]=i;
+				if(t1>t)
+					for(int i=0;i<t;++i)	ans[i]=ans1[i];
+				if(t1==t)
+					{
+						int i=0;
+						while(ans[i]==ans1[i]) i++;
+						if(ans[i]>ans1[i])
+							for(int k=0;k<t;++k)	ans[k]=ans1[k];
+					}
+ 
+			}
+		}
+	}
+	else
+		for(int i=0;i<=3;++i)
+		{
+			vec[dep]=i;
+			dfs(dep+1);
+		}
+}
+int main()
+{
+	for(int i=1;i<=9;++i)
+		cin>>input[i];
+ 
+	dfs(1);
+ 
+	int i=0;
+	while(ans[i]!=0) ++i;
+	for(int j=0;j<i-1;++j)
+		cout<<ans[j]<<' ';
+	cout<<ans[i-1]<<endl;
+ 
+	cin.close();cout.close();
+ 
+	return 0;
+ 
+}/*
+ID: MasterRay
+LANG: C++
+TASK: clocks
+*/
+ 
+#include <algorithm>
+#include <climits>
+#include <cstdio>
+#include <numeric>
+using namespace std;
+ 
+#define LOOP(x) for (s[x] = 0; s[x] < 4; ++s[x])
+ 
+int main()
+{
+	int a[9], b[9], cnt, min_cnt = INT_MAX, res[10], s[10];
+	freopen("clocks.in", "r", stdin);
+	freopen("clocks.out", "w", stdout);
+	for (int i = 0; i < 9; ++i)
+		scanf("%d", &a[i]), a[i] = a[i]/3%4;
+	LOOP(1) LOOP(2) LOOP(3)
+	LOOP(4)	LOOP(5)	LOOP(6)
+	LOOP(7)	LOOP(8)	LOOP(9)
+	{
+		b[0] = (a[0]+s[1]+s[2]+s[4])%4;
+		b[1] = (a[1]+s[1]+s[2]+s[3]+s[5])%4;
+		b[2] = (a[2]+s[2]+s[3]+s[6])%4;
+		b[3] = (a[3]+s[1]+s[4]+s[5]+s[7])%4;
+		b[4] = (a[4]+s[1]+s[3]+s[5]+s[7]+s[9])%4;
+		b[5] = (a[5]+s[3]+s[5]+s[6]+s[9])%4;
+		b[6] = (a[6]+s[4]+s[7]+s[8])%4;
+		b[7] = (a[7]+s[5]+s[7]+s[8]+s[9])%4;
+		b[8] = (a[8]+s[6]+s[8]+s[9])%4;
+		if (accumulate(b, b+9, 0)) continue;
+		cnt = accumulate(s+1, s+10, 0);
+		if (cnt < min_cnt)
+		{
+			min_cnt = cnt;
+			copy(s+1, s+10, res+1);
+		}
+	}
+	for (int i = 1; i < 10; ++i)
+		while (res[i]--)
+			printf("%d%c", i, --cnt ? ' ' : '\n');
+}/*
+  ID:nettle99
+  PROG:clocks
+  LANG:C++
+  */
+ 
+  #include <fstream>
+  using namespace std;
+ 
+  ifstream fin("clocks.in");
+  ofstream fout("clocks.out");
+ 
+  int m, minh, rus;
+  int ham(int n)
+  {
+    int t = 0;
+    do
+    {
+      t += (n & 3);
+      n = n >> 2;
+    } while (n);
+    return t;
+  }
+ 
+  int mino(int pos)
+  {
+    int l = ham(pos);
+    if (l > minh) return m;
+    if (l < minh) {minh = l; return pos;}
+  int pos_ = pos, min_ = m;
+    while (pos_ && min_)
+    {
+      if ((pos_ & 3) > (min_ & 3)) return pos;
+      if ((pos_ & 3) < (min_ & 3)) return m;
+      pos_ = pos_ >> 2; 
+      min_ = min_ >> 2;
+    }
+  }
+ 
+  void seat(int &pos, int n)
+  {
+  int t = 3 << (2 * n - 2);
+    if ((pos & t) == t) pos = pos & ~t;
+      else pos += 1 << (2 *n - 2);
+    return ;
+  } 
+ 
+  int turn(int pos, int n)
+  { 
+    switch (n)
+    {
+      case 1: seat(pos, 1); seat(pos, 2); seat(pos, 4); seat(pos, 5); break;
+      case 2: seat(pos, 1); seat(pos, 2); seat(pos, 3); break;
+      case 3: seat(pos, 2); seat(pos, 3); seat(pos, 5); seat(pos, 6); break;
+      case 4: seat(pos, 1); seat(pos, 4); seat(pos, 7); break;
+      case 5: seat(pos, 2); seat(pos, 4); seat(pos, 5); seat(pos, 6); seat(pos, 8); break;
+      case 6: seat(pos, 3); seat(pos, 6); seat(pos, 9); break;
+      case 7: seat(pos, 4); seat(pos, 5); seat(pos, 7); seat(pos, 8); break;
+      case 8: seat(pos, 7); seat(pos, 8); seat(pos, 9); break;
+      case 9: seat(pos, 5); seat(pos, 6); seat(pos, 8); seat(pos, 9); break;
+    }
+    return pos;
+  }
+ 
+  void test(int pos, int now, int n)
+  {
+    if (n > 9) return ; 
+    test(pos, now, n + 1);
+    for (int i = 1; i <= 3; i++) 
+      {
+        pos = turn(pos, n);
+        now += (1 << (2 * n - 2));
+        if (pos == rus) {m = mino(now);}
+          else test(pos, now, n + 1);
+      }
+    return ;
+  }
+ 
+  void prin()
+  {
+  int k = m, i = 1, j, key = 0;
+    do
+    {
+      j = (m & 3);
+      for (int p = 0; p < j; p++)
+        {
+          if (key == 1) fout << ' ';
+            fout << i;
+          key = 1;
+        }
+      i++;
+      m = m >> 2;
+    }
+    while (m);
+    fout << endl;
+    return ;
+  } 
+ 
+  int main()
+  {
+    m = INT_MAX;
+    minh = INT_MAX;
+  int t = 0;
+    for (int i = 1; i <= 9; i++)
+      {
+        fin >> t;
+        t = 4 - t/3;
+        rus = rus | (t << (2 * i - 2));
+      }
+    test(0,0,1);
+    prin(); 
+    fin.close();
+    fout.close();
+    return EXIT_SUCCESS;
+  }<source lang = "C++">
+ 
+/*
+ID:herohan1
+LANG:C++
+TASK:clocks
+*/
+ 
+#include<fstream>
+#include<iostream>
+#include<math.h>
+using namespace std;
+ 
+struct matrix{
+	int data[3][3];
+	matrix(){}
+	matrix(int a[3][3]){
+		for(int i=0;i<3;i++)
+			for(int j=0;j<3;j++)
+				data[i][j]=a[i][j];
+	}
+    void set(int a[3][3]){
+		for(int i=0;i<3;i++)
+			for(int j=0;j<3;j++)
+				data[i][j]=a[i][j];
+	}
+ 
+    int read(int i,int j){
+		return data[i][j];}
+ 
+};
+ 
+int matrixs[9][3][3]={
+						{1,1,0,
+						1,1,0,
+						0,0,0 },
+									{1,1,1,
+								   0,0,0,
+								   0,0,0},
+					   {0,1,1,
+					   0,1,1,
+					   0,0,0},
+								   {1,0,0,
+								  1,0,0,
+								  1,0,0},
+					  {0,1,0,
+					  1,1,1,
+					  0,1,0},
+								  {0,0,1,
+								  0,0,1,
+								  0,0,1},
+				  {0,0,0,
+		          1,1,0,
+				  1,1,0},
+							  {
+							   0,0,0,
+							   0,0,0,
+							   1,1,1},
+				   {
+		           0,0,0,
+				   0,1,1,
+				   0,1,1}
+};
+ 
+ 
+class clocks{
+public:
+    int clock[3][3];
+    matrix step;
+	int valid[9];
+	int Move[9];
+ 
+	clocks(ifstream& infile){
+		int data[3][3];
+		for(int i=0;i<3;i++)
+			for(int j=0;j<3;j++){
+				infile>>clock[i][j];
+				 data[i][j]=(12-clock[i][j])/3;
+			}
+        step.set(data);
+		for(int k=0;k<9;k++)
+			Move[k]=0;
+	}
+ 
+	void  update(matrix& step,int choice){
+		for(int i=0;i<3;i++)
+			for(int j=0;j<3;j++)
+				step.data[i][j]-=(matrixs[choice])[i][j];
+ 
+	}
+ 
+ 
+    bool OK(matrix step){
+		for(int i=0;i<3;i++)
+			for(int j=0;j<3;j++){
+				int mol=(abs(step.read(i,j) ))%4;
+				if(  mol !=0)
+					return false;
+			}	
+		return true;
+	}
+ 
+   //the variable i represent the i th clock
+	bool move(int i,matrix step){   
+			if(OK(step) ){
+			cout<<"when is ok: "<<(i+1)<<endl;
+			return true;}
+ 
+			if(i>8)
+		    	return false;
+ 
+ 
+	 //each clock can rotate at most 4 times:0,1,2,3,
+	  for(int j=3;j>=0;j--){
+		    matrix newStep(step);
+ 
+			for(int k=j;k>0;k--)
+			   update(newStep,i);
+ 
+             bool Found=move(i+1,newStep);
+			if(Found==true){
+				cout<<(i+1)<<endl;
+				Move[i]=j;
+				return true;}
+ 
+	 }//for
+	 return false;
+	}
+ 
+ 
+		void cal(){
+		move(0,step);
+	}
+ 
+void output(ofstream& outfile){
+	bool first=true;
+	for(int i=0;i<9;i++)
+		if(Move[i]>0){  			
+			for(int j=0;j<Move[i];j++){
+					if(first)
+					first=false;
+				else
+					outfile<<" ";
+				cout<<"i: "<<(i+1)<<endl;
+				outfile<<(i+1);}
+		}
+	outfile<<endl;
+ 
+}
+};
+ 
+int main(){
+	ifstream infile("clocks.in");
+	ofstream outfile("clocks.out");
+	clocks CLS(infile);
+	CLS.cal();
+	CLS.output(outfile);
+	return 0;
+}

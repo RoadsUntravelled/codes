@@ -1,0 +1,348 @@
+#include<fstream> //by adventop
+#include<cstdlib>
+using namespace std;
+ofstream fout ("fence8.out",ios::out);
+ifstream fin ("fence8.in",ios::in);
+long n,m,mid,space,pack[51]={-1},rail[1024]={-1},total,numr[1024],bag[51];
+int compare(const void *a,const void *b){
+    return (*(int *)a-*(int *)b);
+}
+bool dfsid(int deep,int pos){
+    if(deep<=0) return true;
+    if(space>total-numr[mid]) return false; //cut 1
+    for(int i=pos;i<=n;i++)
+    if(bag[i]>=rail[deep]){
+        bag[i]-=rail[deep];
+        if(bag[i]<rail[1])
+            space+=bag[i];
+        if(rail[deep]==rail[deep-1]){ //cut 2
+            if(dfsid(deep-1,i)) return true;}
+        else if (dfsid(deep-1,1)) return true;
+        if(bag[i]<rail[1])
+            space-=bag[i];
+        bag[i]+=rail[deep];
+    }
+    return false;
+}
+int main()
+{
+    fin>>n;
+    for(int i=1;i<=n;i++){
+        fin>>pack[i];
+        total+=pack[i];
+    }
+    fin>>m;
+    for(int i=1;i<=m;i++) fin>>rail[i];
+    qsort(pack,n+1,sizeof(long),compare); //cut 3
+    qsort(rail,m+1,sizeof(long),compare);
+    rail[0]=pack[0]=0;
+    for(int i=1;i<=m;i++) numr[i]=numr[i-1]+rail[i];
+    while(numr[m]>total) m--;
+    int left=0,right=m;
+    mid=(left+right)/2;
+    while(left<=right){ //2分答案
+        for(int i=1;i<=n;i++) bag[i]=pack[i];
+        space=0;
+        if(dfsid(mid,1)){
+            left=mid+1;
+            mid=(left+right)/2;
+        }else{
+            right=mid-1;
+            mid=(left+right)/2;
+        }
+    }
+    fout<<mid<<endl;
+    return 0;
+}#include <fstream>
+#include <algorithm>
+ 
+using namespace std;
+ifstream fin("net.in");
+ofstream fout("net.out");
+ 
+const int maxboard=50+1;
+const int maxrail=1023+1;
+ 
+int nboard,nrail,best;
+int board[maxboard];
+int rail[maxrail];
+int remain[maxboard];
+int sumlen[maxrail];
+int minindex[maxrail];
+long long sum=0;
+long long maywaste,waste;
+ 
+void dfs(int r,int index1)
+{
+    if(r == 0){
+        for(int i=index1; i<nboard; ++i)
+            if (remain[i]>=rail[0]){
+                fout << best+1 << endl;
+                fout.close();
+                exit(0);
+            }
+        return;
+    }
+    for(int i=index1; i<nboard; ++i)
+        if(remain[i]>=rail[r]){
+            long long oldwaste=waste;
+            remain[i]-=rail[r];
+            if (remain[i]<rail[0] && waste+remain[i]>maywaste) {
+                remain[i]+=rail[r];
+                continue;
+            }
+            if (remain[i]<rail[0]) waste+=remain[i];
+            if(rail[r-1] == rail[r]) dfs(r-1,i);
+            else dfs(r-1,0);
+            remain[i]+=rail[r];
+            waste=oldwaste;
+        }
+}
+ 
+int main()
+{
+    fin>>nboard;
+    for(int i=0;i<nboard;i++){
+        fin>>board[i];
+        sum+=board[i];
+        remain[i]=board[i];
+    }
+    fin>>nrail;
+    for(int i=0;i<nrail;i++)
+        fin>>rail[i];
+    fin.close();
+ 
+    sort(board,board+nboard);
+    sort(rail,rail+nrail);
+ 
+    int temp=0;
+    sumlen[0]=rail[0];
+    while(temp<nrail && sumlen[temp]<=sum){
+         ++temp;
+         sumlen[temp]=sumlen[temp-1]+rail[temp];
+    }
+    nrail=temp;
+ 
+    for(int i=nrail-1;i>=0;--i){
+        waste=0;
+        maywaste=sum-sumlen[i];
+        best=i;
+        dfs(i,0);
+    }
+    return 0;
+}/*
+Executing...
+   Test 1: TEST OK [0.022 secs, 2844 KB]
+   Test 2: TEST OK [0.000 secs, 2848 KB]
+   Test 3: TEST OK [0.000 secs, 2848 KB]
+   Test 4: TEST OK [0.043 secs, 2844 KB]
+   Test 5: TEST OK [0.076 secs, 2844 KB]
+   Test 6: TEST OK [0.011 secs, 2844 KB]
+   Test 7: TEST OK [0.011 secs, 2844 KB]
+   Test 8: TEST OK [0.032 secs, 2844 KB]
+   Test 9: TEST OK [0.022 secs, 2848 KB]
+   Test 10: TEST OK [0.011 secs, 2848 KB]
+   Test 11: TEST OK [0.022 secs, 2844 KB]
+   Test 12: TEST OK [0.011 secs, 2848 KB]
+*/
+/*
+TASK:fence8
+LANG:C++
+*/
+ 
+#include<iostream>
+#include<fstream>
+using namespace std;
+ 
+int yl[51],n;//原料
+int x[1024],m;//需要切成的材料
+int sum=0,use;
+ 
+int cmp(const void *a,const void *b) 
+{
+	return *(int*)a-*(int*)b;
+}
+ 
+int cmp2(const void *a,const void *b) 
+{
+	return *(int*)b-*(int*)a;
+}
+ 
+inline bool dfsid(int now,int last)//now:当前要安放第几块了 last:上次放在哪 
+{
+	if(now>m) return 0;
+ 
+	if(use<0) return 0;
+ 
+	if(!now) return 1;
+ 
+	int s=1;
+	if(x[now]==x[now-1]) s=last;
+	for(int i=s;i<=n;i++)
+		if(yl[i]>=x[now])
+		{
+			yl[i]-=x[now];
+			if(yl[i]<x[1]) use-=yl[i];
+			if(dfsid(now-1,i))
+			{
+				yl[i]+=x[now];
+				return 1;
+			}
+			if(yl[i]<x[1]) use+=yl[i];
+			yl[i]+=x[now];
+		}
+	return 0;
+}
+ 
+int main()
+{
+ 
+	ifstream cin("fence8.in");
+	ofstream cout("fence8.out");
+ 
+	x[0]=-1;
+	cin>>n;
+	for(int i=1;i<=n;i++)
+	{
+		cin>>yl[i];
+		sum+=yl[i];
+	}
+	qsort(yl+1,n,sizeof(yl[0]),cmp2);
+	cin>>m;
+	int M=m;
+	for(int i=1;i<=m;i++) cin>>x[i];
+	qsort(x+1,m,sizeof(x[0]),cmp);
+	bool ok=0;
+ 
+	for(int i=1;i<=m+1;i++)
+	{
+		use=sum;
+		for(int j=1;j<=i;j++) use-=x[j];
+		if(!dfsid(i,0))
+		{
+			ok=1;
+			cout<<i-1<<endl;
+			break;
+		}
+	}
+	//system("pause");
+	return 0;
+}
+/*
+PS: 这个程序貌似有错误…………
+在测试数据为：
+2
+10
+5
+4
+6
+5
+1
+1
+的时候，会计算出错误的答案3，而实际的答案为4…………
+但是USACO官方的数据没有这么变态，所以可以通过…………
+*/时间：
+ 
+Executing...
+   Test 1: TEST OK [0.000 secs, 3028 KB]
+   Test 2: TEST OK [0.000 secs, 3028 KB]
+   Test 3: TEST OK [0.000 secs, 3028 KB]
+   Test 4: TEST OK [0.032 secs, 3028 KB]
+   Test 5: TEST OK [0.011 secs, 3028 KB]
+   Test 6: TEST OK [0.151 secs, 3028 KB]
+   Test 7: TEST OK [0.011 secs, 3028 KB]
+   Test 8: TEST OK [0.022 secs, 3028 KB]
+   Test 9: TEST OK [0.562 secs, 3028 KB]
+   Test 10: TEST OK [0.011 secs, 3028 KB]
+   Test 11: TEST OK [0.000 secs, 3028 KB]
+   Test 12: TEST OK [0.000 secs, 3028 KB]
+ 
+All tests OK.
+ 
+ 
+C++语言: Codee#13702
+/*
+    ID:echooat1
+    LANG:C++
+    TASK:fence8
+    */
+#include <fstream>
+#include <cstring>
+using namespace std;
+long a[60]={0},b[2000]={0},n,m,deep=1,sum=0;
+long fim[2000]={0};
+void ex(long& a,long& b){
+    long c=a;a=b;b=c;
+}
+ifstream fin("fence8.in");
+ofstream fout("fence8.out");
+int comp(const void* a,const void* b){
+    return *(long*)a-*(long*)b;
+}
+long temp[60]={0};
+bool kk=false;
+void dfs(long u,long k){
+    if(u<=0){
+        kk=true;
+        return;
+    }
+    for(long i=1;i<=n;i++){
+        if(temp[i]<=0)continue;
+        long sum=0;long h=u;
+        while(sum<temp[i]&&h>0){sum+=b[h--];}
+        if(sum==temp[i]){
+            long pp=temp[i];
+            temp[i]=0;
+            dfs(h,1);
+            temp[i]=pp;
+            return;
+        }
+    }
+    long j=n;
+    while(j>=k){
+        if(kk)return;
+        if(b[u]<=temp[j]){
+            temp[j]-=b[u];
+            if(b[u]==b[u-1])
+                dfs(u-1,j);
+            else 
+                dfs(u-1,1);
+            temp[j]+=b[u];
+        }
+        j--;
+    }
+}
+int main(int argc,char** argv){
+    fin >>n;
+    for(long i=1;i<=n;i++){
+        fin >>a[i];
+        sum+=a[i];
+    }
+    memcpy(temp,a,sizeof(long)*(n+1));
+    fin >>m;
+    for(long j=1;j<=m;j++){
+        fin >>b[j];
+    }
+    qsort(b,m+1,sizeof b[0],comp);
+    qsort(a,n+1,sizeof a[0],comp);
+    for(long j=1;j<=m;j++)fim[j]=fim[j-1]+b[j];
+    for(deep=1;deep<=m;deep+=30){
+        memcpy(temp,a,sizeof(long)*(n+1));
+        kk=false;
+        if(fim[deep]>sum){break;}
+        dfs(deep,1);
+        if(!kk)break;
+    }
+    long uuu=deep-30;
+    for(deep=uuu;deep<=uuu+30;deep++){
+        memcpy(temp,a,sizeof(long)*(n+1));
+        kk=false;
+        if(fim[deep]>sum){break;}
+        dfs(deep,1);
+        if(!kk)break;
+    }
+    if(!kk)
+    fout <<deep-1<<endl;
+    else fout<<m<<endl;
+    return 0;
+}

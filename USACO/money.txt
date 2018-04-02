@@ -1,0 +1,86 @@
+/*
+ID:ybojan2
+LANG:C++
+TASK:money
+*/
+ 
+#include <iostream>
+#include <fstream>
+ 
+using namespace std;
+ 
+int main()
+{
+    ifstream fin("money.in");
+    ofstream fout("money.out");
+ 
+    int v,n,p;
+    long long dp[10001];
+ 
+    fin>>v>>n;
+    memset(dp,0,sizeof(dp));
+    dp[0]=1;
+    for (int i=1;i<=v;i++)
+    {
+        fin>>p;
+        for (int j=p;j<=n;j++)
+            dp[j]+=dp[j-p];
+    }
+ 
+    fout<<dp[n]<<endl;
+    return 0;
+}/*
+ID:Dominic
+PROG:money
+LANG:C++
+*/
+#include<iostream>
+#include<fstream>
+using namespace std;
+ifstream fin("money.in");
+ofstream fout("money.out");
+ 
+long long Dp[ 10001 ];
+long V,N;
+long Kind[ 26 ];
+ 
+int main(){
+    long i,j;
+    fin >> V >> N;
+    for(i = 1; i <= V; i ++) fin >> Kind[ i ];
+    Dp[ 0 ] = 1;
+ 
+    for(i = 1; i <= V; i ++)
+        for(j = Kind[ i ]; j <= N; j ++)
+                Dp[ j ] = Dp[ j ] + Dp[ j-Kind[i] ];
+    fout << Dp[ N ] << endl;
+    return 0;
+}/*
+	ID:echooat1
+	LANG:C++
+	TASK:money
+	*/
+#include <fstream>
+#include <cstdlib>
+using namespace std;
+int comp(const void* a,const void* b){
+	return *(long*)a-*(long*)b;
+}
+int main(int argc,char** argv){
+	ifstream fin("money.in");ofstream fout("money.out");
+	long a[26]={0};
+	long long f[10002]={0};
+	long n,m;
+	fin >>n>>m;
+	for(long i=1;i<=n;i++){fin >>a[i];}fin.close();
+	qsort(a,n+1,sizeof a[0],comp);
+	if(m<a[1]){fout <<0<<endl;fout.close();exit(0);}
+	f[0]=1;
+	for(long j=1;j<=n;j++)
+	   for(long i=a[j];i<=m;i++){
+			  f[i]+=f[i-a[j]];
+	}
+	fout <<f[m]<<endl;
+	fout.close();
+	return 0;
+}

@@ -1,0 +1,523 @@
+DP 一次AC庆祝一下！
+  Test 1: TEST OK [0.000 secs, 3224 KB]
+  Test 2: TEST OK [0.000 secs, 3224 KB]
+  Test 3: TEST OK [0.011 secs, 3224 KB]
+  Test 4: TEST OK [0.011 secs, 3224 KB]
+  Test 5: TEST OK [0.000 secs, 3224 KB]
+  Test 6: TEST OK [0.011 secs, 3224 KB]
+  Test 7: TEST OK [0.000 secs, 3224 KB]
+  Test 8: TEST OK [0.000 secs, 3224 KB]
+  Test 9: TEST OK [0.000 secs, 3224 KB]
+  Test 10: TEST OK [0.011 secs, 3224 KB]
+  Test 11: TEST OK [0.011 secs, 3224 KB]
+  Test 12: TEST OK [0.011 secs, 3224 KB]
+/*
+  ID:p.tiany1
+  PROG:shopping
+  LANG:C++
+*/
+#  include<iostream>
+#  include<cstring>
+using namespace std;
+struct  arr
+{
+        int  v,k[1002];        
+}a[102];
+struct  brr
+{
+        int  high,buy,p;        
+}b[7];
+int  n,m,f[6][6][6][6][6];
+void  init()
+{
+      freopen("shopping.in","r",stdin);
+      freopen("shopping.out","w",stdout);
+      int  i,j,k,num,l;
+      //  读入优惠方案 
+      scanf("%d",&n);
+      for  (i=1;i<=n;i++)
+      {
+           scanf("%d",&num);
+           for  (j=1;j<=num;j++)
+           {
+                scanf("%d",&l);
+                scanf("%d",&a[i].k[l]);
+           }
+           scanf("%d",&a[i].v);
+      }   
+      //读入购物清单 
+      scanf("%d",&m);
+      for  (i=1;i<=m;i++)
+      {
+           scanf("%d%d%d",&b[i].buy,&b[i].high,&a[++n].v);
+           a[n].k[b[i].buy]=1;
+      }
+}
+void  work()//多重背包
+{
+      memset(f,50,sizeof(f));
+      f[0][0][0][0][0]=0;
+      int i,j,k,l,b1,b2,b3,b4,b5,m1,m2,m3,m4,m5;   
+      for  (i=1;i<=n;i++)   
+      {
+            m1=a[i].k[b[1].buy];
+            m2=a[i].k[b[2].buy];
+            m3=a[i].k[b[3].buy];
+            m4=a[i].k[b[4].buy];
+            m5=a[i].k[b[5].buy];
+            for  (b1=m1;b1<=b[1].high;b1++)
+               for  (b2=m2;b2<=b[2].high;b2++)
+                 for  (b3=m3;b3<=b[3].high;b3++)  
+                   for  (b4=m4;b4<=b[4].high;b4++)
+                     for  (b5=m5;b5<=b[5].high;b5++)
+                          f[b1][b2][b3][b4][b5]=min(f[b1][b2][b3][b4][b5],f[b1-m1][b2-m2][b3-m3][b4-m4][b5-m5]+a[i].v);
+      }
+} 
+void  out()
+{
+      printf("%d\n",f[b[1].high][b[2].high][b[3].high][b[4].high][b[5].high]);
+      fclose(stdin);
+      fclose(stdout);     
+}
+int  main()
+{
+     init();
+     work();     
+     out();
+     return 0;
+}动态规划
+/*
+ID:ybojan2
+LANG:C++
+TASK:shopping
+*/
+ 
+#include <iostream>
+#include <fstream>
+ 
+using namespace std;
+ 
+int s,p[200],c[200][6],tt=0,t[6],pp[6],nn[6],dp[6][6][6][6][6];
+ 
+int ord(int x)
+{
+    for (int i=1;i<=tt;i++)
+        if (x==nn[i]) return i;
+    tt++;
+    nn[tt]=x;
+    return tt;
+ 
+}
+ 
+int main()
+{
+    ifstream fin("shopping.in");
+    ofstream fout("shopping.out");
+ 
+    fin>>s;
+    memset(c,0,sizeof(c));
+    for (int i=1;i<=s;i++)
+    {
+        int n;
+        fin>>n;
+        for (int j=1;j<=n;j++)
+        {
+            int cc,k;
+            fin>>cc>>k;
+            c[i][ord(cc)]=k;
+        }
+        fin>>p[i];
+    }
+    int b;
+    fin>>b;
+    for (int i=1;i<=b;i++)
+    {
+        int cc;
+        fin>>cc;
+        fin>>t[ord(cc)]>>pp[ord(cc)];
+        s++;
+        p[s]=pp[ord(cc)];
+        c[s][ord(cc)]=1;
+ 
+    }
+    for (int i1=0;i1<=t[1];i1++)
+        for (int i2=0;i2<=t[2];i2++)
+            for (int i3=0;i3<=t[3];i3++)
+                for (int i4=0;i4<=t[4];i4++)
+                    for (int i5=0;i5<=t[5];i5++)
+                    {
+                        dp[i1][i2][i3][i4][i5]=i1*pp[1]+i2*pp[2]+i3*pp[3]+i4*pp[4]+i5*pp[5];
+                        for (int i=1;i<=s;i++)
+                        {
+                            int t1=max(i1-c[i][1],0),t2=max(i2-c[i][2],0),t3=max(i3-c[i][3],0),t4=max(i4-c[i][4],0),t5=max(i5-c[i][5],0);
+                            if (dp[t1][t2][t3][t4][t5]+p[i]<dp[i1][i2][i3][i4][i5]) dp[i1][i2][i3][i4][i5]=dp[t1][t2][t3][t4][t5]+p[i];
+                        }
+                    }
+    fout<<dp[t[1]][t[2]][t[3]][t[4]][t[5]]<<endl;
+    return 0;
+}/*
+ID:GeorgeG1
+TASK:shopping
+LANG:C++
+*/
+/*
+DP:
+        c[i]表示要买的第i个商品的商品编号(0<=i<b)
+        b[i]记录商品编号为i的商品是第几个要买的商品，-1表示不买 
+        v[i]表示要买的第i个商品的单价 
+        k[i]表示要买的第i个商品的数量 
+        设f[i0][i1][i2][i3][i4]表示买i0个c[0],i1个c[1]....i4个c[4]的最低价格
+ 
+        初值：f[i0][i1][i2][i3][i4]=sum(in*v[n])(i=0 to 4)
+        然后用无穷背包计算。
+        ans=f[k[0]][k[1]][k[2]][k[3]][k[4]]
+*/
+#include <fstream>
+#include <cstdlib>
+#include <string.h>
+ 
+using namespace std;
+ 
+ifstream fin ("shopping.in");
+ofstream fout ("shopping.out");
+ 
+const long MAXS=100,MAXN=6,MAXC=1000,MAXK=6;
+ 
+struct specialOffers
+{
+       long component[MAXN];
+       long amount[MAXN];
+       long value;
+};
+ 
+static long c[MAXN],b[MAXC],v[MAXN],k[MAXN];
+static long f[MAXN][MAXN][MAXN][MAXN][MAXN];
+specialOffers so[MAXS];
+long S,B;
+ 
+ 
+void init()
+{
+     fin >>S;
+     long n;
+     for (long i=0;i<S;++i)
+     {
+         fin >>n;
+         for (long j=0;j<n;++j)
+             fin >>so[i].component[j] >>so[i].amount[j];
+         for (long j=n;j<5;++j)
+         {
+             so[i].component[j]=0;      //用component=0处理商品种类少于5的special offer 
+             so[i].amount[j]=0;
+         }
+         fin >>so[i].value;
+     }
+     fin >>B;
+     memset (b,-1,sizeof(b));
+     b[0]=5;                           //请注意 上面那个注释 与 下面那个注释 以及 本行 的联系 
+     for (long i=0;i<B;++i)
+     {
+         fin >>c[i] >>k[i] >>v[i];
+         b[c[i]]=i;
+     }
+     c[5]=v[5]=k[5]=0;             //so[i].component数量不足5个时，剩下的将指向c[5] 
+     return;
+}
+ 
+bool check(long index)
+{
+     for (long i=0;i<5;++i)
+         if (b[so[index].component[i]]==-1)
+            return false;
+     return true;
+}
+ 
+ 
+void DP()
+{
+     memset (f,127,sizeof(f));                //初值 
+     for (long i0=0;i0<=k[0];++i0)
+         for (long i1=0;i1<=k[1];++i1)
+             for (long i2=0;i2<=k[2];++i2)
+                 for (long i3=0;i3<=k[3];++i3)
+                     for (long i4=0;i4<=k[4];++i4)
+                         f[i0][i1][i2][i3][i4]=i0*v[0]+i1*v[1]+i2*v[2]+i3*v[3]+i4*v[4];
+     //无穷背包DP
+     for (long i=0;i<S;++i)
+     {
+         if (!check(i))   //检查so[i]是否能使用 
+            continue;
+         //统计该 Special Offer 方案的需求 
+         long k2[MAXN];
+         memset (k2,0,sizeof(k2));
+         for (long j=0;j<5;++j)
+             k2[b[so[i].component[j]]]=so[i].amount[j];
+         //DP
+         for (long i0=k2[0];i0<=k[0];++i0)
+             for (long i1=k2[1];i1<=k[1];++i1)
+                 for (long i2=k2[2];i2<=k[2];++i2)
+                     for (long i3=k2[3];i3<=k[3];++i3)
+                         for (long i4=k2[4];i4<=k[4];++i4)
+                             f[i0][i1][i2][i3][i4]=min(f[i0][i1][i2][i3][i4],f[i0-k2[0]][i1-k2[1]][i2-k2[2]][i3-k2[3]][i4-k2[4]]+so[i].value);
+     }
+     return;     
+}
+ 
+int main()
+{
+    init();
+    DP();
+    fout <<f[k[0]][k[1]][k[2]][k[3]][k[4]] <<endl;
+    return 0;
+}
+记忆化的递归实现，这样好写
+/*
+ID: cmykrgb1
+PROG: shopping
+LANG: C++
+*/
+#include <iostream>
+#include <fstream>
+using namespace std;
+ifstream fi("shopping.in");
+ofstream fo("shopping.out");
+long P[105][6];
+long buy[6];
+long n,ans;
+long c_n[1000];
+long F[6][6][6][6][6];
+long ori;
+ 
+void init()
+{
+	long i,j,m,tp=0,c,k,s,b;
+	fi >> s;
+	for (i=1;i<=s;i++)
+	{
+		fi >>m;
+		for (j=1;j<=m;j++)
+		{
+			fi>> c >> k;
+			if (c_n[c]==0) c_n[c]=++tp;
+			P[i][ c_n[c] ]=k;
+		}
+		fi >> P[i][0];
+	}
+	fi >> b;
+	for (i=1;i<=b;i++)
+	{
+		fi>> c >> k >> P[s+i][0];
+		if (c_n[c]==0) c_n[c]=++tp;
+		P[s+i][ c_n[c] ]=1;
+		buy[c_n[c]]=k;
+	}
+	n=s+b;
+	memset(F,0xF,sizeof(F));
+	ori=F[0][0][0][0][0];
+	F[0][0][0][0][0]=0;
+}
+ 
+void print()
+{
+	fo << ans <<endl;
+	fi.close();
+	fo.close();
+}
+ 
+inline long min(long a,long b)
+{
+	return a<b?a:b;
+}
+ 
+long get(long a1,long a2,long a3,long a4,long a5)
+{
+	if (F[a1][a2][a3][a4][a5]!=ori)
+		return F[a1][a2][a3][a4][a5];
+	long i;
+	long w1,w2,w3,w4,w5,pmin=ori;
+	for (i=1;i<=n;i++)
+	{
+		w1=a1-P[i][1];w2=a2-P[i][2];w3=a3-P[i][3];w4=a4-P[i][4];w5=a5-P[i][5];
+		if (w1<0||w2<0||w3<0||w4<0||w5<0) continue;
+		if (F[w1][w2][w3][w4][w5]==ori)
+			F[w1][w2][w3][w4][w5]=get(w1,w2,w3,w4,w5);
+		pmin=min(pmin,F[w1][w2][w3][w4][w5]+P[i][0]);
+	}
+	return pmin;
+}
+ 
+int main()
+{
+	init();
+	ans=get(buy[1],buy[2],buy[3],buy[4],buy[5]);
+	print();
+	return 0;
+}/*
+PROB:shopping
+LANG:C++
+ID:hannett1
+*/
+ 
+#include<iostream>
+#include<fstream>
+#include<cstdlib>
+#include<cstring>
+#include<cstdio>
+#include<cmath>
+#include<cctype>
+#include<algorithm>
+using namespace std;
+ 
+#define for6(I) for(int I=0;I<=5;++I)
+#define for56 for6(i1) for6(i2) for6(i3) for6(i4) for6(i5)
+#define oo (0xFFFFFFF)
+#define MS(S) memset(S,0,sizeof(S))
+#define forr(I,a,b) for(int I=a;I<=b;++I)
+ 
+ifstream fin ("shopping.in" );
+ofstream fout("shopping.out");
+ 
+int arc[10000];
+int need[10000],m[10000],pay[10000];
+int opt[8][8][8][8][8];
+int h[200][1010];
+int p[10000],w[10000];
+int sw[200][8];
+int s,n,c;
+ 
+int main() {
+	MS(h);
+	MS(arc);
+	MS(need);
+	MS(m);
+	MS(pay);
+	MS(opt);
+	MS(h);
+	fin >>s;
+	for(int i=1;i<=s;++i) {
+		fin >>m[i];
+		for(int j=1;j<=m[i];++j) {
+			fin >>c;
+			fin >>h[i][c];
+		}
+		fin >>p[i];
+	}
+	fin >>n;
+	for(int i=1;i<=n;++i) {
+		fin >>c >>need[i] >>w[i];
+		arc[i]=c;
+	}
+	MS(sw);
+	int tot=0;
+	sw[++tot][1] = (n>=1); pay[tot]=w[1];
+	sw[++tot][2] = (n>=2); pay[tot]=w[2];
+	sw[++tot][3] = (n>=3); pay[tot]=w[3];
+	sw[++tot][4] = (n>=4); pay[tot]=w[4];
+	sw[++tot][5] = (n>=5); pay[tot]=w[5];
+	for(int i=1;i<=s;++i) {
+		++tot;
+		for(int j=1;j<=5;++j)
+			sw[tot][j] = h[i][ arc[j] ] ;
+		pay[tot]=p[i];
+	}
+	for56
+		opt[i1][i2][i3][i4][i5]=oo;
+	opt[0][0][0][0][0]=0;
+	for(int i=1;i<=tot;++i)
+		forr(i1,sw[i][1],5) forr(i2,sw[i][2],5)
+		forr(i3,sw[i][3],5) forr(i4,sw[i][4],5)
+		forr(i5,sw[i][5],5)
+			opt[i1][i2][i3][i4][i5] = min( opt[i1][i2][i3][i4][i5],
+				opt[ i1-sw[i][1] ] [ i2-sw[i][2] ]
+					[ i3-sw[i][3] ] [ i4-sw[i][4] ] [ i5-sw[i][5] ] + pay[i] );
+	fout <<opt[ need[1] ][ need[2] ][ need[3] ][ need[4] ][ need[5] ] <<endl;
+	return 0;
+}
+ 
+/*
+Compiling...
+Compile: OK
+ 
+Executing...
+   Test 1: TEST OK [0.000 secs, 4168 KB]
+   Test 2: TEST OK [0.011 secs, 4168 KB]
+   Test 3: TEST OK [0.000 secs, 4168 KB]
+   Test 4: TEST OK [0.022 secs, 4168 KB]
+   Test 5: TEST OK [0.000 secs, 4168 KB]
+   Test 6: TEST OK [0.000 secs, 4168 KB]
+   Test 7: TEST OK [0.000 secs, 4168 KB]
+   Test 8: TEST OK [0.011 secs, 4168 KB]
+   Test 9: TEST OK [0.022 secs, 4168 KB]
+   Test 10: TEST OK [0.000 secs, 4168 KB]
+   Test 11: TEST OK [0.011 secs, 4168 KB]
+   Test 12: TEST OK [0.011 secs, 4168 KB]
+ 
+All tests OK.
+*/什么叫做暴力。。
+ 
+/*
+	ID:echooat1
+	LANG:C++
+	TASK:shopping
+	*/
+#include <fstream>
+#include <cstring>
+#define min(a,b) ((a)<(b)?(a):(b))
+#define ma 199405222
+using namespace std;
+struct re{
+	long l[10];
+	long da;
+};
+ifstream fin("shopping.in");
+ofstream fout("shopping.out");
+int main(int argc,char** argv){
+	long f[8][8][8][8][8];
+	long goal[8]={0};
+	long x[2000]={0};
+	re a[200];
+	memset(a,0,sizeof(a));
+	long m,n,p=0;
+	fin >>m;
+	for(long i=1;i<=m;i++){
+		long temp;
+		fin >>temp;
+		for(long j=1;j<=temp;j++){
+			long l1,l2;
+			fin >>l1>>l2;
+			if(x[l1]==0)x[l1]=++p;
+			a[i].l[x[l1]]=l2;
+		}
+		fin >>a[i].da;
+	}
+	fin >>n;
+	for(long i=1;i<=n;i++){
+		long l1,l2;
+		fin >>l1>>l2;
+		if(x[l1]==0)x[l1]=++p;
+		a[i+m].l[x[l1]]=1;
+		goal[x[l1]]=l2;
+		fin >>a[i+m].da;
+	}
+	for(long l1=0;l1<=goal[1]+1;l1++)
+			for(long l2=0;l2<=goal[2]+1;l2++)
+				for(long l3=0;l3<=goal[3]+1;l3++)
+					for(long l4=0;l4<=goal[4]+1;l4++)
+						for(long l5=0;l5<=goal[5]+1;l5++)
+							f[l1][l2][l3][l4][l5]=ma;
+	f[0][0][0][0][0]=0;
+	for(long l1=0;l1<=goal[1];l1++)
+			for(long l2=0;l2<=goal[2];l2++)
+				for(long l3=0;l3<=goal[3];l3++)
+					for(long l4=0;l4<=goal[4];l4++)
+						for(long l5=0;l5<=goal[5];l5++){
+							long mama=ma;
+							for(long i=1;i<=n+m;i++)
+								if(a[i].l[1]<=l1&&a[i].l[2]<=l2&&a[i].l[3]<=l3&&a[i].l[4]<=l4&&a[i].l[5]<=l5)
+									mama=min(mama,f[l1-a[i].l[1]][l2-a[i].l[2]][l3-a[i].l[3]][l4-a[i].l[4]][l5-a[i].l[5]]+a[i].da);
+							if(mama!=ma)
+							f[l1][l2][l3][l4][l5]=mama;
+							}
+	fout <<f[goal[1]][goal[2]][goal[3]][goal[4]][goal[5]]<<endl;
+	return 0;
+}

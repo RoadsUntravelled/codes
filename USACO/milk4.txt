@@ -1,0 +1,507 @@
+/*
+	ID:ymf11111
+	TASK:milk4
+	LANG:C++
+*/
+/*
+一种纯DP方法 但是速度不敢恭维
+Test 1: TEST OK [0.000 secs, 3036 KB]
+Test 2: TEST OK [0.011 secs, 3036 KB]
+Test 3: TEST OK [0.000 secs, 3036 KB]
+Test 4: TEST OK [0.022 secs, 3036 KB]
+Test 5: TEST OK [0.000 secs, 3036 KB]
+Test 6: TEST OK [0.076 secs, 3036 KB]
+Test 7: TEST OK [0.032 secs, 3036 KB]
+Test 8: TEST OK [0.184 secs, 3036 KB]
+Test 9: TEST OK [0.076 secs, 3036 KB]
+Test 10: TEST OK [0.151 secs, 3036 KB]
+*/
+#include <iostream>
+#include <cstring>
+#include <cstdio>
+#include <cstdlib>
+ 
+#define MAXQ 20001
+#define MAXP 201
+#define INF 9999999
+ 
+using namespace std;
+ 
+int f[MAXQ],b[MAXP],s[MAXQ][2];
+int Q,P,anslist[MAXP],cnt = 0;
+ 
+int cmp(const void *a,const void *b) {
+	return ((*(int *)a) - (*(int *)b));
+}
+ 
+bool smaller(int ta,int tb) {
+	while (ta && tb)
+	{
+		if (s[ta][0] < s[tb][0]) return 1;
+			else if (s[ta][0] > s[tb][0]) return 0;
+		ta -= b[s[ta][0]] * s[ta][1];
+		tb -= b[s[tb][0]] * s[tb][1];
+	}
+	return 0;
+}
+ 
+int main() {
+ 
+	freopen("milk4.in","r",stdin);
+	freopen("milk4.out","w",stdout);
+	f[0] = 0;
+ 
+	scanf("%d%d",&Q,&P);
+	for (int i = 1; i <= P; i++) scanf("%d",&b[i]); //f[b[i]] = 1;}
+	//read
+	qsort(b + 1,P,sizeof(b[0]),cmp);
+	for (int tq = 1; tq <= Q; tq++)
+	{
+		f[tq] = INF;
+		for (int j = 1; j <= P; j++)
+		{
+			int tmp = 0,k = 0,prev;
+			while (tmp + b[j] <= tq)
+			{
+				tmp += b[j]; k++;
+				if (f[tq - tmp] < f[tq] || (f[tq - tmp] == f[tq] && j == s[tq][0] && smaller(tq - tmp,prev)))
+				{
+					f[tq] = f[tq - tmp];
+					s[tq][0] = j;
+					s[tq][1] = k;
+					prev = tq - tmp;
+				}
+			}
+		}
+		f[tq]++;
+	}
+	printf("%d ",f[Q]);
+	int tmp = Q;
+	while (tmp)
+	{
+		anslist[++cnt]  = s[tmp][0];
+		tmp -= b[s[tmp][0]] * s[tmp][1];
+	}
+	for (int i = 1; i < cnt; i++) printf("%d ",b[anslist[i]]); printf("%d\n",b[anslist[cnt]]);
+	return 0;
+}/*
+ID: cmykrgb1
+PROG: milk4
+LANG: C++
+*/
+//written by CmYkRgB123
+#include <iostream>
+#include <fstream>
+#define MAXP 101
+#define MAXQ 20001
+ 
+using namespace std;
+ 
+ifstream fi("milk4.in");
+ofstream fo("milk4.out");
+ 
+int Q,P,ans,v[MAXP],use[MAXP];
+ 
+inline int cmp(const void * a,const void * b)
+{
+	return *(int *)a<*(int *)b?-1:1;
+}
+ 
+void init()
+{
+	int i;
+	fi >> Q >> P;
+	for (i=1;i<=P;i++) fi >> v[i];
+	qsort(v+1,P,sizeof(v[0]),cmp);
+}
+ 
+void print()
+{
+	fo << ans;
+	for (int i=1;i<=ans;i++) 
+		fo << ' ' << v[ use[i] ];
+	fo << endl;
+	fi.close();	
+	fo.close();	
+	exit(0);
+}
+ 
+void judge()
+{
+	int i,j;
+	bool f[MAXQ];
+	memset(f,0,sizeof(f));
+	for (i=1;i<=Q/v[use[1]];i++)
+		f[ i*v[use[1]] ]=true;
+	for (i=2;i<=ans;i++)
+		for (j=v[use[i]];j<=Q;j++) //第一种牛奶桶至少用了一次
+			f[j] |= f[ j- v[use[i]] ] ;
+	if (f[Q]) 
+		print();
+}
+ 
+void dfs(int k)
+{
+	int i,j;
+	for (i=use[k-1]+1;i<=P-ans+k;i++)
+	{
+		use[k]=i;
+		if (k==ans)	
+			judge();
+		else 
+			dfs(k+1);
+	}
+}
+ 
+void DFSID()
+{
+	for (ans=1;ans<=P;ans++)
+		dfs(1);
+}
+ 
+int main()
+{
+	init();
+	DFSID();
+	return 0;
+}// 裸DFSID+DP（记忆化搜索），瞬秒
+/*
+PROG: milk4
+LANG: C++
+*/
+ 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+ 
+int a[100], b[100];
+bool f[20001], g[20001];
+int n, m;
+ 
+int i, j, k;
+ 
+bool calc(const int x) {
+	if (g[x]) return f[x];
+	g[x] = true;
+	for (int i = 0; i < k; ++i)
+		if (x >= b[i] && calc(x - b[i])) return (f[x] = true);
+	return (f[x] = false);
+}
+ 
+void search(const int dep, const int tot) {
+	if (tot == k) {
+		memset(g, 0, sizeof g);
+		f[0] = g[0] = true;
+		if (calc(n)) {
+			printf("%d", k);
+			for (i = 0; i < k; ++i) printf(" %d", b[i]);
+			printf("\n");
+			exit(0);
+		}
+		return ;
+	}
+	if (dep >= m) return ;
+	b[tot] = a[dep];
+	search(dep + 1, tot + 1);
+	search(dep + 1, tot);
+}
+ 
+int main() {
+	freopen("milk4.in", "rt", stdin);
+	freopen("milk4.out", "wt", stdout);
+	scanf("%d%d", &n, &m);
+	for (i = 0; i < m; ++i) scanf("%d", a + i);
+ 
+	for (i = 0; i < m; ++i)
+		for (j = i + 1; j < m; ++j)
+			if (a[i] > a[j]) k = a[i], a[i] = a[j], a[j] = k;
+ 
+	for (k = 1; k <= m; ++k) search(0, 0);
+}/*
+ID:wwqqss21
+TASK: milk4 
+LANG:C++
+*/
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <limits.h>
+const int MAXQ = 20004;
+const int MAXP = 102;
+int pv[MAXP];
+short cost[MAXP][MAXQ];
+short pre[MAXP][MAXQ];
+short bin0[MAXQ];
+short bin1[MAXQ];
+short rank[MAXQ];
+short start[MAXQ];
+int cmp(const void*p1, const void*p2)
+{
+  return -(*(int*)p1 - *(int*)p2);
+}
+inline int min(int a, int b)
+{
+  return a<b ? a : b;
+}
+void sort(short* src, short* dest, short* key, int n, int r);
+int main()
+{
+  freopen("milk4.in", "r", stdin);
+  freopen("milk4.out", "w", stdout);
+  int p, q, i, j, k, tmp, cnt, minj;
+  scanf("%d%d", &q, &p);
+  for(i = 0; i < p; i++)
+  {
+    scanf("%d", pv + i);
+  }
+  qsort(pv, p, sizeof(int), cmp);
+  for(i = 0; i < p; i++)
+  {
+    if(i != 0)
+    {
+      for(j = 0; j <= q; j++)
+      {
+        cost[i][j] = cost[i-1][j];
+        pre[i][j] = j;
+      }
+    }
+    else
+    {
+      memset(cost[0], 1, sizeof(cost[0]));
+      cost[0][0] = 0;
+    }
+    for(k = 0; k < pv[i]; k++)
+    {
+      minj = k;
+      for(j = k + pv[i]; j <= q; j += pv[i])
+      {
+        if(cost[i][j] > cost[i][minj])
+        {
+          cost[i][j] = cost[i][minj] + 1;
+          pre[i][j] = minj;
+          rank[j] = rank[minj];
+        }
+        else if(cost[i][j]<cost[i][minj] || cost[i][j]==cost[i][minj] && rank[j] < rank[minj])
+        {
+          minj = j;
+        }
+      }
+    }
+    cnt = 0;
+    for(j = 0; j <= q; j++)
+    {
+      if(pre[i][j] != j)
+      {
+        bin0[cnt++] = j;
+      }
+    }
+    sort(bin0, bin1, rank, cnt, q);
+    for(j = 0; j < cnt; j++)
+    {
+      rank[bin1[j]] = j;
+    }
+    cnt = 0;
+    for(j = 0; j <= q; j++)
+    {
+      if(pre[i][j] == j)
+      {
+        bin0[cnt++] = j;
+      }
+    }
+    sort(bin0, bin1, rank, cnt, q);
+    for(j = 0; j < cnt; j++)
+    {
+      rank[bin1[j]] = j + q+1 - cnt;
+    }
+  }
+  printf("%d", cost[p-1][q]);
+  j = q;
+  for(i = p - 1; j; i--)
+  {
+    if(pre[i][j] != j)
+    {
+      printf(" %d", pv[i]);
+      j = pre[i][j];
+    }
+  }
+  printf("\n");
+  return 0;
+}
+void sort(short* src, short* dest, short* key, int n, int r)
+{
+  int i;
+  memset(start, 0 ,sizeof(start));
+  for(i = 0; i < n; i++)
+  {
+    start[key[src[i]]]++;
+  }
+  for(i = 1; i <= r; i++)
+  {
+    start[i] += start[i-1];
+  }
+  for(i = n-1; i >= 0; i--)
+  {
+    dest[--start[key[src[i]]]] = src[i];
+  }
+}迭代加深+DP+裴蜀定理，相当快的速度。。
+ 
+Compiling...
+Compile: OK
+ 
+Executing...
+   Test 1: TEST OK [0.000 secs, 3032 KB]
+   Test 2: TEST OK [0.000 secs, 3032 KB]
+   Test 3: TEST OK [0.000 secs, 3032 KB]
+   Test 4: TEST OK [0.011 secs, 3032 KB]
+   Test 5: TEST OK [0.011 secs, 3032 KB]
+   Test 6: TEST OK [0.011 secs, 3032 KB]
+   Test 7: TEST OK [0.076 secs, 3032 KB]
+   Test 8: TEST OK [0.000 secs, 3032 KB]
+   Test 9: TEST OK [0.000 secs, 3032 KB]
+   Test 10: TEST OK [0.011 secs, 3032 KB]
+ 
+All tests OK.
+ 
+/*
+	ID:echooat1
+	LANG:C++
+	TASK:milk4
+	*/
+#include <fstream>
+#include <cstring>
+#define M 20003
+using namespace std;
+ifstream fin("milk4.in");ofstream fout("milk4.out");
+long n=0,m=0,a[103]={0},deep=0,ans[103]={0};
+bool hash[103]={0},f[20003]={0};
+int comp(const void* a,const void* b){
+	return *(long*)a-*(long*)b;
+}
+void go(void){
+		for(long i=0;i<ans[0];i++)
+			fout <<ans[i]<<' ';
+		fout <<ans[ans[0]]<<endl;
+		fin.close();fout.close();exit(0);
+}
+long gcd(long a,long b){
+	if(b==0)return a;
+	a=a%b;
+	return gcd(b,a);
+}
+void dfs(long k){
+	if(k==deep){
+		if(deep>=3){
+		for(long i=1;i<=ans[0];i++)
+			for(long j=0;j*ans[i]<=m;j++)
+				f[ans[i]*j]=true;
+		for(long i=1;i<=m;i++)
+			for(long j=1;j<=ans[0];j++)
+				if(i>=ans[j])
+				f[i]=f[i]|f[i-ans[j]];
+				else break;
+		}else if(deep==2){
+			long x=gcd(ans[2],ans[1]);
+			if(!(m%x)){
+				long kk=m/x,l1=ans[1]/x,l2=ans[2]/x;
+				for(long i=1;l1*i<=kk;i++)
+					if((kk-l1*i)%l2==0){f[m]=true;break;}
+				}
+		}
+		else if(deep==1) f[m]=!(m%ans[1]);
+		if(f[m])
+			go();
+		memset(f,0,sizeof f);
+		return;
+	}
+	for(long i=1;i<=n;i++)
+		if(!hash[i]){
+			ans[++ans[0]]=a[i];
+			hash[i]=true;
+			dfs(k+1);
+			hash[i]=0;ans[ans[0]--]=0;
+	}
+}
+int main(int argc,char** argv){
+	fin >>m>>n;long rr=0;
+	for(long i=1;i<=n;i++){
+		long u=0;bool bo=0;
+		fin >>u;
+		for(long j=1;j<=rr;j++)
+			if(!(u%a[j])){bo=true;break;}
+		if(!bo)a[++rr]=u;
+		}
+	n=rr;
+	qsort(a,n+1,sizeof a[0],comp);
+	while(++deep){
+		memset(hash,0,sizeof hash);
+		memset(ans,0,sizeof ans);
+		dfs(0);
+	}
+	go();
+	return 0;
+}比楼上快,哈哈！
+   Test 1: TEST OK [0.000 secs, 2928 KB]
+   Test 2: TEST OK [0.011 secs, 2928 KB]
+   Test 3: TEST OK [0.011 secs, 2928 KB]
+   Test 4: TEST OK [0.000 secs, 2928 KB]
+   Test 5: TEST OK [0.011 secs, 2928 KB]
+   Test 6: TEST OK [0.011 secs, 2928 KB]
+   Test 7: TEST OK [0.022 secs, 2928 KB]
+   Test 8: TEST OK [0.011 secs, 2928 KB]
+   Test 9: TEST OK [0.022 secs, 2928 KB]
+   Test 10: TEST OK [0.011 secs, 2928 KB]
+ 
+/*
+TASK: milk4
+LANG: C++
+*/
+#include<stdio.h>
+#include<string.h>
+#include<iostream>
+using namespace std;
+const int maxn=20001;
+const int maxm=101;
+int a[maxm],b[maxm];
+bool f[maxn],g[maxn];
+int n,m,i,j,k;
+int cmp(const void *a,const void *b){
+    return *(int *)a-*(int *)b;
+}
+bool work1(int x){
+     if(g[x])return f[x];
+     g[x]=1;
+     for(int i=0;i<k;i++)if(x>=b[i]&&work1(x-b[i]))return f[x]=1;
+     return f[x]=0;
+}
+void init(){
+     cin>>n>>m;
+     for(i=0;i<m;i++)cin>>a[i];
+     qsort(a,m,sizeof(a[0]),cmp);
+}
+void dfsid(int dep,int tot){
+     if(tot==k){
+                memset(g,0,sizeof(g));
+                f[0]=g[0]=1;
+                if(work1(n)){
+                             printf("%d",k);
+                             for(i=0;i<k;i++)printf(" %d",b[i]);
+                             printf("\n");
+                             exit(0);
+                             }
+                return;
+                }
+     if(dep>=m)return;
+     b[tot]=a[dep];
+     dfsid(dep+1,tot+1);
+     dfsid(dep+1,tot);
+}
+void work(){
+     for(k=1;k<=m;k++)dfsid(0,0);
+}
+int main(){
+    freopen("milk4.in","r",stdin);
+    freopen("milk4.out","w",stdout);
+    init();
+    work();
+    return 0;
+}

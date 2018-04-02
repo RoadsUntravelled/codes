@@ -1,0 +1,313 @@
+#include <iostream>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <string>
+#include <map>
+#include <list>
+using namespace std;
+ 
+FILE *in, *out;
+ 
+void openfile() { in = fopen("crypt1.in", "r"); out = fopen("crypt1.out", "w+"); }
+void closefile() { fclose(in); fclose(out); }
+ 
+/** TODO VAR. */
+int arr[10], n;
+bool ex[10];
+ 
+int main()
+{
+    openfile();
+    fscanf(in, "%d", &n);
+    memset(ex, 0, sizeof(ex));
+    for(int i = 0; i < n; i++)
+    {
+        fscanf(in, "%d", arr + i);
+        ex[arr[i]] = true;
+    }
+ 
+    int r = 0;
+    for(int i = 0; i < n; i++)
+        for(int j = 0; j < n; j++)
+            for(int k = 0; k < n; k++)
+                for(int l = 0; l < n; l++)
+                    for(int m = 0; m < n; m++)
+                    {
+                        int a = arr[i] * 100 + arr[j] * 10 + arr[k];
+                        int b = a * arr[l], c = a * arr[m], d = b + c * 10;
+                        if(b > 1000 || c > 1000 || d > 10000) continue;
+                        if(!ex[b % 10] || !ex[c % 10] || !ex[d % 10]) continue;
+                        b /= 10, c /= 10, d /= 10;
+                        if(!ex[b % 10] || !ex[c % 10] || !ex[d % 10]) continue;
+                        d /= 10;
+                        if(!ex[b / 10] || !ex[c / 10] || !ex[d % 10] || !ex[d / 10]) continue;
+ 
+                        r++;
+                    }
+ 
+    fprintf(out, "%d\n", r);
+ 
+    closefile();
+    return 0;
+}/*
+   ID : Your ID
+   PROG : crypt1
+   LANG : C++
+*/
+#include <iostream>
+#include <stdio.h>
+using namespace std;
+bool mark[10];
+int n, a, b, num[10];
+bool check(int m, int k)
+{
+   if (m / k > 0) return false;
+   do
+   {
+     if (mark[m % 10] != true)
+        return false;
+     m /= 10;
+   } while (m > 0);
+   return true;
+}
+int main(void)
+{
+    freopen ("crypt1.in", "r", stdin);
+    freopen ("crypt1.out", "w", stdout);    
+    scanf ("%d", &n);
+    for (int i = 1; i <= n; i++)
+    {
+      scanf ("%d", &num[i]);
+      mark[num[i]] = true;
+    }
+    int tot(0);
+    for (int a1 = 1; a1 <= n; a1++)
+      for (int a2 = 1; a2 <= n; a2++)
+        for (int a3 = 1; a3 <= n; a3++)
+          for (int a4 = 1; a4 <= n; a4++)
+            for (int a5 = 1; a5 <= n; a5++)    
+            {
+              bool flag(true);
+              a = num[a1] * 100 + num[a2] * 10 + num[a3];
+              if (check(a * num[a4], 1000) == false)
+                 flag = false;
+              if (check(a * num[a5], 1000) == false)
+                 flag = false;
+              b = num[a4] * 10 + num[a5];
+              if (check(a * b, 10000) == false)
+                 flag = false;
+              if (flag) tot++;
+            } 
+   printf("%d\n", tot); 
+}/*
+ID: richeir2
+PROG: crypt1
+LANG: C++
+*/
+#include <fstream>
+#include <cstring>
+using namespace std;
+ifstream fi("crypt1.in");
+ofstream fo("crypt1.out");
+ 
+int n;
+bool num[10];
+ 
+bool iscow( int t )
+{
+     int extra;
+     while( t!=0 ){
+            extra=t%10;
+            if( !num[extra] )
+                return false;
+            t/=10;
+     }
+     return true;
+}
+ 
+void input()
+{
+     for( int i=0;i<=9;i++ )
+          num[i]=false;
+     fi>>n;
+     int t;
+     for( int i=1;i<=n;i++ ){
+          fi>>t;
+          num[t]=true;
+     }
+}
+ 
+void solve()
+{
+     int t1,t2,ans,count=0;
+     for( int i=100;i<999;i++ ){
+          if( !iscow(i) )
+              continue;
+          for( int j=10;j<99;j++ ){
+               if( !iscow(j) )
+                   continue;
+ 
+               t1=i*(j%10);
+               if( t1>999 )
+                   continue;
+               if( !iscow(t1) )
+                   continue;
+ 
+               t2=i*(j/10);
+               if( t2>999 )
+                   continue;
+               if( !iscow(t2) )
+                   continue;
+ 
+               ans=t1+t2*10;
+ 
+               if( ans>9999 )
+                   continue;
+               if( !iscow(ans) )
+                   continue;
+ 
+               count++;
+          }
+     }
+     fo<<count<<endl;
+}
+ 
+int main()
+{
+    input();
+    solve();
+ 
+    return 0;
+}
+//Program By Richeir 03-10-08 22:41/*
+  ID:p.tiany1
+  LANG:C++
+  PROG:crypt1
+*/
+#  include<iostream>
+using  namespace  std;
+int  a[10],n,t;
+void  init()
+{
+      freopen("crypt1.in","r",stdin);
+      freopen("crypt1.out","w",stdout);
+      int i,j;
+      scanf("%d",&n);
+      for  (i=1;i<=n;i++)
+           scanf("%d",&a[i]);
+}
+bool  check(int b)
+{
+      int i,j;
+      bool tt;
+      while  (b>0)
+      {
+          j=b%10;
+          tt=false;
+          for  (i=1;i<=n;i++)
+               if  (j==a[i])    tt=true;  
+          if  (!tt)  return  false; 
+          b/=10;   
+      }   
+      return  true;   
+}
+void  work()
+{
+      int l1,l2,l3,r1,r2,s1,s2,s3;
+      for  (l1=1;l1<=n;l1++)
+        for  (l2=1;l2<=n;l2++)
+          for  (l3=1;l3<=n;l3++)
+            for  (r1=1;r1<=n;r1++)
+            {
+                 s1=a[r1]*(a[l1]*100+a[l2]*10+a[l3]);
+                 if  (s1>999||!check(s1))  continue;
+                 for  (r2=1;r2<=n;r2++)
+                 {
+                      s2=a[r2]*(a[l1]*100+a[l2]*10+a[l3]);
+                      if  (s2>999||!check(s2))  continue;
+                      s3=s1+s2*10;
+                      if  (!check(s3))  continue;
+                      t++;     
+                 }       
+            }
+}
+void  out()
+{
+      printf("%d\n",t);     
+      fclose(stdin);
+      fclose(stdout); 
+}
+int  main()
+{
+     init();     
+     work();
+     out();
+     return 0;
+}
+//直接枚举/*
+  ID:sgfreed1
+  PROG:crypt1
+  LANG:C++
+*/
+ 
+#include <fstream>
+ 
+using namespace std;
+ 
+ifstream fin("crypt1.in");
+ofstream fout("crypt1.out");
+ 
+const long maxn=10;
+ 
+long n,p[maxn],r=0;
+ 
+inline bool checkit(int k)
+{
+	for(int i=1;i<=n;++i)
+	if(k==p[i])return 1;
+	return 0;
+}
+ 
+inline bool check(int a,int b,int c,int d,int e)
+{
+	long t1=(p[a]*100+p[b]*10+p[c])*p[d],t2=(p[a]*100+p[b]*10+p[c])*p[e],t3=t2+10*t1;
+	if(t2>999||t1>999||t3>9999)return 0;
+	long z,x,y,u;
+	z=t1/100;
+	if(!checkit(z))return 0;
+	y=t1%10;
+	if(!checkit(y))return 0;
+	x=(t1-z*100)/10;
+	if(!checkit(x))return 0;
+	z=t2/100;
+	if(!checkit(z))return 0;
+	x=(t2-z*100)/10;
+	if(!checkit(x))return 0;
+	y=t2%10;
+	if(!checkit(y))return 0;
+	z=t3/1000;
+	if(!checkit(z))return 0;
+	x=(t3-z*1000)/100;
+	if(!checkit(x))return 0;
+	y=(t3-z*1000-x*100)/10;
+	if(!checkit(y))return 0;
+	u=t3%10;
+	if(!checkit(u))return 0;
+	return 1;
+}
+ 
+int main()
+{
+	fin>>n;
+	for(int i=1;i<=n;++i)
+	fin>>p[i];
+	for(int i1=1;i1<=n;++i1)
+	   for(int i2=1;i2<=n;++i2)
+	      for(int i3=1;i3<=n;++i3)
+	         for(int j=1;j<=n;++j)
+	            for(int j2=1;j2<=n;++j2)
+	            if(check(i1,i2,i3,j,j2))r++;
+    fout<<r<<endl;
+	return 0;
+}

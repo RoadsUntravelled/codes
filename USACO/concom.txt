@@ -1,0 +1,331 @@
+/*
+ID:ybojan2
+LANG:C++
+TASK:concom
+*/
+ 
+#include <iostream>
+#include <fstream>
+ 
+using namespace std;
+ 
+void swap(int &x,int &y)
+{
+     int tmp=x;
+     x=y;
+     y=tmp;
+}
+ 
+int n,con[101][101],use[101][101],maxn,x[10001],y[10001],cnt=0;
+ 
+int main()
+{
+    ifstream fin("concom.in");
+    ofstream fout("concom.out");
+ 
+    memset(con,0,sizeof(con));
+    memset(use,false,sizeof(use));
+ 
+    fin>>n;
+    for (int i=1;i<=n;i++)
+    {
+        int a,b,c;
+        fin>>a>>b>>c;
+        con[a][b]=c;
+        maxn=max(max(a,b),maxn);
+    }
+    n=maxn;
+    for (int i=1;i<=n;i++) use[i][i]=true;
+    for (;;)
+    {
+        bool find=false;
+        for (int i=1;i<=n;i++)
+        {
+            for (int j=1;j<=n;j++)
+            {
+                if (i==j) continue;
+                if ((con[i][j]>50)&&(!use[i][j]))
+                {
+                                 find=true;
+                                 cnt++;
+                                 x[cnt]=i;
+                                 y[cnt]=j;
+                                 use[i][j]=true;
+                }
+            }
+        }
+        for (int i=1;i<=n;i++)
+        {
+            for (int k=1;k<=n;k++)
+            {
+                if (use[i][k]) continue;
+                int sum=0;
+                for (int j=1;j<=n;j++)
+                {
+                    if (!use[i][j]) continue;
+                    sum+=con[j][k];
+                }
+                if (sum>50)
+                {
+                           find=true;
+                           cnt++;
+                           x[cnt]=i;
+                           y[cnt]=k;
+                           use[i][k]=true;
+                }
+ 
+            }
+        }
+        if  (!find) break;
+    }
+ 
+    for (int i=1;i<=cnt;i++)
+    {
+        for (int j=i+1;j<=cnt;j++)
+        {
+            if (((x[i]==x[j])&&(y[i]>y[j]))||(x[i]>x[j]))
+            {
+                                                         swap(x[i],x[j]);
+                                                         swap(y[i],y[j]);
+            }
+        }
+    }
+    for (int i=1;i<=cnt;i++)
+        fout<<x[i]<<" "<<y[i]<<endl;
+    return 0;
+}/*
+ID: MasterRay
+LANG: C++
+TASK: concom
+*/
+ 
+#include <algorithm>
+#include <cstdio>
+using namespace std;
+ 
+bool flag[101], own[101];
+int a[101][101] = {}, cnt[101], m;
+ 
+void DFS(int x)
+{
+	if (flag[x]) return;
+	flag[x] = true;
+	for (int i = m; i; --i)
+	{
+		cnt[i] += a[x][i];
+		if (cnt[i] > 50)
+		{
+			own[i] = true;
+			DFS(i);
+		}
+	}
+}
+ 
+int main()
+{
+	int n, u, v, w;
+	freopen("concom.in", "r", stdin);
+	freopen("concom.out", "w", stdout);
+	for (scanf("%d", &n); n; --n)
+	{
+		scanf("%d%d%d", &u, &v, &w);
+		a[u][v] += w;
+		if (u > m) m = u;
+		if (v > m) m = v;
+	}
+	for (int i = 1; i <= m; ++i)
+	{
+		fill_n(cnt+1, m, 0);
+		fill_n(flag+1, m, false);
+		fill_n(own+1, m, false);
+		DFS(i);
+		for (int j = 1; j <= m; ++j)
+			if (own[j] && i != j)
+				printf("%d %d\n", i, j);
+	}
+}
+/*
+ID:GeorgeG1
+PROB:concom
+LANG:C++
+*/
+#include <fstream>
+#include <cstdlib>
+#include <string.h>
+ 
+using namespace std;
+ 
+ 
+ifstream fin ("concom.in");
+ofstream fout ("concom.out");
+ 
+const long comLimit=101;
+ 
+long inputState[comLimit][comLimit]; //inputState[i][j]=x  means i owns x% stocks of j
+ 
+void init()
+{
+     memset (inputState,0,sizeof(inputState));
+     long conCount;
+     fin >>conCount;
+     long i,j,p;
+     for (long x=1;x<=conCount;x++)
+     {
+         fin >>i >>j;
+         fin >>p;
+         inputState[i][j]+=p;
+     }
+     return;
+}
+ 
+ 
+int main()
+{
+    init();
+ 
+    long conState[comLimit][comLimit]; //conState[i][j]=x  means i owns x% stocks of j
+    bool owns[comLimit][comLimit];
+ 
+    memset (owns,0,sizeof(owns));
+    for (long i=1;i<comLimit;i++) owns[i][i]=true;
+    bool changed=true;
+    //work
+    while (changed)
+    {
+          changed=false;
+          memset (conState,0,sizeof(conState));
+          //根据owns从inputState重建conState 
+          for (long i=1;i<comLimit;i++)
+              for (long j=1;j<comLimit;j++)
+                  if (owns[i][j])
+                  {
+                     for (long j2=1;j2<comLimit;j2++)
+                         conState[i][j2]+=inputState[j][j2];
+                  }
+          //根据conState更新owns 
+          for (long i=1;i<comLimit;i++)
+              for (long j=1;j<comLimit;j++)
+                  if (conState[i][j]>50 && owns[i][j]==false)
+                  {
+                     changed=true;
+                     owns[i][j]=true;
+                  }
+    }    
+ 
+ 
+    //output
+    for (long i=1;i<comLimit;i++)           
+    {
+        for (long j=1;j<comLimit;j++)
+        {
+            if (owns[i][j] && i!=j)
+               fout <<i <<' ' <<j <<endl;
+        }
+    }
+    return 0;
+}我的觉着怎么像bellman-ford。。
+/*
+	ID:echooat1
+	LANG:C++
+	TASK:concom
+	*/
+#include <fstream>
+#define max(a,b) ((a)>(b)?(a):(b))
+using namespace std;
+int main(int argc,char** argv){
+	long a[101][101]={0},s[101][101]={0};bool c[101][101]={0},hash[101][101][101]={false};
+	ifstream fin("concom.in");
+	ofstream fout("concom.out");
+	long n;
+	fin >>n;
+	long ma=0;
+	for(long i=1;i<=n;i++){
+		long x,y,z;
+		fin >>x>>y>>z;
+		ma=max(ma,x);ma=max(ma,y);
+		a[x][y]=s[x][y]=z;
+		if(z>50)c[x][y]=true;
+	}
+	bool bo=true;
+	while(bo){
+	bo=false;
+		for(long i=1;i<=ma;i++)
+		for(long j=1;j<=ma;j++)
+			if(!c[i][j])
+				for(long k=1;k<=ma;k++)
+					if(s[i][k]>50&&!hash[i][j][k]){
+						s[i][j]=s[i][j]+a[k][j];
+						hash[i][j][k]=true;
+						if(s[i][j]>50){
+							c[i][j]=true;
+						}
+						if(c[i][j])bo=true;
+				}
+	}
+	for(long i=1;i<=ma;i++)
+		for(long j=1;j<=ma;j++)
+			if(c[i][j]&&i!=j)fout <<i<<' '<<j<<endl;
+	fin.close();fout.close();
+	return 0;
+}//类似SPFA的BFS迭代求解。
+/*
+ID :ambusho1
+TASK :concom
+LANG: C++
+*/
+#include<iostream>
+#include<cstdlib>
+#include<cstdio>
+#include<cstring>
+#include<cmath>
+using namespace std;
+ 
+FILE *fi,*fo;
+const int maxn=120;
+int n=0,m,have[maxn][maxn];
+bool con[maxn][maxn],live[maxn];
+ 
+void solve(int v)
+{
+     int sta=1,las=1,cod[maxn],now[maxn],i,u;
+     bool vis[maxn];
+     memset(now,0,sizeof(now)); memset(cod,0,sizeof(cod));
+     memset(vis,0,sizeof(vis));
+     cod[sta]=v; vis[v]=true;
+     while (sta<=las)
+     {
+           u=cod[sta];
+           for (i=1; i<=n; i++) 
+           {
+               now[i]+=have[u][i];
+               if (live[i] && !vis[i] && now[i]>50) 
+                  { cod[++las]=i; vis[i]=true; }
+           }
+           sta++;
+     }
+     for (i=1; i<=n; i++)
+          if (live[i] && now[i]>50) con[v][i]=true;   
+}
+ 
+int main()
+{
+    fi=fopen("concom.in","r"); fo=fopen("concom.out","w");
+    int i,j,a,b,c;
+    memset(have,0,sizeof(have)); memset(con,0,sizeof(con));
+    memset(live,0,sizeof(live));
+    fscanf(fi,"%d",&m);
+    for (i=1; i<=m; i++)
+    { 
+        fscanf(fi,"%d%d%d",&a,&b,&c);
+        have[a][b]=c;
+        n=max(n,max(a,b)); 
+        live[a]=true; live[b]=true;
+    }
+    for (i=1; i<=n; i++) if (live[i]) solve(i);
+    for (i=1; i<=n; i++)
+        for (j=1; j<=n; j++)
+            if (i!=j && live[i] && live[j] && con[i][j]) 
+               fprintf(fo,"%d %d\n",i,j);
+    fclose(fi); fclose(fo);
+    return 0;
+}

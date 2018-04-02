@@ -1,0 +1,311 @@
+简单标准算法
+/*
+USER: Long Guo [jscompa1]
+TASK: stamps
+LANG: C++
+ 
+Compiling...
+Compile: OK
+ 
+Executing...
+   Test 1: TEST OK [0.000 secs, 10668 KB]
+   Test 2: TEST OK [0.000 secs, 10664 KB]
+   Test 3: TEST OK [0.000 secs, 10668 KB]
+   Test 4: TEST OK [0.000 secs, 10668 KB]
+   Test 5: TEST OK [0.000 secs, 10668 KB]
+   Test 6: TEST OK [0.000 secs, 10664 KB]
+   Test 7: TEST OK [0.000 secs, 10664 KB]
+   Test 8: TEST OK [0.000 secs, 10664 KB]
+   Test 9: TEST OK [0.000 secs, 10668 KB]
+   Test 10: TEST OK [0.162 secs, 10672 KB]
+   Test 11: TEST OK [1.274 secs, 10668 KB]
+   Test 12: TEST OK [0.389 secs, 10664 KB]
+   Test 13: TEST OK [0.011 secs, 10664 KB]
+ 
+All tests OK.
+ 
+*/
+#include<iostream>
+#define BIGNUM 100000000
+using namespace std;
+int main()
+{
+    int f[2000001],a[50],i,j,m,n;
+    freopen("stamps.in","r",stdin);
+    freopen("stamps.out","w",stdout);
+    cin>>n>>m;
+    for (i=0;i<m;i++) cin>>a[i];
+    f[0]=0;
+    for (i=1;i<=2000000;i++)
+    {
+        f[i]=BIGNUM;
+        for (j=0;j<m;j++)
+            if (a[j]<=i) f[i]=min(f[i],f[i-a[j]]+1);
+        if (f[i]>n) break;
+    }
+    cout<<i-1<<endl;
+    return 0;
+}/*
+ID:ybojan2
+LANG:C++
+TASK:stamps
+*/
+ 
+#include <iostream>
+#include <fstream>
+ 
+using namespace std;
+ 
+    int k,n,sum=0,res,p[201],dp[2000002];
+ 
+int main()
+{
+    ifstream fin("stamps.in");
+    ofstream fout("stamps.out");
+ 
+    fin>>k>>n;
+    for (int i=1;i<=n;i++)
+    {
+        fin>>p[i];
+        sum=max(sum,p[i]);
+    }
+    sum*=k;
+    dp[0]=0;
+    for (int i=1;i<=sum+1;i++)
+        dp[i]=2147483646;
+    for (int i=1;i<=n;i++)
+    {
+        for (int j=p[i];j<=sum;j++)
+            dp[j]=min(dp[j],dp[j-p[i]]+1);
+    }
+ 
+    for (int i=1;i<=sum+1;i++)
+        if (dp[i]>k)
+        {
+                    res=i-1;
+                    break;
+        }
+    fout<<res<<endl;
+    return 0;
+}#include <iostream>
+#include <fstream>
+ 
+using namespace std;
+ 
+ifstream fin("stamps.in");
+ofstream fout("stamps.out");
+ 
+//DP题
+ 
+const int MaxRange=2000000;
+ 
+//邮票数量，最大能够使用的张数
+int stamps,maxuse;
+ 
+//表示得到这个面值的需要的最小张数
+short int f[MaxRange+1];
+ 
+//每个邮票的面值
+int value[300];
+int maxvalue;
+ 
+void init()
+{
+	fin>>maxuse>>stamps;
+	fill_n(f,MaxRange+1,1000);
+ 
+	//读入每个邮票的面值，记录最大面值，用来优化
+	maxvalue=0;
+	for (int i=0;i<stamps;++i) 
+	{
+		fin>>value[i];
+		if (value[i]>maxvalue) maxvalue=value[i];
+	}
+}
+ 
+void deal()
+{
+	int j,k;
+ 
+	//DP初始化，最大面值的邮票的用来生成其倍数的面值，得到的一定是最优解
+	f[0]=0;
+	for (j=1,k=maxvalue;k<=MaxRange;k+=maxvalue,j++) f[k]=j;
+ 
+	//如果最大面值为1，特别处理
+	if (maxvalue==1) fout<<maxuse<<endl;
+	else
+	{
+		//DP每个状态是否可以得到
+		for (k=1;k<=MaxRange;++k)
+		{
+			//如果是倍数，已经算出，加这个优化可以快0.2s对于最大规模数据
+			if (k % maxvalue ==0) continue;
+			//枚举每个面值
+			for (j=0;j<stamps;++j) 
+			{
+				if (k-value[j]>=0) 
+					//如果能用更少的数量得到，优化
+					if (f[k-value[j]]+1<f[k]) f[k]=f[k-value[j]]+1;
+			}
+			//如果超过了最大量，则当前面值已经不能满足要求
+			if (f[k]>maxuse) break;
+		}
+		//输出前一个
+		fout<<k-1<<endl;
+	}
+}
+ 
+ 
+int main()
+{
+	init();
+	deal();
+ 
+	//system("pause");
+}
+Test 1: TEST OK [0.054 secs, 12648 KB]
+   Test 2: TEST OK [0.086 secs, 12648 KB]
+   Test 3: TEST OK [0.076 secs, 12648 KB]
+   Test 4: TEST OK [0.086 secs, 12648 KB]
+   Test 5: TEST OK [0.032 secs, 12648 KB]
+   Test 6: TEST OK [0.065 secs, 12648 KB]
+   Test 7: TEST OK [0.162 secs, 12648 KB]
+   Test 8: TEST OK [0.184 secs, 12648 KB]
+   Test 9: TEST OK [0.194 secs, 12648 KB]
+   Test 10: TEST OK [0.259 secs, 12648 KB]
+   Test 11: TEST OK [0.745 secs, 12648 KB]
+   Test 12: TEST OK [0.302 secs, 12648 KB]
+   Test 13: TEST OK [0.227 secs, 12648 KB]
+ 
+/*
+ID:dingyag1
+LANG:C++
+TASK:stamps
+*/
+ 
+#include <stdio.h>
+#include <iostream>
+#include <string>
+#include <math.h>
+using namespace std;
+int dp[2000001];
+bool can[2000001];
+int main()
+{
+	freopen("stamps.in","r",stdin);
+	freopen("stamps.out","w",stdout);
+	int i,j,N,K,v;
+	cin>>K>>N;
+	can[0]=1;
+	for (i=1;i<2000001;++i)
+	{
+		dp[i]=-1;
+	}
+	for (i=1;i<=N;++i)
+	{
+		cin>>v;
+		for (j=v;j<=2000000;++j)
+		{
+			if(can[j-v] && (dp[j]==-1 || dp[j] > dp[j-v]+1))
+			{
+				dp[j]=dp[j-v]+1;
+				can[j]=1;	
+			}
+		}
+	}
+	for (i=1;;++i)
+	{
+		if (!can[i] || dp[i]>K)
+		{
+			cout<<i-1<<endl;
+			break;
+		}
+	}
+	return 0;
+}
+/* TASK: stamps LANG: C++ 
+ 
+Compiling... Compile: OK 
+ 
+Executing... 
+ 
+  Test 1: TEST OK [0.032 secs, 13184 KB]
+  Test 2: TEST OK [0.000 secs, 13184 KB]
+  Test 3: TEST OK [0.011 secs, 13184 KB]
+  Test 4: TEST OK [0.011 secs, 13184 KB]
+  Test 5: TEST OK [0.011 secs, 13184 KB]
+  Test 6: TEST OK [0.011 secs, 13184 KB]
+  Test 7: TEST OK [0.022 secs, 13184 KB]
+  Test 8: TEST OK [0.000 secs, 13184 KB]
+  Test 9: TEST OK [0.011 secs, 13184 KB]
+  Test 10: TEST OK [0.054 secs, 13184 KB]
+  Test 11: TEST OK [0.302 secs, 13184 KB]
+  Test 12: TEST OK [0.140 secs, 13184 KB]
+  Test 13: TEST OK [0.000 secs, 13184 KB]
+}*/
+/*
+TASK: stamps
+PROB:daxiong1
+LANG: C++
+*/
+ 
+#include<iostream>
+#include<fstream>
+using namespace std;
+const int maxn=10001*201;
+int best[maxn];
+int main(){
+	//ifstream cin("in.txt");
+	ifstream cin("stamps.in");
+	ofstream cout("stamps.out");
+	int limit;
+	int n;
+	int m;
+	int aa[51];
+	int temp;
+	cin>>limit>>n;
+	for(int i=0;i<n;i++)
+	{
+		cin>>aa[i];
+	}
+	int max=0;
+	for(int i=0;i<n;i++)
+	{
+		if(aa[i]>max)
+			max=aa[i];
+	}
+	max=max*limit;
+	//memset(best,max,sizeof(best));
+	for(int i=0;i<maxn;i++)
+	{
+		best[i]=max;
+	}
+	best[0]=0;
+	for(int i=0;i<n;i++) {
+			int m=1,k=limit;
+			int temp;
+			while(k-m+1>0) {
+					temp=m;
+					if(k-2*m+1<0) {
+					m=k-m+1;
+			}
+			for(int j=max;j>=m*aa[i];j--) 
+					if(best[ j - m*aa[i] ]+m<best[j])
+						best[j]=best[j-m*aa[i]]+m;
+ 
+							m=temp*2;
+			}
+ 
+        }   //二进制优化
+	int a=0;
+	int i;
+	for( i=1;i<=max;i++) 
+	{
+		if(best[i]>0&&best[i]<=limit)
+			continue;
+		else 
+			break;
+	}
+	cout<<i-1<<endl;
+	return 0;
+}

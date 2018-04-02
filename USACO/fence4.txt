@@ -1,0 +1,1363 @@
+/*
+ID:ybojan2
+LANG:C++
+TASK:fence4
+*/
+#include <iostream>
+#include <stdio.h>
+#include <cmath>
+#include <algorithm>
+#include <cstring>
+#include <string>
+using namespace std;
+/* 常用的常量定义 */
+#define INF  1e200
+#define EP  1e-10
+#define MAXV  300
+#define PI  3.14159265
+const int M=100000+5;
+ 
+/* 基本几何结构 */
+struct POINT {
+    double x;
+    double y; POINT(double a=0, double b=0) { x=a; y=b;} //constructor
+};
+struct LINESEG {
+    POINT s;
+    POINT e;
+    LINESEG(POINT a, POINT b) { s=a; e=b;}
+    LINESEG() { }
+};
+double max(double a,double b) {
+    if (a>b) return a;
+    return b;
+}
+double min(double a,double b) {
+    if (a>b) return b;
+    return a;
+}
+double sqr(double x){
+    return x * x;
+}
+/********************\
+* *
+* 点的基本运算 *
+* *
+\********************/
+double dist(POINT p1,POINT p2) {// 返回两点之间欧氏距离
+    return( sqrt( (p1.x-p2.x)*(p1.x-p2.x)+(p1.y-p2.y)*(p1.y-p2.y) ) );
+}
+/******************************************************************************
+r=multiply(sp,ep,op),得到(sp-op)*(ep-op)的叉积
+r>0:ep在矢量opsp的逆时针方向；
+r=0：opspep三点共线；
+r<0:ep在矢量opsp的顺时针方向
+*******************************************************************************/
+double multiply(POINT sp,POINT ep,POINT op) {
+    return((sp.x-op.x)*(ep.y-op.y)-(ep.x-op.x)*(sp.y-op.y));
+}
+/* 判断点p是否在线段l上，条件：(p在线段l所在的直线上)&& (点p在以线段l为对角线的矩形内) */
+bool online(LINESEG l,POINT p) {
+    return((multiply(l.e,p,l.s)==0) &&( ( (p.x-l.s.x)*(p.x-l.e.x)<=0 )&&( (p.y-l.s.y)*(p.y-l.e.y)<=0 ) ) );
+}
+//返回两点的中点
+POINT midpoint(POINT a, POINT b)
+{
+    return POINT((a.x + b.x) / 2, (a.y + b.y) / 2);
+}
+// 如果线段u和v相交(包括相交在端点处)时，返回true
+bool intersect(LINESEG u,LINESEG v) {
+    return ( (max(u.s.x,u.e.x)>=min(v.s.x,v.e.x))&& //排斥实验
+        (max(v.s.x,v.e.x)>=min(u.s.x,u.e.x))&&
+        (max(u.s.y,u.e.y)>=min(v.s.y,v.e.y))&&
+        (max(v.s.y,v.e.y)>=min(u.s.y,u.e.y))&&
+        (multiply(v.s,u.e,u.s)*multiply(u.e,v.e,u.s)>=0)&& //跨立实验
+        (multiply(u.s,v.e,v.s)*multiply(v.e,u.e,v.s)>=0));
+}
+// (线段u和v相交)&&(交点不是双方的端点) 时返回true
+bool intersect_A(LINESEG u,LINESEG v) {
+    return ((intersect(u,v))&&
+        (!online(u,v.s))&&
+        (!online(u,v.e))&&
+        (!online(v,u.e))&&
+        (!online(v,u.s)));
+}
+//以上是计算几何模板=___=|||
+int n;
+POINT p[2000], e;
+LINESEG s[2000];
+bool sv[2000];
+bool save(int k, LINESEG a)
+{
+    if (dist(a.s, a.e) < 1e-5) return false;
+    int flag = 0;
+    for (int v = 1; v <= n; v++)
+        if (v != k){
+            if (intersect(LINESEG(e, a.s), s[v]) && intersect(LINESEG(e, a.e), s[v])){
+                flag = 1;
+                break;
+            }
+            if (intersect_A(LINESEG(e, a.s), s[v]) || intersect_A(LINESEG(e, a.e), s[v])) flag = 2;
+        }
+    if (flag == 0) return true;
+    if (flag == 1) return false;
+    else return save(k, LINESEG(a.s, midpoint(a.s, a.e))) || save(k, LINESEG(midpoint(a.s, a.e), a.e));
+}
+int main()
+{
+    freopen("fence4.in", "r", stdin);
+    freopen("fence4.out", "w", stdout);
+    scanf("%d", &n);
+    scanf("%lf%lf", &e.x, &e.y);
+    for (int i = 1; i <= n; i++)
+        scanf("%lf%lf", &p[i].x, &p[i].y);
+    for (int i = 1; i < n; i++)
+        s[i] = LINESEG(p[i], p[i + 1]);
+    s[n] = LINESEG(p[1], p[n]);
+    int cnt = 0;
+    memset(sv, false, sizeof(sv));
+    for (int i = 1; i <= n; i++)
+        if (save(i, s[i])) {
+            cnt++;
+            sv[i] = true;
+        }
+    printf("%d\n", cnt);
+    for (int i = 1; i < n - 1; i++)
+        if (sv[i]) printf("%d %d %d %d\n", (int)s[i].s.x, (int)s[i].s.y, (int)s[i].e.x, (int)s[i].e.y);
+    if (sv[n]) printf("%d %d %d %d\n", (int)s[n].s.x, (int)s[n].s.y, (int)s[n].e.x, (int)s[n].e.y);
+    if (sv[n - 1]) printf("%d %d %d %d\n", (int)s[n - 1].s.x, (int)s[n - 1].s.y, (int)s[n - 1].e.x, (int)s[n - 1].e.y);
+    return 0;
+}/*
+/*
+ID: interne4
+PROG: fence4
+LANG: C++
+*/
+/**************************************	
+	OIer C++ IDE Generate
+web:	http://www.n8lm.cn/product?id=1
+Please don't cut down these.
+**************************************/
+#include <fstream>
+#include <cmath>
+using namespace std;
+ifstream fin("fence4.in");
+ofstream fout("fence4.out");
+ 
+/*
+web:	http://www.n8lm.cn
+This template code is writed by Alchemist.
+*/
+const double EP = 0.00000001;
+const int LINE_SEG = 0xff;
+const int LINE_SEG_INF = 0xff + 1;
+template <class T = double>
+class point
+{
+public:
+	T x;
+	T y;
+	point()	{};
+	point(T a,T b)
+	{
+		x = a;
+		y = b;
+	}
+ 
+	point(const point<T>& a)
+	{
+		x = a.x;
+		y = a.y;
+	}
+ 
+	point<T>& operator = (const point<T>& p)
+	{
+		x = p.x;
+		y = p.y;
+	}
+ 
+	friend point<T> operator - (point<T>& p1, point<T>& p2)
+    {
+	    point<T> p(p1.x - p2.x, p1.y - p2.y);
+	    return p;
+    }
+ 
+	friend T crossProduct(point<T> p1, point<T> p2)
+	{
+		return p1.x * p2.y - p1.y * p2.x;
+	}
+ 
+	friend T direction(point<T> p1, point<T> p2, point<T> pO)
+	{
+		return crossProduct(p1 - pO, p2 - pO);
+	}
+ 
+	friend bool operator == (point<T>& p1, point<T>& p2)
+	{
+		return (abs(p1.x - p2.x) < EP  && abs(p1.y - p2.y) < EP);
+	}
+ 
+	friend T dist(point<T> p1, point<T> p2)
+	{
+		return sqrt((p1.x - p2.x)*(p1.x - p2.x) + (p1.y - p2.y)*(p1.y - p2.y));
+	}
+ 
+	friend istream& operator >> (istream& input, point<T>& p)
+	{
+		input >> p.x;
+		input >> p.y;
+		return input;
+	}
+ 
+	friend ostream& operator << (ostream& output, point<T>& p)
+	{
+		output << p.x << ' ' << p.y;
+		return output;
+	}
+};
+ 
+template <class T = double>
+class line
+{
+public:
+	point<T> A;
+	point<T> B;
+ 
+	line(){};
+	line(const point<T>& a,const point<T>& b):A(a),B(b) {};
+	line(T a, T b, T c, T d):A(a,b),B(c,d) {};
+ 
+	void setPoints(point<T> a, point<T> b)
+	{
+		A = a;
+		B = b;
+	}
+ 
+	T length()
+	{
+		return dist(A,B);
+	}
+ 
+	friend bool intersect(line<T>& P, line<T>& Q ,int intersect_way)
+	{
+		if(intersect_way == LINE_SEG)
+		{
+			if(
+			(max(Q.A.x,Q.B.x)>=min(P.A.x,P.B.x))&&
+			(max(P.A.x,P.B.x)>=min(Q.A.x,Q.B.x))&&
+			(max(Q.A.y,Q.B.y)>=min(P.A.y,P.B.y))&&
+			(max(P.A.y,P.B.y)>=min(Q.A.y,Q.B.y))&&
+			(crossProduct(P.A - Q.A , Q.B - Q.A ) * crossProduct( Q.B - Q.A , P.B - Q.A ) >= 0) &&
+			(crossProduct(Q.A - P.A , P.B - P.A ) * crossProduct( P.B - P.A , Q.B - P.A ) >= 0) &&
+			!(P.A == Q.A) &&
+			!(P.A == Q.B) &&
+			!(P.B == Q.A) &&
+			!(P.B == Q.B) 
+			)
+				return true;
+			else
+				return false;
+		}
+		else if(intersect_way == LINE_SEG_INF)
+		{
+			if(
+			(crossProduct(P.A - Q.A , Q.B - Q.A ) * crossProduct( Q.B - Q.A , P.B - Q.A ) > 0) &&
+			!(P.A == Q.A) &&
+			!(P.A == Q.B) &&
+			!(P.B == Q.A) &&
+			!(P.B == Q.B) 
+			)
+				return true;
+			else
+				return false;
+		}
+		return false;
+	}
+ 
+	friend point<T> intersection(line<T>& P, line<T>& Q)
+	{
+		point<T> crossPoint;
+		T tempLeft,tempRight;
+ 
+		//求x坐标
+		tempLeft = (Q.B.x - Q.A.x) * (P.A.y - P.B.y) - (P.B.x - P.A.x) * (Q.A.y - Q.B.y);
+		tempRight = (P.A.y - Q.A.y) * (P.B.x - P.A.x) * (Q.B.x - Q.A.x) + Q.A.x * (Q.B.y - Q.A.y) * (P.B.x - P.A.x) - P.A.x * (P.B.y - P.A.y) * (Q.B.x - Q.A.x);
+    	crossPoint.x = tempRight / tempLeft;
+		//求y坐标
+		tempLeft = (P.A.x - P.B.x) * (Q.B.y - Q.A.y) - (P.B.y - P.A.y) * (Q.A.x - Q.B.x);
+		tempRight = P.B.y * (P.A.x - P.B.x) * (Q.B.y - Q.A.y) + (Q.B.x- P.B.x) * (Q.B.y - Q.A.y) * (P.A.y - P.B.y) - Q.B.y * (Q.A.x - Q.B.x) * (P.B.y - P.A.y);
+		crossPoint.y = tempRight / tempLeft;
+ 
+		return crossPoint;
+	}
+ 
+	friend ostream& operator << (ostream& output, line<T>& l)
+	{
+		output << l.A << ' ' << l.B; 
+		return output;
+	}
+ 
+};
+ 
+const int MaxP = 200 + 1;
+ 
+struct OptArea
+{
+	int p;
+	point<double> optl;
+	line<double> nearest;
+}optas[MaxP*2],optasL[MaxP*2];
+ 
+line<double> lines[MaxP];
+point<double> points[MaxP];
+point<double> person;
+int n,optaN,optaNL;
+ 
+void init()
+{
+	int i,j,x,y;
+	fin >> n;
+	if(n < 2)
+		return;
+	fin >> person;
+	fin >> points[0];
+	for(i=1;i<n;i++)
+	{
+		fin >> points[i];
+		lines[i-1].setPoints(points[i-1],points[i]);
+	}
+	lines[n-1].setPoints(points[0],points[n-1]);
+}
+ 
+int compL(const void* p,const void* q)
+{
+	if(direction(((OptArea*)p)->optl, ((OptArea*)q)->optl, person) > 0)
+		return 1;
+	else
+		return -1;
+}
+ 
+int main()
+{
+	int i,j;
+	init();
+	for(i=0;i<n;i++)
+		for(j=0;j<i;j++)
+		{
+			if(intersect(lines[i],lines[j],LINE_SEG))
+			{
+				fout << "NOFENCE" << endl;
+				return 0;
+			}
+		}
+	for(i=0;i<n;i++)
+	{
+		optasL[i].optl = points[i];
+	}
+	qsort(optasL,n,sizeof(OptArea),compL);
+	optaN = 0;
+	for(i=0;i<n-1;i++)
+	{
+		if(abs(direction(optasL[i].optl, optasL[i+1].optl, person)) < EP)
+			continue;
+		else
+		{
+			optas[optaN] = optasL[i];
+			optas[optaN ++].p = -1;
+		}
+	}
+	optas[optaN] = optasL[n-1];
+	optas[optaN ++].p = -1;
+	optas[optaN] = optas[0];
+	optas[optaN ++].p = -1;
+ 
+	for(i=0;i<n;i++)
+	{
+		int l,r;
+		point<double> t;
+		point<double> lA,lB;
+		if(abs(direction(lines[i].A, lines[i].B, person)) < EP)
+			continue;
+		if(direction(lines[i].A, lines[i].B, person) > 0)
+		{
+			lA = lines[i].B;
+			lB = lines[i].A;
+		}
+		else
+		{
+			lA = lines[i].A;
+			lB = lines[i].B;
+		}
+		r = l = 0;
+		for(j=0;j<optaN;j++)
+			if(abs(direction(lA, optas[j].optl , person)) < EP && (dist(lA, optas[j%optaN].optl) < dist(lA, person) || dist(lA, optas[j%optaN].optl) < dist(optas[j%optaN].optl, person))){
+				l = j;
+				break;
+			}
+		for(j=l;j<optaN+l;j++)
+			if(abs(direction(lB, optas[j%optaN].optl , person)) < EP && (dist(lB, optas[j%optaN].optl) < dist(lB, person) || dist(lB, optas[j%optaN].optl) < dist(optas[j%optaN].optl, person)))
+			{
+				r = j;
+				break;
+			}
+		//fout << i << "--- " << lines[i] << "  :  " << l << ' ' << r << endl;
+ 
+		for(j=l;j<r;j++)
+		{
+			point<double> p1,p2;
+			line<double> l1,l2;
+			l1.setPoints(person, optas[j%optaN].optl);
+			l2.setPoints(person, optas[(j+1)%optaN].optl);
+			p1 = intersection(lines[i], l1);
+			p2 = intersection(lines[i], l2);
+			if(optas[j%optaN].p == -1 || dist(optas[j%optaN].nearest.A , person) - dist(p1 , person) > EP ||  dist(optas[j%optaN].nearest.B , person) - dist(p2 , person) > EP )
+			{
+				optas[j%optaN].nearest.setPoints(p1,p2);
+				optas[j%optaN].p = i;
+			}
+		}
+	}
+ 
+	bool isSee[MaxP] = {0};
+	//fout << endl;
+	for(i=0;i<optaN;i++)
+	{
+		//fout << optas[i].p << endl;
+		if(optas[i].p >= 0)
+			isSee[optas[i].p] = 1;
+	}
+	int ansN = 0;
+	for(i=0;i<n;i++)
+	{
+		if(isSee[i])
+			ansN ++;
+	}
+	fout << ansN <<endl;
+	for(i=0;i<n-2;i++)
+	{
+		if(isSee[i])
+			fout << lines[i] << endl;
+	}
+	if(isSee[n-2] && isSee[n-1])
+	{
+		fout << lines[n-1] << endl;
+		fout << lines[n-2] << endl;
+	}
+	else
+	{
+		if(isSee[n-2])
+			fout << lines[n-2] << endl;
+		else if(isSee[n-1])
+			fout << lines[n-1] << endl;
+	}
+	return 0;
+}/*
+	ID:ymf11111
+	TASK:fence4
+	LANG:C++
+*/
+ 
+//by ymfoi(ymf)
+ 
+#include <iostream>
+#include <cstdio>
+#include <cstring>
+#include <cmath>
+#define MAXE 10000
+#define EPS 1e-6
+ 
+using namespace std;
+ 
+typedef
+struct Point {
+        double px,py;
+} Vect;
+ 
+struct Seg {
+        Point  st,ed;
+};
+ 
+double det(Vect a,Vect b) {
+        return (a.px * b.py - b.px * a.py);
+}
+ 
+Vect P2Vect(Point a,Point b) { // a --> b
+        b.px -= a.px;
+        b.py -= a.py;
+        return b;
+}
+ 
+bool Diff_Side(Seg a,Seg b) {
+ 
+        Vect va = P2Vect(a.st,a.ed);
+        double t1 = det(va,P2Vect(a.st,b.st));
+        double t2 = det(va,P2Vect(a.st,b.ed));
+        if (t1 * t2 <= 0) return 1;
+        return 0;
+}
+ 
+bool Seg_Cross(Seg a,Seg b) {
+        return (Diff_Side(a,b) && Diff_Side(b,a));
+}
+ 
+bool Same(Point a,Point b) {
+ 
+        if (fabs(a.px - b.px) >= EPS) return 0;
+        if (fabs(a.py - b.py) >= EPS) return 0;
+        return 1;
+}
+//////////// Basic Graphics  ///////////////
+ 
+Seg edges[MAXE];
+int e_Num = 0;
+bool canbs[MAXE];
+Point eye;
+ 
+bool seen(Seg a,int num,Point eye) { //二分法！ 通过了test12 且通过网友自编数据
+ 
+        if (Same(a.st,a.ed)) return 0; // a is a point
+ 
+        Seg leyes,reyes,al,ar;
+        leyes.st = reyes.st = eye;
+        leyes.ed = a.st; reyes.ed = a.ed;
+        bool ok = 0;
+ 
+        for (int i = 1; i <= e_Num; i++)
+                if (i != num)
+                {
+                        bool b1 = Seg_Cross(leyes,edges[i]);
+                        bool b2 = Seg_Cross(reyes,edges[i]);
+                        if (b1 && b2) return 0;//cout << num <<"was covered by"<< i<<endl; }
+                        ok|=b1 || b2;
+                }
+ 
+        if (!ok) return 1;
+ 
+        al.st = a.st;
+        al.ed.px = (a.st.px + a.ed.px) / 2;
+        al.ed.py = (a.st.py + a.ed.py) / 2;
+        ar.st = al.ed;
+        ar.ed = a.ed;
+ 
+        if (seen(al,num,eye)) return 1;
+        if (seen(ar,num,eye)) return 1;
+        return 0;
+}
+ 
+int main() {
+ 
+        int N,sum = 0;
+        Point lp;
+ 
+        freopen("fence4.in","r",stdin);
+        freopen("fence4.out","w",stdout);
+		memset(canbs,0,sizeof(canbs));
+ 
+        scanf("%d",&N);
+        scanf("%lf %lf",&eye.px,&eye.py);
+        scanf("%lf %lf",&lp.px,&lp.py);
+ 
+        for (int i = 2; i <= N; i++)
+        {
+                Point tmp;
+                scanf("%lf %lf",&tmp.px,&tmp.py);
+                edges[++e_Num].st = lp;
+                edges[e_Num].ed = tmp;
+                lp = tmp;
+        }
+        edges[++e_Num].st =lp;
+        edges[e_Num].ed = edges[1].st;
+ 
+        //read & add
+ 
+		for (int i = 1; i <= e_Num; i++) if (canbs[i] = seen(edges[i],i,eye)) sum++;
+ 
+ 
+		printf("%d\n",sum);
+        for (int i = 1; i <= e_Num - 2; i++)
+                if (canbs[i])
+                        printf("%.0lf %.0lf %.0lf %.0lf\n",edges[i].st.px,edges[i].st.py,edges[i].ed.px,edges[i].ed.py);
+		if (canbs[e_Num])
+                printf("%.0lf %.0lf %.0lf %.0lf\n",edges[e_Num].ed.px,edges[e_Num].ed.py,edges[e_Num].st.px,edges[e_Num].st.py);
+		if (canbs[e_Num - 1])
+                printf("%.0lf %.0lf %.0lf %.0lf\n",edges[e_Num - 1].st.px,edges[e_Num - 1].st.py,edges[e_Num - 1].ed.px,edges[e_Num - 1].ed.py);
+ 
+       return 0;
+}#include<fstream>//by Adventop
+#include<cmath>
+using namespace std;
+ofstream fout ("fence4.out",ios::out);
+ifstream fin ("fence4.in",ios::in);
+const double JD = 0.005;
+struct Point{
+    double x,y;
+}point[201],see;
+struct Line{
+    Point start,end;
+}line[201];
+long n,len=0;
+bool cansee[201],reg[201];
+inline double crossproduct(Point start,Point U,Point V){//计算叉积
+    double Ux=U.x-start.x,Uy=U.y-start.y,Vx=V.x-start.x,Vy=V.y-start.y;
+    return (Ux*Vy-Uy*Vx);
+}
+inline int cancross(Line A,Line B){
+    double A1=crossproduct(A.start,A.end,B.start),A2=crossproduct(A.start,A.end,B.end),
+        B1=crossproduct(B.start,B.end,A.start),B2=crossproduct(B.start,B.end,A.end);
+    if(A1==0 || A2==0) return -1;//被点挡住
+    if(A1*A2<0 && B2*B1<0) return 1;//严格相交
+    return 0;
+}
+inline bool check(const Line &mid){
+    for(int i=1;i<=n;i++) if(!reg[i])
+        if(cancross(mid,line[i])!=0) return false;
+    return true;
+}
+inline bool watch(Point start,Point end){
+    if(sqrt(((start.x-end.x)*(start.x-end.x))+((start.y-end.y)*(start.y-end.y)))<JD) return false;
+    Line mid;//中位线
+    bool temp=false;
+    mid.end.x=(start.x+end.x)/2;
+    mid.end.y=(end.y+start.y)/2;
+    mid.start.x=see.x;
+    mid.start.y=see.y;
+    if(check(mid)) return true;
+    else{
+        temp=watch(start,mid.end);
+        if(!temp) temp=watch(mid.end,end);
+    }
+    return temp;
+}
+int main()
+{
+    fin>>n>>see.x>>see.y;
+    fin>>point[1].x>>point[1].y;
+    for(int i=1;i<=200;i++) cansee[i]=false;
+    for(int i=2;i<=n;i++){
+        fin>>point[i].x>>point[i].y;
+        line[i-1].start=point[i-1];
+        line[i-1].end=point[i];
+    }
+    line[n].start=point[1];
+    line[n].end=point[n];
+    for(int i=1;i<n;i++)
+        for(int j=i+1;j<=n;j++)
+            if(cancross(line[i],line[j])==1){fout<<"NOFENCE"<<endl;return 0;}
+    for(int i=1;i<=n;i++){
+        if(crossproduct(see,line[i].start,line[i].end)==0) continue;
+        reg[i]=true;//不要跟自己比较
+        if(watch(line[i].start,line[i].end)){len++; cansee[i]=true;}
+        reg[i]=false;
+    }
+    fout<<len<<endl;
+    if(cansee[n]&&cansee[n-1]){ //如果最后两个都合法,交换
+        Line temp=line[n];
+        line[n]=line[n-1];
+        line[n-1]=temp;
+    }
+    for(int i=1;i<=n;i++) if(cansee[i])
+        fout<<line[i].start.x<<' '<<line[i].start.y<<' '<<line[i].end.x<<' '<<line[i].end.y<<endl;
+    return 0;
+}/*
+ID: MasterRay
+LANG: C++
+TASK: fence4
+*/
+ 
+#include <math.h>
+#include <float.h>
+#include <stdio.h>
+ 
+template <typename T>
+struct vertex
+{
+	T x, y;
+	vertex() {}
+	vertex(T x, T y) : x(x), y(y) {}
+	vertex<T> operator-(const vertex<T> &rhs) const
+	{
+		return vertex(x-rhs.x, y-rhs.y);
+	}
+	T inner_product(const vertex &rhs) const
+	{
+		return x*rhs.x+y*rhs.y;
+	}
+	T outer_product(const vertex &rhs) const
+	{
+		return x*rhs.y-y*rhs.x;
+	}
+};
+ 
+template <typename T>
+struct edge
+{
+	vertex<T> a, b;
+	bool include(const vertex<T> &rhs) const
+	{
+		T res = vertex<T>(rhs-a).inner_product(rhs-b);
+		return res <= 0;
+	}
+	int cross(const edge<T> &rhs) const
+	{
+		int flag = 0;
+		vertex<T> base = b-a;
+		T res1 = base.outer_product(rhs.a-a), res2 = base.outer_product(rhs.b-a);
+		if (res1*res2 < 0)
+			flag = 1;
+		else
+		{
+			if (res1 == 0 && include(rhs.a)) return 1;
+			if (res2 == 0 && include(rhs.b)) return 1;
+		}
+		base = rhs.b-rhs.a;
+		res1 = base.outer_product(a-rhs.a);
+		res2 = base.outer_product(b-rhs.a);
+		if (res1*res2 < 0)
+			++flag;
+		else
+		{
+			if (res1 == 0 && rhs.include(a)) return 1;
+			if (res2 == 0 && rhs.include(b)) return 1;
+		}
+		return flag == 2 ? 2 : 0;
+	}
+	double dist(const edge<T> &rhs) const
+	{
+		T s1 = vertex<T>(rhs.a-a).outer_product(rhs.b-a),
+			s2 = vertex<T>(rhs.b-b).outer_product(rhs.a-b);
+		return sqrt((b.x-a.x)*(b.x-a.x)+(b.y-a.y)*(b.y-a.y))*s1/(s1+s2);
+	}
+};
+ 
+bool hash[1000];
+vertex<int> src, v[1000];
+vertex<double> vv[1000];
+edge<int> e[1000];
+edge<double> ee[1000];
+ 
+int main()
+{
+	int n;
+	freopen("fence4.in", "r", stdin);
+	freopen("fence4.out", "w", stdout);
+	scanf("%d%d%d", &n, &src.x, &src.y);
+	for (int i = 0; i < n; ++i)
+		scanf("%d%d", &v[i].x, &v[i].y);
+	e[0].a = v[n-1]; e[0].b = v[0];
+	for (int i = 1; i < n; ++i)
+		e[i].a = v[i-1], e[i].b = v[i];
+	for (int i = 0; i < n; ++i)
+		for (int j = i+2; j %= n, j != (i-1+n)%n; ++j)
+			if (e[i].cross(e[j])) return puts("NOFENCE"), 0;
+	for (int i = 0; i < n; ++i)
+	{
+		double cos_theta = cos(1E-4), sin_theta = sin(1E-4);
+		vv[i] = vertex<double>((v[i].x-src.x)*2000+src.x, (v[i].y-src.y)*2000+src.y);
+		vv[i] = vertex<double>((vv[i].x-src.x)*cos_theta-(vv[i].y-src.y)*sin_theta+src.x, (vv[i].x-src.x)*sin_theta+(vv[i].y-src.y)*cos_theta+src.y);
+		ee[i].a.x = e[i].a.x; ee[i].a.y = e[i].a.y;
+		ee[i].b.x = e[i].b.x; ee[i].b.y = e[i].b.y;
+	}
+	for (int i = 0; i < n; ++i)
+	{
+		int min_j = -1;
+		double min_dist = DBL_MAX, t;
+		edge<double> radial = {vertex<double>(src.x, src.y), vertex<double>(vv[i].x, vv[i].y)};
+		for (int j = 0; j < n; ++j)
+			if (radial.cross(ee[j]) == 2 && (t = radial.dist(ee[j])) < min_dist)
+				min_dist = t, min_j = j;
+		if (min_j != -1) hash[min_j] = true;
+	}
+	int res = 0;
+	for (int i = 0; i < n; ++i)
+		if (hash[i]) ++res;
+	printf("%d\n", res);
+	for (int i = 1; i < n-1; ++i)
+		if (hash[i]) printf("%d %d %d %d\n", e[i].a.x, e[i].a.y, e[i].b.x, e[i].b.y);
+	if (hash[0]) printf("%d %d %d %d\n", e[0].b.x, e[0].b.y, e[0].a.x, e[0].a.y);
+	if (hash[n-1]) printf("%d %d %d %d\n", e[n-1].a.x, e[n-1].a.y, e[n-1].b.x, e[n-1].b.y);
+}//失败的代码
+/*
+ID:   talenth1
+PROG: fence4
+LANG: C++
+*/
+#include<stdio.h>
+#include<stdlib.h>
+#include<math.h>
+#include<string.h>
+const int maxn=300;
+const double pi=3.1415926535;
+int n,xp,yp;
+bool seen[maxn];
+struct vector{
+       int x,y;
+       };
+vector op[maxn];
+double fmin(double x,double y)
+{
+       if(x<y)return x;
+       else   return y;
+}
+double fmax(double x,double y)
+{
+       if(x>y)return x;
+       else   return y;
+}
+int main()
+{
+      freopen("fence4.in","r",stdin);
+      freopen("fence4.out","w",stdout);
+      scanf("%d",&n);
+      scanf("%d%d",&xp,&yp);
+      for(int i=1;i<=n;i++)
+              scanf("%d%d",&op[i].x,&op[i].y);
+      memset(seen,0,sizeof(seen));
+ 
+      for(float sita=0;sita<=pi;sita+=0.0001){//枚举视线的倾斜角 
+                 double k1,b1,k2,b2;
+                 double cx[maxn],cy[maxn];
+                 bool   p[maxn];
+                 memset(p,0,sizeof(p));
+                 k1=tan(sita);
+                 b1=yp-tan(sita)*xp;
+                 for(int i=1;i<=n;i++){
+                         double dx,dy,tmpx,tmpy; 
+                         dx=op[i+1].x-op[i].x;
+                         dy=op[i+1].y-op[i].y;
+                         k2=dy/dx;
+                         b2=op[i].y-op[i].x*k2;
+                         tmpx=(b2-b1)/(k1-k2);
+                         tmpy=tmpx*k1+b1;
+                         if(dx==0){tmpx=op[i].x;tmpy=k1*tmpx+b1;}
+                         if(k1==k2&&b1==b2)break;
+                         if(tmpx>fmin(op[i+1].x,op[i].x)&&tmpx<fmax(op[i+1].x,op[i].x)){p[i]=true;cx[i]=tmpx;cy[i]=tmpy;}
+                         if(tmpy>fmin(op[i+1].y,op[i].y)&&tmpy<fmax(op[i+1].y,op[i].y)){p[i]=true;cx[i]=tmpx;cy[i]=tmpy;}
+                         }//对每一条边 
+                 double t1=9999999.0,t2=9999999.0;
+                 int tmp1=-1,tmp2=-1;
+                 for(int i=1;i<=n;i++){
+                         if(cx[i]-xp<0)if(fabs(xp-cx[i])<t1&&p[i]){t1=fabs(xp-cx[i]);tmp1=i;}
+                         if(cx[i]-xp>0)if(fabs(xp-cx[i])<t2&&p[i]){t2=fabs(xp-cx[i]);tmp2=i;}
+                         }//for i
+                 if(tmp1!=-1)seen[tmp1]=true;
+                 if(tmp2!=-1)seen[tmp2]=true;
+                 }
+      //--out
+      int count=0;
+      for(int i=1;i<=n;i++)
+        if(seen[i])count++;
+      printf("%d\n",count);
+      for(int i=1;i<=n-2;i++)
+        if(seen[i])if(i!=n)printf("%d %d %d %d\n",op[i].x,op[i].y,op[i+1].x,op[i+1].y);
+      if(seen[n])printf("%d %d %d %d\n",op[1].x,op[1].y,op[n].x,op[n].y);
+      if(seen[n-1])printf("%d %d %d %d\n",op[n-1].x,op[n-1].y,op[n].x,op[n].y);
+      return 0;      
+}/*
+ID:GeorgeG1
+TASK:fence4
+LANG:C++
+*/
+/*
+先用O(n^2)判断线段是否相交
+然后用扫描线处理
+*/
+#include <fstream>
+#include <cmath>
+#include <string.h>
+ 
+using namespace std;
+ 
+ifstream fin ("fence4.in");
+ofstream fout ("fence4.out");
+ 
+const long MAXN=210;
+ 
+struct point 
+{
+       double x;
+       double y;
+};
+ 
+struct edge
+{
+       point *v[2];
+};
+ 
+//    观察点    顶点集 
+point watcher,*vertex[MAXN];
+bool isInSight[MAXN];
+long N;
+//       边集 
+edge *fence[MAXN];
+ 
+ 
+void calcSight();
+void checkLine(double angle);
+void checkCross();
+void createEdge();
+inline bool isCross(edge *a,edge *b);
+inline double times(double x1,double y1,double x2,double y2){return x1*y2-x2*y1;}      //向量叉积
+ 
+ 
+int main()
+{
+    //数据读入 
+    fin >>N;
+    fin >>watcher.x >>watcher.y;
+    for (long i=0;i<N;++i)
+    {
+        vertex[i]=new point();
+        fin >>vertex[i]->x >>vertex[i]->y;
+    }
+    //建立边 
+    createEdge();
+ 
+    //检查是否相交 
+    checkCross();
+ 
+    //扫描线处理
+    calcSight();
+ 
+    //输出 
+    long counter=0;
+    for (long i=0;i<N;++i) counter+=isInSight[i];
+    fout <<counter <<endl;
+ 
+    for (long i=0;i<N-2;++i)
+        if (isInSight[i]) fout <<fence[i]->v[0]->x <<" "
+                               <<fence[i]->v[0]->y <<" "
+                               <<fence[i]->v[1]->x <<" "
+                               <<fence[i]->v[1]->y <<"\n";
+    if (isInSight[N-1]) fout <<fence[N-1]->v[0]->x <<" "
+                             <<fence[N-1]->v[0]->y <<" "
+                             <<fence[N-1]->v[1]->x <<" "
+                             <<fence[N-1]->v[1]->y <<"\n";
+    if (isInSight[N-2]) fout <<fence[N-2]->v[0]->x <<" "
+                             <<fence[N-2]->v[0]->y <<" "
+                             <<fence[N-2]->v[1]->x <<" "
+                             <<fence[N-2]->v[1]->y <<"\n";
+    return 0;
+} 
+ 
+ 
+inline bool isCross(edge *a,edge *b)   //检查a、b是否相交 
+{
+       point *s=a->v[0];
+       if (times(a->v[1]->x - s->x,a->v[1]->y - s->y,b->v[0]->x - s->x,b->v[0]->y - s->y)
+          *times(a->v[1]->x - s->x,a->v[1]->y - s->y,b->v[1]->x - s->x,b->v[1]->y - s->y) >=0)
+          return false;
+       s=b->v[0];
+       if (times(b->v[1]->x - s->x,b->v[1]->y - s->y,a->v[0]->x - s->x,a->v[0]->y - s->y)
+          *times(b->v[1]->x - s->x,b->v[1]->y - s->y,a->v[1]->x - s->x,a->v[1]->y - s->y) >=0)
+          return false;
+       return true;
+}
+ 
+void createEdge()                  //通过输入的点建立边集 
+{
+     --N;
+     for (long i=0;i<N;++i)
+     {
+         fence[i]=new edge();
+         fence[i]->v[0]=vertex[i];
+         fence[i]->v[1]=vertex[i+1];
+     }
+     fence[N]=new edge();
+     fence[N]->v[0]=vertex[0];
+     fence[N]->v[1]=vertex[N];
+     ++N;
+     return;
+}
+ 
+void checkCross()                //检查输入是否是fence
+{
+     for (long i=0;i<N;++i)
+         for (long j=0;j<N;++j)
+         { 
+             if (i==j) continue;
+             if (!isCross(fence[i],fence[j])) continue;
+             fout <<"NOFENCE\n";
+             exit(0);
+         }
+     return;
+}
+ 
+/*
+给定一个射线OA（向量OA与x轴正方向的夹角），算法将记录下边集中与射线OA有交点且交点离O点最近的线段。
+*/
+void checkLine(double angle)  
+{
+     double min_k1=1E16;
+     long firstCrash=-1;
+     double lx=cos(angle),ly=sin(angle);
+     double k1,t;
+     for (long i=0;i<N;++i)
+     {
+         double &x=watcher.x;
+         double &y=watcher.y;
+         double &x1=fence[i]->v[0]->x;
+         double &y1=fence[i]->v[0]->y;
+         double &x2=fence[i]->v[1]->x;
+         double &y2=fence[i]->v[1]->y;
+ 
+         //不相交则跳过 
+         if (times(x1-x,y1-y,lx,ly) * times(x2-x,y2-y,lx,ly)>=0)
+            continue;
+         //相交 
+ 
+         lx=cos(angle),ly=sin(angle);
+         if (x2-x1==0)
+         {
+            k1=(x1-x)/lx;
+         }else{
+               t=(y2-y1)/(x2-x1);
+               k1=(t*(x1-x)+y-y1)/(t*lx-ly);
+         }
+         if (k1>0 && k1<min_k1)
+         {
+            min_k1=k1;
+            firstCrash=i;
+         }
+     }
+     if (firstCrash!=-1) 
+        isInSight[firstCrash]=1;    //记录可见边 
+     return;
+}
+ 
+/*
+枚举观察点到每个顶点的向量，然后把其与x轴的夹角(+-)1E-8 rad 后检查沿该方向能看到的fence 
+*/
+void calcSight()    
+{
+     memset (isInSight,0,sizeof(isInSight));
+     double tmpAngle;
+     for (long i=0;i<N;++i)
+     {
+         tmpAngle=atan2(vertex[i]->y-watcher.y,vertex[i]->x-watcher.x);
+         checkLine(tmpAngle+1E-8);
+         checkLine(tmpAngle-1E-8);
+     }
+     return;
+}/*
+ID: dxmtb1
+PROG: fence4
+LANG: C++
+*/
+#include <cstdio>
+#include <cmath>
+#include <cstring>
+#include <algorithm>
+using namespace std;
+ 
+#define sqr(x) ((x)*(x))
+ 
+const int MAXN=200;
+const int oo=1050;
+const double precision=1e-7;
+const double small=0.01;
+ 
+struct Node
+{
+	double x,y;
+}p[MAXN],s,pc[MAXN];
+ 
+inline double dis(Node a,Node b)
+{
+	return sqr(a.x-b.x)+sqr(a.y-b.y);
+}
+ 
+inline double det(double x1,double y1,double x2,double y2)
+{
+	return x1*y2-x2*y1;
+}
+ 
+inline double cross(Node a,Node b,Node c)
+{
+	return det(b.x-a.x,b.y-a.y,c.x-a.x,c.y-a.y);
+}
+ 
+inline int dblcmp(double d)
+{
+	if (fabs(d)<precision)
+		return 0;
+	return d>0?1:-1;
+}
+ 
+int segcross(Node a,Node b,Node c,Node d,Node &p)
+{
+	int d1,d2,d3,d4;
+	double s1,s2,s3,s4;
+	d1=dblcmp(s1=cross(a,b,c));
+	d2=dblcmp(s2=cross(a,b,d));
+	d3=dblcmp(s3=cross(c,d,a));
+	d4=dblcmp(s4=cross(c,d,b));
+	if ((d1^d2)==-2&&(d3^d4)==-2)
+	{
+		p.x=(c.x*s2-d.x*s1)/(s2-s1);
+		p.y=(c.y*s2-d.y*s1)/(s2-s1);
+		return 1;
+	}
+ 
+	return 0;
+}
+ 
+bool operator < (Node a,Node b)
+{
+	return cross(s,a,b)>0?true:false;
+}
+ 
+bool operator > (Node a,Node b)
+{
+	return !(a<b);
+}
+ 
+void qsort(Node q[],int l,int r)
+{
+ int i=l,j=r;
+ Node mid=q[(l+l+r)/3];
+ while (i<=j)
+ {
+  while (((q[i].x-s.x)*(mid.y-s.y)-(q[i].y-s.y)*(mid.x-s.x))>0)i++;
+  while (((q[j].x-s.x)*(mid.y-s.y)-(q[j].y-s.y)*(mid.x-s.x))<0)j--;
+  if(i<=j)swap(q[i++],q[j--]);
+ }
+ if(i<r)qsort(q,i,r);
+ if(l<j)qsort(q,l,j);
+}
+ 
+int n,sum;
+bool vis[MAXN];
+ 
+inline int mo(int d)
+{
+	return (d+n)%n;
+}
+ 
+int main()
+{
+	freopen("fence4.in","r",stdin);
+	freopen("fence4.out","w",stdout);
+	scanf("%d",&n);
+	scanf("%lf%lf",&s.x,&s.y);
+	for(int i=0;i<n;i++)
+		scanf("%lf%lf",&p[i].x,&p[i].y);
+	memcpy(pc,p,n*sizeof(Node));
+	qsort(pc,0,n-1);
+	for(int i=0;i<n;i++)
+	{
+		double mdis=1e30;
+		int now=n;
+		Node temp={(pc[i].x+pc[mo(i+1)].x)/2+small,
+			(pc[i].y+pc[mo(i+1)].y)/2+small};
+		Node t;
+		t.x=temp.x>s.x?oo:-oo;
+		if (temp.x==s.x)t.x=s.x,t.y=temp.y>s.y?oo:-oo;
+		else t.y=(t.x-s.x)*(temp.y-s.y)/(temp.x-s.x)+s.y;
+		for(int j=0;j<n;j++)
+			if (segcross(s,t,p[j],p[mo(j+1)],temp)==1)
+			{
+				double t_dis=dis(s,temp);
+				if (t_dis<mdis)
+				{
+					mdis=t_dis;
+					now=j;
+				}
+			}
+		if (now!=n&&!vis[now]) vis[now]=true,sum++;
+	}
+	for(int i=0;i<n;i++)
+	{
+		double mdis=1e30;
+		int now=n;
+		Node temp={(pc[i].x+pc[mo(i+1)].x)/2-small,
+			(pc[i].y+pc[mo(i+1)].y)/2-small};
+		Node t;
+		t.x=temp.x>s.x?oo:-oo;
+		if (temp.x==s.x)t.x=s.x,t.y=temp.y>s.y?oo:-oo;
+		else t.y=(t.x-s.x)*(temp.y-s.y)/(temp.x-s.x)+s.y;
+		for(int j=0;j<n;j++)
+			if (segcross(s,t,p[j],p[mo(j+1)],temp)==1)
+			{
+				double t_dis=dis(s,temp);
+				if (t_dis<mdis)
+				{
+					mdis=t_dis;
+					now=j;
+				}
+			}
+		if (now!=n&&!vis[now]) vis[now]=true,sum++;
+	}
+	printf("%d\n",sum);
+	for(int i=0;i<n-2;i++)
+		if (vis[i])
+			printf("%d %d %d %d\n",int(p[i].x),int(p[i].y),
+					int(p[i+1].x),int(p[i+1].y));
+	if (vis[n-1])
+		printf("%d %d %d %d\n",int(p[0].x),int(p[0].y),
+				int(p[n-1].x),int(p[n-1].y));
+	if (vis[n-2])
+		printf("%d %d %d %d\n",int(p[n-2].x),int(p[n-2].y),
+				int(p[n-1].x),int(p[n-1].y));
+	return 0;
+}用了叉积和点积，然后一大堆公式往上砸，弄了10个小时。。。
+ 
+/*
+	ID:echooat1
+	LANG:C++
+	TASK:fence4
+	*/
+#include <fstream>
+#include <cmath>
+#define len 320
+#define max(a,b) ((a)>(b)?(a):(b))
+#define min(a,b) ((a)<(b)?(a):(b))
+#define cha(a,b,c,d) ((a)*(d)-(b)*(c))
+#define dian(a,b,c,d) ((a)*(c)+(b)*(d))
+using namespace std;
+struct re{
+	long x,y;
+};
+struct ll{
+	long x1,y1,x2,y2;
+};
+void ex(long &a,long &b){
+	long c=a;a=b;b=c;
+}
+re p[len];
+ll l[len];
+long n,m,x0,t0,ans=0;
+long  hash[len]={0},temp=0;
+ifstream fin("fence4.in");
+ofstream fout("fence4.out");
+bool ok(long x1,long y1,long x2,long y2,long x3,long y3,long x4,long y4){
+	if(max(x1,x2)<min(x3,x4)||min(x1,x2)>max(x3,x4)||
+		max(y1,y2)<min(y3,y4)||min(y1,y2)>max(y3,y4))
+		return false;
+	if(cha(x3-x1,y3-y1,x2-x1,y2-y1)*cha(x4-x1,y4-y1,x2-x1,y2-y1)<=0&&
+		cha(x1-x3,y1-y3,x4-x3,y4-y3)*cha(x2-x3,y2-y3,x4-x3,y4-y3)<=0)
+	return true;
+	return false;
+}
+bool dele(long mode,long h){
+	long da=mode,xiao=mode,l1,u1,l2,u2,temp2=0,temp1=0;
+	if(cha(l[da].x2-x0,l[da].y2-t0,l[xiao].x1-x0,l[xiao].y1-t0)<0){
+		temp1=-1;temp2=1;
+	}else {
+		temp1=1;temp2=-1;
+	}
+	long mimi=mode,mama=mode;
+	while(hash[da+1]!=0&&da+1!=mode){
+		if(cha(l[da+1].x2-x0,l[da+1].y2-t0,l[mama].x2-x0,l[mama].y2-t0)*temp1>0)
+			mama=da+1;
+		da++;if(da>n)da=1;
+	}
+	da=mama;
+	while(hash[xiao-1]!=0&&xiao-1!=mode){
+		if(cha(l[xiao-1].x1-x0,l[xiao-1].y1-t0,l[mimi].x1-x0,l[mimi].y1-t0)*temp2>0)
+			mimi=xiao-1;
+		xiao--;if(xiao<1)xiao=n;
+	}
+	xiao=mode;
+	long mii=mode;
+	while(hash[xiao+1]!=0&&xiao+1!=mode){
+		if(cha(l[xiao+1].x1-x0,l[xiao+1].y1-t0,l[mii].x1-x0,l[mii].y1-t0)*temp2>0)
+			mii=xiao+1;
+		xiao++;if(xiao>n)xiao=1;
+	}
+	if(cha(l[mii].x1-x0,l[mii].y1-t0,l[mode].x1-x0,l[mode].y1-t0)*temp2>
+		cha(l[mimi].x1-x0,l[mimi].y1-t0,l[mode].x1-x0,l[mode].y1-t0)*temp2)
+	xiao=mii;else xiao=mimi;
+	if(cha(l[da].x2-x0,l[da].y2-t0,l[xiao].x1-x0,l[xiao].y1-t0)==0)
+		if(temp1<0){
+			l1=l[da].x2;
+		u1=l[da].y2;
+		l2=l[xiao].x1;
+		u2=l[xiao].y1;
+		}else {l1=l[xiao].x1;u1=l[xiao].y1;l2=l[da].x2;u2=l[da].y2;}
+	if(cha(l[da].x2-x0,l[da].y2-t0,l[xiao].x1-x0,l[xiao].y1-t0)<0){
+		l1=l[da].x2;
+		u1=l[da].y2;
+		l2=l[xiao].x1;
+		u2=l[xiao].y1;
+		}
+	if(cha(l[da].x2-x0,l[da].y2-t0,l[xiao].x1-x0,l[xiao].y1-t0)>0)
+		{l1=l[xiao].x1;u1=l[xiao].y1;l2=l[da].x2;u2=l[da].y2;}
+	bool bo=false;
+	if(cha(l[mode].x1-x0,l[mode].y1-t0,l[mode].x2-x0,l[mode].y2-t0)*cha(l[xiao].x1-x0,l[xiao].y1-t0,l[da].x2-x0,l[da].y2-t0)<0)
+		bo=true;
+		if(!bo){
+	long a1=cha(l[h].x1-x0,l[h].y1-t0,l1-x0,u1-t0),a2=cha(l[h].x2-x0,l[h].y2-t0,l1-x0,u1-t0),
+			a3=cha(l[h].x1-x0,l[h].y1-t0,l2-x0,u2-t0),a4=cha(l[h].x2-x0,l[h].y2-t0,l2-x0,u2-t0);
+	if(a1>=0&&a2>=0&&a3<=0&&a4<=0)
+	return true;
+}
+	else {
+			long a1=cha(l[h].x1-x0,l[h].y1-t0,l1-x0,u1-t0),a2=cha(l[h].x2-x0,l[h].y2-t0,l1-x0,u1-t0),
+			a3=cha(l[h].x1-x0,l[h].y1-t0,x0-l1,t0-u1),a4=cha(l[h].x2-x0,l[h].y2-t0,x0-l1,t0-u1);
+		if(a1<=0&&a2<=0&&a3>=0&&a4>=0)
+			return true;
+		a1=cha(l[h].x1-x0,l[h].y1-t0,x0-l2,t0-u2),a2=cha(l[h].x2-x0,l[h].y2-t0,x0-l2,t0-u2),
+			a3=cha(l[h].x1-x0,l[h].y1-t0,l2-x0,u2-t0),a4=cha(l[h].x2-x0,l[h].y2-t0,l2-x0,u2-t0);
+		if(a1<=0&&a2<=0&&a3>=0&&a4>=0)
+			return true;
+	}
+	return false;
+}
+int main(int argc,char** argv){
+	fin >>n>>x0>>t0;
+	long nn=n;
+	for(long i=1;i<=n;i++){
+		fin >>p[i].x>>p[i].y;
+	}
+	p[n+1].x=p[1].x;p[n+1].y=p[1].y;
+	for(long i=1;i<=n;i++){
+		l[i].x1=p[i].x;l[i].y1=p[i].y;
+		l[i].x2=p[i+1].x;l[i].y2=p[i+1].y;
+}
+	l[0]=l[n];
+	l[n+1]=l[1];
+	while(temp<n){
+		long k=0;
+		for(long i=1;i<=n;i++){
+			bool bo=false;
+			if(hash[i])continue;
+			long ii=(i%n)+1,jj=i-1;
+			if(jj==0)jj=n;
+			for(long j=1;j<=n;j++){
+				if(i==j||hash[j]!=0)continue;
+				if(j!=jj&&ok(x0,t0,l[i].x1,l[i].y1,l[j].x1,l[j].y1,l[j].x2,l[j].y2)){bo=true;break;}
+				if(j!=ii&&ok(x0,t0,l[i].x2,l[i].y2,l[j].x1,l[j].y1,l[j].x2,l[j].y2)){bo=true;break;}
+			}
+			if(hash[ii]==0&&dian(x0-l[ii].x1,t0-l[ii].y1,l[ii].x2-l[ii].x1,l[ii].y2-l[ii].y1)>0&&
+				cha(x0-l[ii].x1,t0-l[ii].y1,l[ii].x2-l[ii].x1,l[ii].y2-l[ii].y1)==0)
+				bo=true;
+			if(hash[jj]==0&&dian(x0-l[i].x1,t0-l[i].y1,l[ii].x1-l[ii].x2,l[ii].y1-l[ii].y2)>0&&
+				cha(x0-l[i].x1,t0-l[i].y1,l[ii].x1-l[ii].x2,l[ii].y1-l[ii].y2)==0)
+				bo=true;
+			if(!bo){k=i;break;}
+		}
+		hash[k]=3;
+		if(k==n)hash[0]=3;
+		if(k==1)hash[n+1]=3;
+		temp++;
+		for(long i=1;i<=n;i++){
+			if(hash[i])continue;
+			if(k==1&&i==6)
+				k=1;
+			if(dele(k,i))
+				{temp++;hash[i]=2;}
+		}
+	}
+	for(long i=1;i<=n;i++)
+		if(hash[i]==3)
+			ans++;
+	fout <<ans<<endl;
+	ex(l[n].x1,l[n].x2);ex(l[n].y1,l[n].y2);
+	for(long i=1;i<n-1;i++)
+		if(hash[i]==3)
+			fout <<l[i].x1<<' '<<l[i].y1<<' '<<l[i].x2<<' '<<l[i].y2<<endl;
+	if(hash[n]==3)fout <<l[n].x1<<' '<<l[n].y1<<' '<<l[n].x2<<' '<<l[n].y2<<endl;
+	if(hash[--n]==3)fout <<l[n].x1<<' '<<l[n].y1<<' '<<l[n].x2<<' '<<l[n].y2<<endl;
+	fin.close();fout.close();
+	return 0;
+}

@@ -1,0 +1,254 @@
+/*
+ID:ybojan2
+LANG:C++
+TASK:cowtour
+*/
+ 
+#include <iostream>
+#include <iomanip>
+#include <fstream>
+#include <math.h>
+ 
+using namespace std;
+ 
+    int n,x[161],y[161];
+    double map[161][161],res=1e20,mmax[161];
+ 
+double dist(int i,int j)
+{
+       return (sqrt((x[i]-x[j])*(x[i]-x[j])+(y[i]-y[j])*(y[i]-y[j])));
+}
+ 
+int main()
+{
+    ifstream fin("cowtour.in");
+    ofstream fout("cowtour.out");
+ 
+ 
+    fin>>n;
+    for (int i=1;i<=n;i++)
+        fin>>x[i]>>y[i];
+    for (int i=1;i<=n;i++)
+        mmax[i]=0;
+    for (int i=1;i<=n;i++)
+        for (int j=1;j<=n;j++)
+        {
+            char c;
+            fin>>c;
+            if(c=='1') map[i][j]=dist(i,j);
+            else map[i][j]=1e20;
+            if (i==j) map[i][j]=0;
+        }
+ 
+    for (int k=1;k<=n;k++)
+        for (int i=1;i<=n;i++)
+            for (int j=1;j<=n;j++)
+                if (map[i][k]+map[k][j]<map[i][j]) 
+                   map[i][j]=map[i][k]+map[k][j];
+ 
+    for (int i=1;i<=n;i++)
+        for (int j=1;j<=n;j++)
+            if ((map[i][j]!=1e20)&&(map[i][j]>mmax[i]))
+               mmax[i]=map[i][j];
+ 
+    for (int i=1;i<=n;i++)
+        for (int j=1;j<=n;j++)
+            if (map[i][j]==1e20)
+            {
+                                if (dist(i,j)+mmax[i]+mmax[j]<res)
+                                {
+                                   res=dist(i,j)+mmax[i]+mmax[j];
+                                }
+            }
+    for (int i=1;i<=n;i++)
+        if (mmax[i]>res) res=mmax[i];
+    fout<<setprecision(6)<<setiosflags(ios::fixed  | ios::showpoint)<<res<<endl;
+    return 0;
+}/*
+ID: blackco3
+TASK: cowtour
+LANG: C++
+*/
+#include <iostream>
+#include <math.h>
+#include <memory.h>
+using namespace std;
+#define _max_node_ 150
+int n_node, x[_max_node_], y[_max_node_] ;
+double map[_max_node_][_max_node_] ;
+char conn[_max_node_][_max_node_+1] ;
+ 
+inline double dis( int i, int j ){
+	return sqrt( ((double)(x[i]-x[j]))*(x[i]-x[j])+(y[i]-y[j])*(y[i]-y[j]) );
+}
+ 
+int grps[_max_node_][_max_node_], grp_size[_max_node_], n_grp=0, grp_id[_max_node_] ;
+void get_group(int node ) {
+	int stk[_max_node_], *top=stk, vis[_max_node_] ;
+	memset( vis, 0, sizeof(int)*n_node );
+	grp_size[n_grp]=0, grps[n_grp][grp_size[n_grp]++]=node, grp_id[node]=n_grp;
+	*(top++)=node, vis[node]=1 ;
+	do{
+		register int cn=*(--top);
+		for( int i=0; i<n_node; i++ )
+			if( conn[cn][i]=='1' && !vis[i] )
+				*(top++)=i , vis[i]=1, grps[n_grp][ grp_size[n_grp]++ ]=i, grp_id[i]=n_grp ;
+	}while(top!=stk);
+	n_grp++ ;
+}
+ 
+double longest[_max_node_], grp_dim[_max_node_] ;
+void get_grp_dim( int grp_id ) {
+	register int m_size=grp_size[grp_id] ;
+	for( int k=0; k<m_size; k++ ){
+		register int kid=grps[grp_id][k];
+		for( int i=0; i<m_size; i++ ) {
+			register int iid=grps[grp_id][i];
+			if( map[iid][kid]<0 )
+				continue ;
+			for( int j=0; j<m_size; j++) {
+				register int jid=grps[grp_id][j];
+				if( map[kid][jid]<0 )
+					continue ;
+				if( map[iid][jid]<0 || map[iid][kid] + map[kid][jid] < map[iid][jid] )
+					map[iid][jid] = map[iid][kid] + map[kid][jid];
+			}
+		}
+	}
+	double dim=-1;
+	for( int i=0; i<m_size; i++ ) {
+		double cur_max=0 ;
+		for( int j=0; j<m_size; j++ )
+			if( i!=j )
+				cur_max = max( cur_max, map[grps[grp_id][i]][grps[grp_id][j]] ) ;
+		longest[grps[grp_id][i]] = cur_max ;
+		dim = max( dim, cur_max ) ;
+	}
+	for( int i=0; i<m_size; i++ ) 
+		grp_dim[grps[grp_id][i]] = dim ;
+}
+ 
+int main() {
+	freopen("cowtour.in", "r", stdin);
+	freopen("cowtour.out", "w", stdout);
+	cin >> n_node ;
+	for( int i=0; i<n_node; i++ )
+		cin >> x[i] >> y[i] ;
+	for( int i=0; i<n_node; i++ )
+		cin >> conn[i] ;
+	for( int i=0; i<n_node; i++ )
+		for( int j=i; j<n_node; j++ )
+			map[i][j] = map[j][i] = conn[i][j]=='1' ?  dis(i,j): -1;
+ 
+	memset( grp_id, 0xff, sizeof(grp_id) );
+	for( int i=0; i<n_node; i++ )
+		if( grp_id[i]==-1 )
+			get_group(i);
+	for( int i=0; i<n_grp; i++ )
+		get_grp_dim( i );
+ 
+	double min_dim=-1;
+	for( int i=0; i<n_node; i++ )
+		for( int j=i+1; j<n_node; j++ ){
+			if( grp_id[i]==grp_id[j] ) 
+				continue ;
+			double cur_dim = max( dis(i,j)+longest[i]+longest[j] , max( grp_dim[i], grp_dim[j] ) );
+			min_dim = min_dim==-1 || cur_dim<min_dim ? cur_dim : min_dim ;
+		}
+	printf("%.6lf\n", min_dim);		
+ 
+	return 0;
+}/*
+	ID:echooat1
+	LANG:C++
+	TASK:cowtour
+	*/
+ 
+我用SPFA求的最短路，突然发现我SPFA写的比Floyd还熟练，orz。。。
+#include <fstream>
+#include <cstdlib>
+#include <cmath>
+#include <cstdio>
+#define max(a,b) ((a)>(b)?(a):(b))
+#define ma 1994052222
+using namespace std;
+FILE *fout;
+ifstream fin("cowtour.in");
+long n=0,a[151][151]={0},tab[151]={0};
+double l[151][151]={0},dis[151][151]={0};
+void spfa(long);
+double t[151];
+void dfs(long g,long color){
+	tab[g]=color;
+	for(long i=1;i<=a[g][0];i++)
+		if(!tab[a[g][i]])
+			dfs(a[g][i],color);
+}
+int main(int argc,char** argv){
+	fout=fopen("cowtour.out","w");
+	long y[151][2];
+	fin >>n;
+	for(long i=1;i<=n;i++)fin >>y[i][0]>>y[i][1];fin.get();
+	for(long i=1;i<=n;i++){
+		for(long j=1;j<=n;j++){
+			char u;
+			fin >>u;
+			if(u=='1'){
+				a[i][++a[i][0]]=j;
+				l[i][j]=sqrt(double((y[i][0]-y[j][0])*(y[i][0]-y[j][0])+(y[i][1]-y[j][1])*(y[i][1]-y[j][1])));
+				}
+			}
+			fin.get();
+		}
+	long p=0;
+	for(long i=1;i<=n;i++)
+		if(!tab[i]){
+			p++;
+			dfs(i,p);
+		}
+	double ans=ma;
+	for(long k=1;k<=n;k++)
+			spfa(k);
+	for(long i=1;i<=n;i++){
+		double mama=0;long k=i;
+		for(long j=1;j<=n;j++)
+			if(dis[i][j]>mama&&dis[i][j]!=ma){
+				mama=dis[i][j];
+				k=j;
+			}
+			t[i]=mama;
+	}
+	double r[151]={0};
+	for(long i=1;i<=n;i++)
+		r[tab[i]]=max(r[tab[i]],t[i]);
+	for(long i=1;i<=n;i++)
+		for(long j=1;j<=n;j++)
+			if(tab[i]!=tab[j]){
+				double temp=sqrt(double((y[i][0]-y[j][0])*(y[i][0]-y[j][0])+(y[i][1]-y[j][1])*(y[i][1]-y[j][1])));
+				if(t[i]+t[j]+temp<ans)ans=max(t[i]+t[j]+temp,max(r[tab[i]],r[tab[j]]));
+				}
+	fprintf(fout,"%.6f\n",ans);
+	fin.close();fclose(fout);
+	return 0;
+}
+void spfa(long u){
+	for(long i=1;i<=n;i++)
+		dis[u][i]=ma;
+	dis[u][u]=0;
+	long head=1,tail=1,d[10000]={0};
+	bool hash[151]={false};
+	d[1]=u;hash[u]=true;
+	while(head<=tail){
+		long now=d[head++];
+		for(long i=1;i<=a[now][0];i++)
+			if(dis[u][a[now][i]]>dis[u][now]+l[now][a[now][i]]){
+				long temp=a[now][i];
+				dis[u][a[now][i]]=dis[u][now]+l[now][a[now][i]];
+				if(!hash[temp]){
+					hash[temp]=true;
+					d[++tail]=temp;
+				}
+			}
+		hash[now]=false;
+		}
+}
