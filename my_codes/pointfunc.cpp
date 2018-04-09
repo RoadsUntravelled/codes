@@ -1,16 +1,19 @@
 /*************************************************************************
-	> File Name: typedefpoint.cpp
+	> File Name: pointfunc.cpp
 	> Author: 魍魉楼主
 	> Mail: wangxufeng1997@outlook.com
-	> Created Time: 2018年03月30日 星期五 20时13分13秒
+	> Created Time: 2018年04月03日 星期二 18时33分43秒
  ************************************************************************/
 
 #include<iostream>
 using namespace std;
-typedef int* Demo[9];
+int*func(int*p,int i){
+    return p+i;
+}
 int main(){
-    Demo p;
-    p[0[0]]=1;
-    cout<<(*p)[1];
+    int p[]={5,8,9,1,2};
+    cout<<p[0];
+    *func(p,0)=2;
+    cout<<p[0];
     return 0;
 }
