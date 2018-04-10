@@ -1,19 +1,19 @@
 /*************************************************************************
-	> File Name: revstring.cpp
+	> File Name: 10_2.cpp
 	> Author: 魍魉楼主
 	> Mail: wangxufeng1997@outlook.com
-	> Created Time: 2018年03月27日 星期二 11时48分56秒
+	> Created Time: 2018年04月09日 星期一 19时59分42秒
  ************************************************************************/
 
 #include<iostream>
-#include<string>
+#include<iterator>
 #include<algorithm>
 using namespace std;
+double square(double x){
+    return x*x;
+}
 int main(){
-    string a;
-    cin>>a;
-    string b(a.rbegin(),a.rend());
-    cout<<a<<endl;
-    cout<<b<<endl;
+    transform(istream_iterator<double>(cin),istream_iterator<double>(),ostream_iterator<double>(cout,"\t"),square);
+    cout<<endl;
     return 0;
 }
