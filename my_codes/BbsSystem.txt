@@ -1,0 +1,18 @@
+My system is Bulletin Board System.
+Its functional requirement:
+	First,it provides a user interface for users to register.If sucess,users go back to login interface to login.When entering the indexpage,users can have a knowledge of the main operations which are as follows.
+	1.Skimming the whole page and choose a partition of posts and enter in to take the next step. 	
+	2.Now,you are in the one of the partitions.This page provides a large quantity of posts from users.You can click the title to check the details,click on the point of praise button to parise for the post,or post on your own by through the textarea at the bottom of the page.
+	3.In the details pages,you can continue to skimming others' replies or make your own reply.
+	4.Common users can delete their own posts or replies.
+	5.Managing users can stick posts on the top,manage common users such as prohibiting users from posting or replying,blocking users' accounts.Administrators can alse delete all the posts or replies.
+	Second,users can enter the homepage to modify personal information,such as resetting
+password,revising the head image.
+Its non-functional requirement:
+	1.Performance and Capacity
+	2.Reliability,Availability and Recoverability	
+	3.Maintainability and Manageability
+	4.Safety
+	5.Usability
+	6.Data consistency
+	7.System environmental conditions and limitations

@@ -1,16 +1,21 @@
 /*************************************************************************
-	> File Name: test.cpp
+	> File Name: ostringstream.cpp
 	> Author: 魍魉楼主
 	> Mail: wangxufeng1997@outlook.com
-	> Created Time: 2017年12月20日 星期三 23时04分38秒
+	> Created Time: 2018年04月10日 星期二 17时55分50秒
  ************************************************************************/
 
 #include<iostream>
-#include<cstdio>
-#include<cstring>
+#include<functional>
+#include<iterator>
+#include<algorithm>
+#include<sstream>
+#include<string>
 using namespace std;
 int main(){
-    char a[]="ddd";
-    cout<<strlen(a+1)<<endl;
+    ostringstream os;
+    os<<123456;
+    string obj=os.str();
+    cout<<obj[2]<<endl;
     return 0;
 }
