@@ -11,6 +11,9 @@
 #include<algorithm>
 using namespace std;
 const int MAXVEX=65565;
+int *etv,*ltv;//the earliest time of vertex;the lastest time of vertex
+int *stack2;//stack2 saves the order of topo
+int top2;//save the top place of the stack2
 struct EdgeNode{//边表结点
     int adjvex;//邻接点域，存储该顶点对应的下标
     int weight;//存储权值
@@ -34,27 +37,57 @@ bool TopologicalSort(GraphAdjList GL){
     stack=(int*)malloc(GL->numVertexes*sizeof(int));
     for(int i=0;i<GL->numVertexes;i++)
         if(GL->adjList[i].in==0){
-            cout<<"data:"<<GL->adjList[i].data<<" ";
             stack[++top]=i;//将入度为0的顶点入栈
         }
-    cout<<endl;
+    top2=0;
+    etv=(int*)malloc(GL->numVertexes*sizeof(int));//the earliest time of the vertex
+    for(int i=0;i<GL->numVertexes;i++)
+        etv[i]=0;//init 0;
+    stack2=(int*)malloc(GL->numVertexes*sizeof(int));//init
     while(top!=0){//如果栈不为空
         gettop=stack[top--];//pop the top of stack
-        printf("%d->",GL->adjList[gettop].data);//print the vertex which it poped
         count++;//count the number of vertexs which are printed
+        stack2[++top2]=gettop;//push the vertex which is poped by stack into stack2
         for(e=GL->adjList[gettop].firstedge;e;e=e->next){
             //go through edge table of the vertex
             k=e->adjvex;
             if(!(--GL->adjList[k].in)){//minus the number in-degrees of kth of the vertex
                 stack[++top]=k;//if the in==0,push the kth of the vertex
-                cout<<"this data:"<<GL->adjList[k].data<<endl;
-            }   
+            }
+            if((etv[gettop]+e->weight)>etv[k])//search the earliest time of the vertex
+                etv[k]=etv[gettop]+e->weight;
         }
     }
     if(count<GL->numVertexes)//if count<numVertexes,the circle has existed
         return 0;
     else
         return 1;
+}
+void CriticalPath(GraphAdjList GL){
+    EdgeNode*e;
+    int i,gettop,k,j;
+    int ete,lte;//the earliest and lastest time of activities
+    TopologicalSort(GL);
+    ltv=(int*)malloc(GL->numVertexes*sizeof(int));//the lastest time of the event
+    for(int i=0;i<GL->numVertexes;i++)
+        ltv[i]=etv[GL->numVertexes-1];//init ltv
+    while(top2!=0){
+        gettop=stack2[top2--];
+        for(e=GL->adjList[gettop].firstedge;e;e=e->next){
+            k=e->adjvex;
+            if(ltv[k]-e->weight<ltv[gettop])
+                ltv[gettop]=ltv[k]-e->weight;
+        }
+    }
+    for(int j=0;j<GL->numVertexes;j++){
+        for(e=GL->adjList[j].firstedge;e;e=e->next){
+            k=e->adjvex;
+            ete=etv[j];
+            lte=ltv[k]-e->weight;
+            if(ete==lte)
+                printf("<v%d,v%d> length:%d,",GL->adjList[j].data,GL->adjList[k].data,e->weight);
+        }
+    }
 }
 int main(){
     graphAdjList topo;
