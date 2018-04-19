@@ -10,7 +10,7 @@
 #include<cstring>
 using namespace std;
 int main(){
-    unsigned long long t=-111111111111111;
-    cout<<t;
+    int *p=new int(2);
+    cout<<*p;
     return 0;
 }

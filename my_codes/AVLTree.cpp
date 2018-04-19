@@ -66,25 +66,25 @@ void RightBalance(BiTree*T){
     BiTree R,Rl;
     R=(*T)->rchild;
     switch(R->bf){//检查T的右子树平衡度，并作相应平衡处理
-        case LH://新结点插入在T的右孩子的左子树上，要作单右旋处理
+        case RH://新结点插入在T的右孩子的右子树上，要作单右旋处理
             (*T)->bf=R->bf=EH;
-            R_Rotate(T);
+            L_Rotate(T);
             break;
-        case RH://新结点插入在T的左孩子的右子树上，要作双旋处理
-            Rl=R->rchild;
+        case LH://新结点插入在T的右孩子的左子树上，要作双旋处理
+            Rl=R->lchild;
             switch(Rl->bf){
-                case LH:(*T)->bf=RH;
+                case LH:(*T)->bf=LH;
                     R->bf=EH;
                     break;
                 case EH:(*T)->bf=R->bf=EH;
                     break;
                 case RH:(*T)->bf=EH;
-                    R->bf=LH;
+                    R->bf=RH;
                     break;
             }
             Rl->bf=EH;
-            L_Rotate(&(*T)->lchild);//对T的左子树作左旋转平衡处理
-            R_Rotate(T);//对T作右旋平衡处理
+            R_Rotate(&(*T)->rchild);//对T的左子树作左旋转平衡处理
+            L_Rotate(T);//对T作右旋平衡处理
     }
 }
 bool insert_avl(BiTree*T,int e,bool*taller){
@@ -146,7 +146,7 @@ bool insert_avl(BiTree*T,int e,bool*taller){
     return true;
 }
 int main(){
-    int a[10]={3,0,1,4,5,6,7,10,9,8};
+    int a[10]={3,2,1,4,5,6,7,10,9,8};
     int i;
     BiTree T=NULL;
     bool taller;
