@@ -77,7 +77,7 @@ int main(){
 
         /*for(int i=1;i<=n;i++)
             cout<<stat[i].shx<<" "<<stat[i].shy<<" "<<stat[i].shz<<" dist:"<<stat[i].dist<<endl;*/
-        printf("%.6f\n",(int)(tot/0.000001+0.00005)*0.000001);
+        printf("%.6f\n",tot);
     }
     return 0;
 }
