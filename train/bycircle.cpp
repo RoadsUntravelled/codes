@@ -14,30 +14,14 @@ using namespace std;
 int main(){
     int n;
     while(cin>>n){
-    int **dp=new int*[n+1];
-    for(int i=0;i<=n;i++)
-        dp[i]=new int[n+1];
-    for(int i=0;i<=n;i++)
-        for(int j=0;j<=n;j++)
-            dp[i][j]=0;
-    for(int i=1;i<=n;i++)
-        for(int j=1;j<=n;j++)
-            //if(i<=0||j<=0||((j+0)*(j+1))/2<i)
-             //   continue;
-             if(i==j)
-                dp[i][j]=1+dp[i][j-1];
-            else if(j>i)
-                dp[i][j]=dp[i][i];
-            else
-                dp[i][j]=dp[i][j-1]+dp[i-j][j-1];
-    /*for(int i=1;i<=n;i++){
-        copy(*(dp+i)+1,*(dp+i)+n+1,ostream_iterator<int>(cout," "));
-        cout<<endl;
-            }*/
-    cout<<dp[n][n]%100001<<endl;
-    for(int i=0;i<=n;i++)
-        delete []dp[i];
-    delete []dp;
+    unsigned long long*dp=new unsigned long long[n+1]();
+    dp[0]=1;
+    for(int i=1;i<=n;i++){
+        for(int j=n;j>=i;j--)
+            dp[j]=dp[j]%100001+dp[j-i];
+    }
+    cout<<dp[n]%100001<<endl;
+    delete[]dp;
     }
     return 0;
 }
