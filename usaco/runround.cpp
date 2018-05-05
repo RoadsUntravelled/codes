@@ -23,11 +23,15 @@ int main(){
     string conv=ss.str();
     string comp(conv);
     int len=comp.length();
-    int cur=comp.find('0');
-    if(cur!=-1){
-        m+=pow(10,len-1-cur);
+    bool flag=false;
+    for(int i=1;i<len;i++)
+        if(conv[i]=='0')
+        {
+            flag=true;
+            m+=pow(10,len-i-1);
+        }
+    if(flag)
         continue;
-    }
     sort(comp.begin(),comp.end());
     int after=unique(comp.begin(),comp.end())-comp.begin();
     if(len!=after){

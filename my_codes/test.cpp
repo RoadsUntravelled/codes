@@ -11,73 +11,56 @@
 #include<cmath>
 #include<cstring>
 #include<iomanip>
+#include<set>
+#include<typeinfo>
+#include<bitset>
 using namespace std;
-struct Station{
-    int x,y,z;
-    double dist;
-    double shx,shy,shz;
+/*bool operator<(const bitset<8>&a,const bitset<8>&b){
+    return a.to_string()<b.to_string();
+}*/
+class cmp{
+    public:
+    bool operator ()(const bitset<8>ori,const bitset<8>&obj)const{
+        return ori.to_string()<obj.to_string();
+    }
 };
 int main(){
-    int T;
-    cin>>T;
-    for(int cas=1;cas<=T;cas++){
-        double v1,v2;//V1为三维速度，V2为二维速度
-        cin>>v1>>v2;
-        int p[4][4];
-        for(int i=1;i<=3;i++)
-            for(int j=1;j<=3;j++)
-                cin>>p[i][j];
-        int a,b,c,d;
-        a=(p[2][2]-p[1][2])*(p[3][3]-p[1][3])-(p[2][3]-p[1][3])*(p[3][2]-p[1][2]);
-        b=(p[2][3]-p[1][3])*(p[3][1]-p[1][1])-(p[2][1]-p[1][1])*(p[3][3]-p[1][3]);
-        c=(p[2][1]-p[1][1])*(p[3][2]-p[1][2])-(p[2][2]-p[1][1])*(p[3][1]-p[1][1]);
-        d=-(a*p[1][1]+b*p[1][2]+c*p[1][3]);
-        double square=a*a+b*b+c*c;
-        double base=sqrt(square);
-        int n;
-        cin>>n;
-        bool vis[16]={false};
-        Station stat[16];
-        for(int i=1;i<=n;i++){
-            cin>>stat[i].x>>stat[i].y>>stat[i].z;
-            stat[i].dist=(double)(abs(a*stat[i].x+b*stat[i].y+c*stat[i].z+d))/(base*v1);
-            double t=(a*stat[i].x+b*stat[i].y+c*stat[i].z+d)/(double)(square);
-            stat[i].shx=stat[i].x-a*t;
-            stat[i].shy=stat[i].y-b*t;
-            stat[i].shz=stat[i].z-c*t;
-        }
-        double tot=0;
-        int i=1;
-        int cnt=n;
-        vis[1]=true;
-        int low[16]={0};
-        while(cnt){
-            //cout<<"i="<<i<<endl;
-            int index;
-            double minum=999999999;
-            for(int j=1;j<=n;j++)
-                if(i!=j&&low[i]!=j){
-                    double dist1=(double)(sqrt((stat[i].x-stat[j].x)*(stat[i].x-stat[j].x)+(stat[i].y-stat[j].y)*(stat[i].y-stat[j].y)+(stat[i].z-stat[j].z)*(stat[i].z-stat[j].z)))/v1;
-                    double dist2=stat[i].dist+stat[j].dist+(double)(sqrt((stat[i].shx-stat[j].shx)*(stat[i].shx-stat[j].shx)+(stat[i].shy-stat[j].shy)*(stat[i].shy-stat[j].shy)+(stat[i].shz-stat[j].shz)*(stat[i].shz-stat[j].shz)))/v2;
-                    double temp=dist1<dist2?dist1:dist2;
-                    if(temp<minum){
-                        index=j;
-                        minum=temp;
-                    }   
-                }
-            tot+=minum;
-            low[index]=i;
-            i=index;
-            vis[i]=true;
-            cnt--;
-            } 
+    /*int arr[]{1,2,3};
+    //string s("asdfg");
+    set<int> se{5,2,3,4,5};
+    for(auto i:arr)
+        cout<<i<<endl;
+    cout<<sizeof arr[0]<<endl;
+    auto c{0.0};
+    cout<<typeid(arr).name()<<endl;
+    cout<<sizeof arr<<endl;
+    bitset<100> s(0xffffffffffffff);
+    bitset<100> a(0xffffffffffffff);
+    string s1=s.to_string();
+    string s2=a.to_string();
+    bool check=s1>s2;
+    cout<<check<<endl;
+    string temp;
+    getline(cin,temp);
+    cout<<temp<<endl;
+    int *p=new int(5);
+    int *ano=p;
+    cout<<*p<<endl;
+    delete p;
+    cout<<*p<<endl;
+    set<bitset<8>,cmp> test{5,4,2,8,1};
+    for(auto i:test)
+        cout<<i<<" ";
+    cout<<endl;
+    bitset<100> tt(0);
+    cout<<~tt<<endl;
+    cout<<tt.count()<<endl;*/
+    char link[25] = {112, 97, 110, 46, 98, 97, 105, 100, 117, 46, 99, 111, 109, 47, 115, 47, 49, 111, 57, 52, 107, 83, 106, 103, 10}; 
 
-        /*for(int i=1;i<=n;i++)
-            cout<<low[i]<<endl;*/
+    char code[5] = {118, 98, 108, 120, 10}; 
 
-        /*for(int i=1;i<=n;i++)
-            cout<<stat[i].shx<<" "<<stat[i].shy<<" "<<stat[i].shz<<" dist:"<<stat[i].dist<<endl;*/
-        printf("%.6f\n",tot);
-    }
+
+    cout << link << endl; cout << code << endl; 
+
     return 0;
 }
