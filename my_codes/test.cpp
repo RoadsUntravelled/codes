@@ -14,6 +14,7 @@
 #include<set>
 #include<typeinfo>
 #include<bitset>
+#include<vector>
 using namespace std;
 /*bool operator<(const bitset<8>&a,const bitset<8>&b){
     return a.to_string()<b.to_string();
@@ -42,7 +43,7 @@ int main(){
     cout<<check<<endl;
     string temp;
     getline(cin,temp);
-    cout<<temp<<endl;
+    cout<<temp<<endl
     int *p=new int(5);
     int *ano=p;
     cout<<*p<<endl;
@@ -55,12 +56,9 @@ int main(){
     bitset<100> tt(0);
     cout<<~tt<<endl;
     cout<<tt.count()<<endl;*/
-    char link[25] = {112, 97, 110, 46, 98, 97, 105, 100, 117, 46, 99, 111, 109, 47, 115, 47, 49, 111, 57, 52, 107, 83, 106, 103, 10}; 
-
-    char code[5] = {118, 98, 108, 120, 10}; 
-
-
-    cout << link << endl; cout << code << endl; 
-
+    string a("12341");
+    string b("12340");
+    bool n=a.compare(0,5,b,0,5);
+    cout<<n<<endl;
     return 0;
 }
