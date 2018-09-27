@@ -51,6 +51,7 @@ void inordertraverse(BiTree T){
 void CreateBiTree(BiTree&T){
     char ch;
     scanf("%c",&ch);
+    getchar();
     if(ch==' '){
         T=NULL;
         cout<<"error"<<endl;
@@ -65,7 +66,7 @@ void CreateBiTree(BiTree&T){
     }
 }
 int main(){
-    //BiTree tree=(BiTree)malloc(sizeof(BiTNode));
+    BiTree tree=(BiTree)malloc(sizeof(BiTNode));
     BiTree createtree;
     /*BiTree root=tree;
     root->data='-';
@@ -99,7 +100,7 @@ int main(){
     rc=root->rchild;
     rc->data='d';*/
     CreateBiTree(createtree);
-    /*cout<<"前序遍历:";
+    cout<<"前序遍历:";
     POT(createtree);
     cout<<endl;
     cout<<"中序遍历:";
@@ -107,6 +108,6 @@ int main(){
     cout<<endl;
     cout<<"后序遍历:";
     PostOrderTraverse(createtree);
-    cout<<endl;*/
+    cout<<endl;
     return 0;
 }

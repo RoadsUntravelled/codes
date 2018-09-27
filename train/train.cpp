@@ -1,24 +1,26 @@
 /*************************************************************************
-	> File Name: test.cpp
+	> File Name: train.cpp
 	> Author: 魍魉楼主
 	> Mail: wangxufeng1997@outlook.com
-	> Created Time: 2018年04月25日 星期三 15时53分21秒
+	> Created Time: 2018年09月26日 星期三 20时11分15秒
  ************************************************************************/
 
 #include<iostream>
 #include<functional>
 #include<iterator>
 #include<algorithm>
+#include<cstring>
+#include<cstdio>
+#include<stack>
 using namespace std;
 int main(){
-    char data[200][200];
     int n;
-    cin>>n;
-    for(int i=1;i<=n;i++)
-        for(int j=1;j<=n;j++){
-            cin>>data[i][j];
-            if(data[i][j]=='1')
-                cout<<i<<" "<<j<<endl;
+    while(cin>>n&&n){
+        int first;
+        while(cin>>first&&first){
+            int *trains=new int[n];
+            trains[0]=first;
+            for(int i)
         }
-    return 0;
+    }
 }
